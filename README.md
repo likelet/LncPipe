@@ -19,7 +19,7 @@ https://www.nextflow.io/
 
 ## 2. Installation of dependencies.
 ### Install NextFlow
-To run our pipelines. NextFlow should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommendate running the pipes in the Windows since most of bioinformatic tools are not supported.
+To run our pipelines. NextFlow should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.
 Here, we show the step by step installation of NextFlow in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
 
 1. Download the executable package by copying and pasting the following command in your terminal window: ```wget -qO- get.nextflow.io | bash```. It will create the nextflow main executable file in the current directory.
@@ -31,7 +31,8 @@ Here, we show the step by step installation of NextFlow in linux system as an ex
 ##### References, index and annotation files
 ##### software and tools
 1. [STAR](https://github.com/alexdobin/STAR), Reference https://www.ncbi.nlm.nih.gov/pubmed/23104886
-2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks)
-3. [Bedops](http://bedops.readthedocs.io/en/latest/)
+2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks), Reference
+3. [Bedops](http://bedops.readthedocs.io/en/latest/), Reference
+4. 
 
 
