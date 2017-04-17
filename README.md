@@ -27,12 +27,13 @@ Here, we show the step by step installation of NextFlow in linux system as an ex
 3. Download the lastest binary verion of NextFlow from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
 ### Install third-party software and database required by each pipe.
 #### Pipe 1
-##### Instructions
+##### introduction
 ##### References, index and annotation files
+
 ##### software and tools
 1. [STAR](https://github.com/alexdobin/STAR), Reference https://www.ncbi.nlm.nih.gov/pubmed/23104886
-2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks), Reference
-3. [Bedops](http://bedops.readthedocs.io/en/latest/), Reference
+2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks), Reference https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/
+3. [Bedops](http://bedops.readthedocs.io/en/latest/), Reference https://www.ncbi.nlm.nih.gov/pubmed/22576172/
 4. 
 
 
