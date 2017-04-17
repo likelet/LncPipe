@@ -30,8 +30,8 @@ Here, we show the step by step installation of NextFlow in linux system as an ex
 ##### Instructions
 ##### References, index and annotation files
 ##### software and tools
-1.[STAR](https://github.com/alexdobin/STAR), Reference https://www.ncbi.nlm.nih.gov/pubmed/23104886
-2.[Cufflinks](https://github.com/cole-trapnell-lab/cufflinks)
-3.[Bedops](http://bedops.readthedocs.io/en/latest/)
+1. [STAR](https://github.com/alexdobin/STAR), Reference https://www.ncbi.nlm.nih.gov/pubmed/23104886
+2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks)
+3. [Bedops](http://bedops.readthedocs.io/en/latest/)
 
 
