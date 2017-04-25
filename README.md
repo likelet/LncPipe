@@ -54,9 +54,9 @@ Here, we show the step by step installation of NextFlow in linux system as an ex
       cd libsvm-3.0
       make
       cd ..
-      ```Shell
-6. [CPAT](http://rna-cpat.sourceforge.net), Reference 
       ```
+6. [CPAT](http://rna-cpat.sourceforge.net), Reference 
+      ```Shell
       wget https://sourceforge.net/projects/rna-cpat/files/?source=navbar
       tar zxf CPAT-VERSION.tar.gz
       cd CPAT-VERSION
