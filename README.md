@@ -29,12 +29,16 @@ Here, we show the step by step installation of NextFlow in linux system as an ex
 #### Pipe 1
 ##### introduction
 ##### References, index and annotation files（required）
-1. STAR index (hg19 genome index etc.)
-2. 
+1. STAR index (hg38 genome index etc.)
+2. Genome reference (genome fasta file with suffix .fa , UCSC etc).
+3. GENCODE gene annotation file in GTF format, [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
+4. LNCipedia gene annotation file in GTF format,[lncipedia_4_0_hc_hg38.gtf] (http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
 ##### software and tools (required)
 1. [STAR](https://github.com/alexdobin/STAR), Reference https://www.ncbi.nlm.nih.gov/pubmed/23104886
 2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks), Reference https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/
 3. [Bedops](http://bedops.readthedocs.io/en/latest/), Reference https://www.ncbi.nlm.nih.gov/pubmed/22576172/
-4. 
+4. PLEK
+5. CNCI
+
 
 
