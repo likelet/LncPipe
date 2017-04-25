@@ -39,23 +39,23 @@ Here, we show the step by step installation of NextFlow in linux system as an ex
 1. [STAR](https://github.com/alexdobin/STAR), Reference https://www.ncbi.nlm.nih.gov/pubmed/23104886
 2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks), Reference https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/
 3. [Bedops](http://bedops.readthedocs.io/en/latest/), Reference https://www.ncbi.nlm.nih.gov/pubmed/22576172/
-4. [PLEK]
-      ```
+4. [PLEK](www.ibiomedical.net), Reference 
+      ```Shell
       wget https://sourceforge.net/projects/plek/files/PLEK.1.2.tar.gz/download
       tar -zvxf PLEK.1.2.tar.gz 
       cd PLEK.1.2
       python PLEK_setup.py 
       ```
-5. [CNCI]
-      ```
+5. [CNCI](https://github.com/www-bioinfo-org/CNCI), Renference
+      ``` Shell
       git clone git@github.com:www-bioinfo-org/CNCI.git
       cd CNCI
       unzip libsvm-3.0.zip
       cd libsvm-3.0
       make
       cd ..
-      ```
-6. [CPAT]
+      ```Shell
+6. [CPAT](http://rna-cpat.sourceforge.net), Reference 
       ```
       wget https://sourceforge.net/projects/rna-cpat/files/?source=navbar
       tar zxf CPAT-VERSION.tar.gz
