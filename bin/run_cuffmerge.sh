@@ -1,0 +1,2 @@
+#!/bin/sh
+cuffmerge -p 25 -g /HOME/nsfc2015_555/NSFC/WORKSPACE/database/genecode_hg38/gencode.v24.annotation.gtf -s /HOME/nsfc2015_555/NSFC/WORKSPACE/database/UCSC_hg38/Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa -o /HOME/nsfc2015_555/NSFC/WORKSPACE/data/zuo/project/CRC_RNASeq/cuffmerge gtf.list.txt
