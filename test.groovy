@@ -56,93 +56,29 @@ plekpath = file(params.plekpath)
 cncipath = file(params.cncipath)
 cpatpath = file(params.cpatpath)
 
-//rRNAmaskfile = file(params.rRNAmask)
+rRNAmaskfile = file(params.rRNAmask)
 
-//gene_annotation=file(params.gene_annotation)
+//specify  weather the merged file was already generated
+skipmerge=true
 
+annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
+annotation_channel.collectFile { file -> ['lncRNA.gtflist', file.name + '\n'] }
+        .set { LncRNA_gtflist }
+process combine_public_annotation {
+    cpus params.cpu
 
-if (params.help) {
-    log.info ''
-    log.info '-------------------------------------------------------------'
-    log.info 'NEXTFLOW Long non-coding RNA analysis PIPELINE v${version}'
-    log.info '-------------------------------------------------------------'
-    log.info ''
-    log.info 'Usage: '
-    log.info 'Nextflow lncRNApipe.nf '
+    input:
+    file lncRNA_gtflistfile from LncRNA_gtflist
+    file gencode_annotation_gtf
+    file lncipedia_gtf
 
-    exit 1
-}
+    output:
+    file "gencode_protein_coding.gtf" into proteinCodingGTF
+    file "merged.filter.gtf" into KnownLncRNAgtf
 
-//Star index
-//star_ref = file(params.params.star_idex_ref)
-
-// Check wether fastq file is available
-mode = 'fastq'
-if (file(params.input_folder).listFiles().findAll { it.name ==~ /.*${params.fastq_ext}/ }.size() > 0 ||
-        file(params.input_folder).listFiles().findAll { it.name ==~ /.*${params.fastq_ext2}/ }.size() > 0) {
-    println "fastq files found, proceed with alignment"
-} else {
-    if (file(params.input_folder).listFiles().findAll { it.name ==~ /.*bam/ }.size() > 0) {
-        println "BAM files found, proceed with realignment"; mode = 'bam';
-        files = Channel.fromPath(params.input_folder + '/*.bam')
-    } else {
-        println "ERROR: input folder contains no fastq nor BAM files"; System.exit(0)
-    }
-}
-
-
-if (mode == 'fastq') {
-    println "Analysis from fastq file"
-    println "Start mapping by Star"
-//
-    keys1 = file(params.input_folder).listFiles().findAll {
-        it.name ==~ /.*${params.suffix1}.${params.fastq_ext}/
-    }.collect { it.getName() }
-            .collect { it.replace("${params.suffix1}.${params.fastq_ext}", '') }
-    keys2 = file(params.input_folder).listFiles().findAll {
-        it.name ==~ /.*${params.suffix2}.${params.fastq_ext}/
-    }.collect { it.getName() }
-            .collect { it.replace("${params.suffix2}.${params.fastq_ext}", '') }
-    if (!(keys1.containsAll(keys2)) || !(keys2.containsAll(keys1))) {
-        println "\n ERROR : There is at least one fastq without its mate, please check your fastq files.";
-        System.exit(0)
-    }
-
-    println keys1
-// parse paired files _1
-    reads1 = Channel.fromPath(params.input_folder + '/*' + params.suffix1 + '.' + params.fastq_ext).map { path -> [path.name.replace("${params.suffix1}.${params.fastq_ext}", ""), path] }
-
-// parse paired files _2
-    reads2 = Channel.fromPath(params.input_folder + '/*' + params.suffix2 + '.' + params.fastq_ext).map { path -> [path.name.replace("${params.suffix2}.${params.fastq_ext}", ""), path] }
-
-// Match the pairs on two channels
-    readPairs = reads1.phase(reads2).map { pair1, pair2 -> [pair1[1], pair2[1]] }
-
-//prepare annotations
-// combine public lnRNA annotation
-//required files
-//#lncRNA.gtflist
-//#gencode.v24.long_noncoding_RNAs.gtf
-//#lncipedia_4_0_hg38.gtf
-
-    annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
-    annotation_channel.collectFile { file -> ['lncRNA.gtflist', file.name + '\n'] }
-            .set { LncRNA_gtflist }
-    process combine_public_annotation {
-        cpus params.cpu
-
-        input:
-        file lncRNA_gtflistfile from LncRNA_gtflist
-        file gencode_annotation_gtf
-        file lncipedia_gtf
-
-        output:
-        file "gencode_protein_coding.gtf" into proteinCodingGTF
-        file "merged.filter.gtf" into KnownLncRNAgtf
-
-        shell:
-        cufflinks_threads = params.cpu.intdiv(2) - 1
-        '''
+    shell:
+    cufflinks_threads = params.cpu.intdiv(2) - 1
+    '''
         set -o pipefail
         cuffmerge -o merged_lncRNA !{lncRNA_gtflistfile}
         cat !{gencode_annotation_gtf} |grep "protein_coding" > gencode_protein_coding.gtf
@@ -152,12 +88,76 @@ if (mode == 'fastq') {
         
         '''
 
+}
+if (!skipmerge) {
+//gene_annotation=file(params.gene_annotation)
+
+
+    if (params.help) {
+        log.info ''
+        log.info '-------------------------------------------------------------'
+        log.info 'NEXTFLOW Long non-coding RNA analysis PIPELINE v!{version}'
+        log.info '-------------------------------------------------------------'
+        log.info ''
+        log.info 'Usage: '
+        log.info 'Nextflow lncRNApipe.nf '
+
+        exit 1
+    }
+
+//Star index
+//star_ref = file(params.params.star_idex_ref)
+
+// Check whether fastq file is available
+    mode = 'fastq'
+    if (file(params.input_folder).listFiles().findAll { it.name ==~ /.*${params.fastq_ext}/ }.size() > 0 ||
+            file(params.input_folder).listFiles().findAll { it.name ==~ /.*${params.fastq_ext2}/ }.size() > 0) {
+        println "fastq files found, proceed with alignment"
+    } else {
+        if (file(params.input_folder).listFiles().findAll { it.name ==~ /.*bam/ }.size() > 0) {
+            println "BAM files found, proceed with realignment"; mode = 'bam';
+            files = Channel.fromPath(params.input_folder + '/*.bam')
+        } else {
+            println "ERROR: input folder contains no fastq nor BAM files"; System.exit(0)
+        }
     }
 
 
-    //specify  weather the merged file was already generated
-    skipmerge=false
-    if (!skipmerge) {
+    if (mode == 'fastq') {
+        println "Analysis from fastq file"
+        println "Start mapping by Star"
+//
+        keys1 = file(params.input_folder).listFiles().findAll {
+            it.name ==~ /.*${params.suffix1}.${params.fastq_ext}/
+        }.collect { it.getName() }
+                .collect { it.replace("${params.suffix1}.${params.fastq_ext}", '') }
+        keys2 = file(params.input_folder).listFiles().findAll {
+            it.name ==~ /.*${params.suffix2}.${params.fastq_ext}/
+        }.collect { it.getName() }
+                .collect { it.replace("${params.suffix2}.${params.fastq_ext}", '') }
+        if (!(keys1.containsAll(keys2)) || !(keys2.containsAll(keys1))) {
+            println "\n ERROR : There is at least one fastq without its mate, please check your fastq files.";
+            System.exit(0)
+        }
+
+        println keys1
+// parse paired files _1
+        reads1 = Channel.fromPath(params.input_folder + '/*' + params.suffix1 + '.' + params.fastq_ext).map { path -> [path.name.replace("${params.suffix1}.${params.fastq_ext}", ""), path] }
+
+// parse paired files _2
+        reads2 = Channel.fromPath(params.input_folder + '/*' + params.suffix2 + '.' + params.fastq_ext).map { path -> [path.name.replace("${params.suffix2}.${params.fastq_ext}", ""), path] }
+
+// Match the pairs on two channels
+        readPairs = reads1.phase(reads2).map { pair1, pair2 -> [pair1[1], pair2[1]] }
+
+//prepare annotations
+// combine public lnRNA annotation
+//required files
+//#lncRNA.gtflist
+//#gencode.v24.long_noncoding_RNAs.gtf
+//#lncipedia_4_0_hg38.gtf
+
+
 
         //run star iterate over sample or parallel
         paramode = true
@@ -269,7 +269,7 @@ if (mode == 'fastq') {
 
 // run cuffmerge
 
-        process cuffmerge {
+        process cuffmerge_assembled_gtf {
             cpus params.cpu
             tag { file_tag }
 
@@ -297,12 +297,13 @@ if (mode == 'fastq') {
         }
 
     }
+}
 
     if (skipmerge) {
 
         Channel.fromPath(params.merged_gtf)
                 .ifEmpty { exit 1, "Cannot find merged gtf : ${params.merged_gtf}" }
-                .into { cuffmergeTranscripts_forCompare;cuffmergeTranscripts_forCompare;cuffmergeTranscripts_forCodeingProtential}
+                .into { cuffmergeTranscripts_forCompare;cuffmergeTranscripts_forExtract;cuffmergeTranscripts_forCodeingProtential}
     }
 //    // run cuffcompare  merged gtf with gencode annotation
     process cuffcompare_GenCODE {
@@ -325,7 +326,8 @@ if (mode == 'fastq') {
         mkdir CUFFCOMPARE_GENCODE
         #!/bin/sh
         cuffcompare -o CUFFCOMPARE_GENCODE/merged_lncRNA -r !{gencode_annotation_gtf} -p !{cufflinks_threads} !{cuffmergefile}
-        awk '$3 = ="u"||$3=="x"{print $5}' merged_lncRNA.merged.gtf.tmap|sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl CUFFCOMPARE_GENCODE/merged_lncRNA.merged.gtf - > merged.filter.gtf
+        awk '$3 =="u"||$3=="x"{print $5}' merged_lncRNA.merged.gtf.tmap|sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl CUFFCOMPARE_GENCODE/merged_lncRNA.combined.gtf - > merged.filter.gtf
+        mv merged_lncRNA.merged.gtf.tmap CUFFCOMPARE_GENCODE/
         '''
     }
 
@@ -340,10 +342,10 @@ if (mode == 'fastq') {
         file mergedGTF from cuffmergeTranscripts_forExtract
 
         output:
-        file "transcript_exoncount.txt" into exoncount
+        //file "transcript_exoncount.txt" into exoncount
         file "novel.gtf.tmap" into noveltmap
         file "novel.longRNA.fa" into novelLncRnaFasta
-        file "novel.longRNA.exoncount.txt" into novelLncRnaExonCount
+//        file "novel.longRNA.exoncount.txt" into novelLncRnaExonCount
 
 
         shell:
@@ -351,7 +353,7 @@ if (mode == 'fastq') {
         '''
         # filtering novel lncRNA based on cuffmerged trascripts
         set -o pipefail
-        awk '$3 = ="x"||$3=="u"||$3=="i"{print $0}' !{cuffcompareDirfrom}/mergedlncRNA.merged.gtf.tmap > novel.gtf.tmap
+        awk '$3 =="x"||$3=="u"||$3=="i"{print $0}' !{cuffcompareDir}/merged_lncRNA.merged.gtf.tmap > novel.gtf.tmap
         #   excluding length smaller than 200 nt
         awk '$11 >200{print}' novel.gtf.tmap > novel.longRNA.gtf.tmap
         #   extract gtf
@@ -392,7 +394,7 @@ if (mode == 'fastq') {
         shell:
         '''
         cpat.py -g !{novel_lncRNA_fasta} -x !{cpatpath}/dat/Human_Hexamer.tsv \
-        -d !{cpatpath}/dat/Human_logitModel.RData -o lncRNA/novel.longRNA.CPAT.out
+            -d !{cpatpath}/dat/Human_logitModel.RData -o novel.longRNA.CPAT.out
         '''
     }
 
@@ -415,7 +417,7 @@ if (mode == 'fastq') {
         input:
         file novel_longRNA_PLEK_ from novel_longRNA_PLEK_result
         file novel_longRNA_CPAT_ from novel_longRNA_CPAT_result
-        file longRNA_novel_exoncount from novelLncRnaExonCount
+        //file longRNA_novel_exoncount from novelLncRnaExonCount
         file cuffmergegtf from cuffmergeTranscripts_forCodeingProtential
         file gencode_annotation_gtf
 
@@ -507,7 +509,7 @@ if (mode == 'fastq') {
 //    }
 
 
-}
+
 
 
 
