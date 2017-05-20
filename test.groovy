@@ -345,7 +345,7 @@ if (!skipmerge) {
         //file "transcript_exoncount.txt" into exoncount
         file "novel.gtf.tmap" into noveltmap
         file "novel.longRNA.fa" into novelLncRnaFasta
-//        file "novel.longRNA.exoncount.txt" into novelLncRnaExonCount
+        file "novel.longRNA.exoncount.txt" into novelLncRnaExonCount
 
 
         shell:
@@ -358,9 +358,7 @@ if (!skipmerge) {
         awk '$11 >200{print}' novel.gtf.tmap > novel.longRNA.gtf.tmap
         #   extract gtf
         awk '{print $5}' novel.longRNA.gtf.tmap |perl !{baseDir}/bin/extract_gtf_by_name.pl !{mergedGTF} - >novel.longRNA.gtf
-        #perl !{baseDir}/bin/get_exoncount.pl novel.longRNA.gtf > novel.longRNA.exoncount.txt
-        # gtf2gff3
-        #check wether required
+        perl !{baseDir}/bin/get_exoncount.pl novel.longRNA.gtf > novel.longRNA.exoncount.txt
         # get fasta frome gtf
         gffread novel.longRNA.gtf -g !{fasta_ref} -w novel.longRNA.fa -W
         '''
@@ -372,6 +370,8 @@ if (!skipmerge) {
 
     process run_PLEK {
         cpus params.cpu
+        // this line was added incase PLEK return a 1 status although it run successfully
+        validExitStatus 0,1,2
         input:
         file novel_lncRNA_fasta from novelLncRnaFasta_for_PLEK
         file plekpath
@@ -417,7 +417,7 @@ if (!skipmerge) {
         input:
         file novel_longRNA_PLEK_ from novel_longRNA_PLEK_result
         file novel_longRNA_CPAT_ from novel_longRNA_CPAT_result
-        //file longRNA_novel_exoncount from novelLncRnaExonCount
+        file longRNA_novel_exoncount from novelLncRnaExonCount
         file cuffmergegtf from cuffmergeTranscripts_forCodeingProtential
         file gencode_annotation_gtf
 
