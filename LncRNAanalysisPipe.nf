@@ -11,6 +11,20 @@
 version = '0.0.4'
 
 //user options
+if (params.help) {
+    log.info ''
+    log.info '-------------------------------------------------------------'
+    log.info 'NEXTFLOW Long non-coding RNA analysis PIPELINE v!{version}'
+    log.info '-------------------------------------------------------------'
+    log.info ''
+    log.info 'Usage: '
+    log.info 'Nextflow lncRNApipe.nf '
+
+    exit 1
+}
+
+
+
 
 //default values
 params.help = null
@@ -59,7 +73,7 @@ cpatpath = file(params.cpatpath)
 rRNAmaskfile = file(params.rRNAmask)
 
 //specify  weather the merged file was already generated
-skipmerge=true
+
 
 
 annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
@@ -90,21 +104,13 @@ process combine_public_annotation {
         '''
 
 }
-if (!skipmerge) {
+
+// whether the merged gtf have already produced.
+if (params.merged_gtf==null) {
 //gene_annotation=file(params.gene_annotation)
 
 
-    if (params.help) {
-        log.info ''
-        log.info '-------------------------------------------------------------'
-        log.info 'NEXTFLOW Long non-coding RNA analysis PIPELINE v!{version}'
-        log.info '-------------------------------------------------------------'
-        log.info ''
-        log.info 'Usage: '
-        log.info 'Nextflow lncRNApipe.nf '
 
-        exit 1
-    }
 
 //Star index
 //star_ref = file(params.params.star_idex_ref)
@@ -153,10 +159,10 @@ if (!skipmerge) {
 
 //prepare annotations
 // combine public lnRNA annotation
-//required files
-//#lncRNA.gtflist
-//#gencode.v24.long_noncoding_RNAs.gtf
-//#lncipedia_4_0_hg38.gtf
+        //required files
+        //#lncRNA.gtflist
+        //#gencode.v24.long_noncoding_RNAs.gtf
+        //#lncipedia_4_0_hg38.gtf
 
 
 
@@ -168,6 +174,7 @@ if (!skipmerge) {
                 cpus params.cpu
                 tag { file_tag }
 
+
                 input:
                 file pair from readPairs
                 file fasta_ref
@@ -175,6 +182,7 @@ if (!skipmerge) {
 
                 output:
                 set val(file_tag_new), file("STAR_${file_tag_new}") into STARmappedReads
+                file "!{file_tag_new}_star_log.txt" into alignment_logs
 
                 shell:
                 file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
@@ -188,7 +196,7 @@ if (!skipmerge) {
                 --readFilesIn !{pair[0]} !{pair[1]} --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate \
                 --chimSegmentMin 20 --outFilterIntronMotifs RemoveNoncanonical --outFilterMultimapNmax 20 \
                 --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000 --outFilterType BySJout \
-                --alignSJoverhangMin 8 --alignSJDBoverhangMin 1  --outFileNamePrefix !{file_tag_new}
+                --alignSJoverhangMin 8 --alignSJDBoverhangMin 1  --outFileNamePrefix !{file_tag_new} > !{file_tag_new}_star_log.txt
                 mkdir STAR_!{file_tag_new}
                 mv !{file_tag_new}Aligned* STAR_!{file_tag_new}/.
                 mv !{file_tag_new}SJ* STAR_!{file_tag_new}/.
@@ -207,8 +215,7 @@ if (!skipmerge) {
 
                 output:
                 set val(file_tag_new), file("STAR_${file_tag_new}") into STARmappedReads
-//        publishDir params.out_folder, mode: 'copy'
-
+                file "!{file_tag_new}_star_log.txt" into alignment_logs
                 shell:
                 file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
                 file_tag_new = file_tag
@@ -221,7 +228,7 @@ if (!skipmerge) {
                         --readFilesIn !{pair[0]} !{pair[1]} --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate \
                         --chimSegmentMin 20 --outFilterIntronMotifs RemoveNoncanonical --outFilterMultimapNmax 20 \
                         --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000 --outFilterType BySJout \
-                        --alignSJoverhangMin 8 --alignSJDBoverhangMin 1  --outFileNamePrefix !{file_tag_new}
+                        --alignSJoverhangMin 8 --alignSJDBoverhangMin 1  --outFileNamePrefix !{file_tag_new} > !{file_tag_new}_star_log.txt
                     mkdir STAR_!{file_tag_new}
                     mv !{file_tag_new}Aligned* STAR_!{file_tag_new}/.
                     mv !{file_tag_new}SJ* STAR_!{file_tag_new}/.
@@ -300,13 +307,14 @@ if (!skipmerge) {
     }
 }
 
-if (skipmerge) {
+if (params.merged_gtf!=null) {
 
     Channel.fromPath(params.merged_gtf)
             .ifEmpty { exit 1, "Cannot find merged gtf : ${params.merged_gtf}" }
             .into { cuffmergeTranscripts_forCompare;cuffmergeTranscripts_forExtract;cuffmergeTranscripts_forCodeingProtential}
 }
-//    // run cuffcompare  merged gtf with gencode annotation
+
+// run cuffcompare  merged gtf with gencode annotation
 process cuffcompare_GenCODE {
     cpus params.cpu
     tag { file_tag }
@@ -456,7 +464,6 @@ process Filter_lncRNA_based_annotationbaes {
     file gencode_protein_coding_gtf from proteinCodingGTF
 
     output:
-    //file "protein_coding.final.gtf" into Protein_coding_final_gtf
     file "lncRNA.final.v2.gtf" into finalLncRNA_gtf
     file "lncRNA.final.v2.map" into finalLncRNA_map
     shell:
@@ -505,15 +512,24 @@ process Filter_lncRNA_based_annotationbaes {
 //
 //    }
 
-// summary result by multiqc software
-//    process Summary_multiqc{
-//        input:
-//        output:
-//        shell:
-//        '''
-//        '''
-//    }
+process multiqc {
+    publishDir "${params.outdir}/MultiQC", mode: 'copy'
+    echo true
 
+    input:
+    file ('alignment/*') from alignment_logs.collect()
+
+    output:
+    file "*multiqc_report.html" into multiqc_report
+    file "*multiqc_data"
+
+    script:
+    prefix = fastqc[0].toString() - '_fastqc.html' - 'fastqc/'
+    """
+    cp $baseDir/conf/multiqc_config.yaml multiqc_config.yaml
+    multiqc -f . 2>&1
+    """
+}
 
 
 
