@@ -31,7 +31,7 @@ params.rRNAmask = "/data/database/hg38/lncRNAanalysisPipeFile/rRNA_hg38.gtf";
 // software
 params.plekpath = '/data/software/PLEK.1.2'
 params.cncipath = '/data/software/CNCI-master'
-params.cpatpath = '/data/software/CPAT-1.2.2'
+params.cpatpath = '/data/software/CPAT-1.2.2/'
 //
 
 // fastq file
@@ -60,6 +60,7 @@ rRNAmaskfile = file(params.rRNAmask)
 
 //specify  weather the merged file was already generated
 skipmerge=true
+
 
 annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
 annotation_channel.collectFile { file -> ['lncRNA.gtflist', file.name + '\n'] }
@@ -299,58 +300,58 @@ if (!skipmerge) {
     }
 }
 
-    if (skipmerge) {
+if (skipmerge) {
 
-        Channel.fromPath(params.merged_gtf)
-                .ifEmpty { exit 1, "Cannot find merged gtf : ${params.merged_gtf}" }
-                .into { cuffmergeTranscripts_forCompare;cuffmergeTranscripts_forExtract;cuffmergeTranscripts_forCodeingProtential}
-    }
+    Channel.fromPath(params.merged_gtf)
+            .ifEmpty { exit 1, "Cannot find merged gtf : ${params.merged_gtf}" }
+            .into { cuffmergeTranscripts_forCompare;cuffmergeTranscripts_forExtract;cuffmergeTranscripts_forCodeingProtential}
+}
 //    // run cuffcompare  merged gtf with gencode annotation
-    process cuffcompare_GenCODE {
-        cpus params.cpu
-        tag { file_tag }
+process cuffcompare_GenCODE {
+    cpus params.cpu
+    tag { file_tag }
 //
-        input:
-        file cuffmergefile from cuffmergeTranscripts_forCompare
-        file gencode_annotation_gtf
+    input:
+    file cuffmergefile from cuffmergeTranscripts_forCompare
+    file gencode_annotation_gtf
 
-        output:
+    output:
 // file "gencode.v25.protein_coding.gtf" into knownProteinCoding
-        file "merged.filter.gtf" into knownLncRNA
-        file "CUFFCOMPARE_GENCODE" into cuffcomparegencodeDir
-        shell:
+    file "merged.filter.gtf" into knownLncRNA
+    file "CUFFCOMPARE_GENCODE" into cuffcomparegencodeDir
+    shell:
 
-        cufflinks_threads = params.cpu.intdiv(2) - 1
+    cufflinks_threads = params.cpu.intdiv(2) - 1
 //
-        '''
+    '''
         mkdir CUFFCOMPARE_GENCODE
         #!/bin/sh
         cuffcompare -o CUFFCOMPARE_GENCODE/merged_lncRNA -r !{gencode_annotation_gtf} -p !{cufflinks_threads} !{cuffmergefile}
         awk '$3 =="u"||$3=="x"{print $5}' merged_lncRNA.merged.gtf.tmap|sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl CUFFCOMPARE_GENCODE/merged_lncRNA.combined.gtf - > merged.filter.gtf
         mv merged_lncRNA.merged.gtf.tmap CUFFCOMPARE_GENCODE/
         '''
-    }
+}
 
 // filter transcript
 
 
-    process ExtractGTF {
+process ExtractGTF {
 
-        input:
-        file cuffcompareDir from cuffcomparegencodeDir
-        file fasta_ref
-        file mergedGTF from cuffmergeTranscripts_forExtract
+    input:
+    file cuffcompareDir from cuffcomparegencodeDir
+    file fasta_ref
+    file mergedGTF from cuffmergeTranscripts_forExtract
 
-        output:
-        //file "transcript_exoncount.txt" into exoncount
-        file "novel.gtf.tmap" into noveltmap
-        file "novel.longRNA.fa" into novelLncRnaFasta
-//        file "novel.longRNA.exoncount.txt" into novelLncRnaExonCount
+    output:
+    //file "transcript_exoncount.txt" into exoncount
+    file "novel.gtf.tmap" into noveltmap
+    file "novel.longRNA.fa" into novelLncRnaFasta
+    file "novel.longRNA.exoncount.txt" into novelLncRnaExonCount
 
 
-        shell:
+    shell:
 
-        '''
+    '''
         # filtering novel lncRNA based on cuffmerged trascripts
         set -o pipefail
         awk '$3 =="x"||$3=="u"||$3=="i"{print $0}' !{cuffcompareDir}/merged_lncRNA.merged.gtf.tmap > novel.gtf.tmap
@@ -358,45 +359,46 @@ if (!skipmerge) {
         awk '$11 >200{print}' novel.gtf.tmap > novel.longRNA.gtf.tmap
         #   extract gtf
         awk '{print $5}' novel.longRNA.gtf.tmap |perl !{baseDir}/bin/extract_gtf_by_name.pl !{mergedGTF} - >novel.longRNA.gtf
-        #perl !{baseDir}/bin/get_exoncount.pl novel.longRNA.gtf > novel.longRNA.exoncount.txt
+        perl !{baseDir}/bin/get_exoncount.pl novel.longRNA.gtf > novel.longRNA.exoncount.txt
         # gtf2gff3
         #check wether required
         # get fasta frome gtf
         gffread novel.longRNA.gtf -g !{fasta_ref} -w novel.longRNA.fa -W
         '''
-    }
+}
 
 // predicting coding potential _ parallel
 // copy fasta channel into three
-    novelLncRnaFasta.into { novelLncRnaFasta_for_PLEK; novelLncRnaFasta_for_CPAT; novelLncRnaFasta_for_CNCI }
+novelLncRnaFasta.into { novelLncRnaFasta_for_PLEK; novelLncRnaFasta_for_CPAT; novelLncRnaFasta_for_CNCI }
 
-    process run_PLEK {
-        cpus params.cpu
-        input:
-        file novel_lncRNA_fasta from novelLncRnaFasta_for_PLEK
-        file plekpath
-        output:
-        file "novel.longRNA.PLEK.out" into novel_longRNA_PLEK_result
-        shell:
-        plek_threads = params.cpu.intdiv(2) - 1
-        '''
+process run_PLEK {
+    cpus params.cpu
+    validExitStatus 0,1,2
+    input:
+    file novel_lncRNA_fasta from novelLncRnaFasta_for_PLEK
+    file plekpath
+    output:
+    file "novel.longRNA.PLEK.out" into novel_longRNA_PLEK_result
+    shell:
+    plek_threads = params.cpu.intdiv(2) - 1
+    '''
         python !{plekpath}/PLEK.py -fasta !{novel_lncRNA_fasta} -out novel.longRNA.PLEK.out -thread !{plek_threads}
-
+	#exit 0
         '''
 
-    }
-    process run_CPAT {
-        input:
-        file novel_lncRNA_fasta from novelLncRnaFasta_for_CPAT
-        file cpatpath
-        output:
-        file "novel.longRNA.CPAT.out" into novel_longRNA_CPAT_result
-        shell:
-        '''
-        cpat.py -g !{novel_lncRNA_fasta} -x !{cpatpath}/dat/Human_Hexamer.tsv \
+}
+process run_CPAT {
+    input:
+    file novel_lncRNA_fasta from novelLncRnaFasta_for_CPAT
+    file cpatpath
+    output:
+    file "novel.longRNA.CPAT.out" into novel_longRNA_CPAT_result
+    shell:
+    '''
+        python !{cpatpath}/bin/cpat.py -g !{novel_lncRNA_fasta} -x !{cpatpath}/dat/Human_Hexamer.tsv \
             -d !{cpatpath}/dat/Human_logitModel.RData -o novel.longRNA.CPAT.out
         '''
-    }
+}
 
 //    process run_CNCI{
 //        cpus params.cpu
@@ -413,23 +415,23 @@ if (!skipmerge) {
 //    }
 
 // merge transcripts and retian lncRNA only by coding ability
-    process merge_filter_by_coding_potential {
-        input:
-        file novel_longRNA_PLEK_ from novel_longRNA_PLEK_result
-        file novel_longRNA_CPAT_ from novel_longRNA_CPAT_result
-        //file longRNA_novel_exoncount from novelLncRnaExonCount
-        file cuffmergegtf from cuffmergeTranscripts_forCodeingProtential
-        file gencode_annotation_gtf
+process merge_filter_by_coding_potential {
+    input:
+    file novel_longRNA_PLEK_ from novel_longRNA_PLEK_result
+    file novel_longRNA_CPAT_ from novel_longRNA_CPAT_result
+    file longRNA_novel_exoncount from novelLncRnaExonCount
+    file cuffmergegtf from cuffmergeTranscripts_forCodeingProtential
+    file gencode_annotation_gtf
 
-        output:
-        file "novel.longRNA.stringent.gtf" into Novel_longRNA_stringent_gtf // not used
-        file "novel.lncRNA.stringent.gtf" into novel_lncRNA_stringent_gtf
-        file "novel.TUCP.stringent.gtf" into novel_TUCP_stringent_gtf // not used
+    output:
+    file "novel.longRNA.stringent.gtf" into Novel_longRNA_stringent_gtf // not used
+    file "novel.lncRNA.stringent.gtf" into novel_lncRNA_stringent_gtf
+    file "novel.TUCP.stringent.gtf" into novel_TUCP_stringent_gtf // not used
 
 
-        shell:
+    shell:
 
-        '''
+    '''
         set -o pipefail
         #merged transcripts
         perl !{baseDir}/bin/integrate_novel_transcripts.pl > novel.longRNA.txt
@@ -441,37 +443,41 @@ if (!skipmerge) {
         awk '$4 >1&&$5=="TUCP"{print $1}' novel.longRNA.txt|perl !{baseDir}/bin/extract_gtf_by_name.pl !{cuffmergegtf} - \
         >novel.TUCP.stringent.gtf
         '''
-    }
+}
 
 //Further  novel lncRNA based on annotated database
-    process Filter_lncRNA_based_annotationbaes {
-        cpus params.cpu
+process Filter_lncRNA_based_annotationbaes {
+    publishDir "${baseDir}/Result", mode: 'link'
+    cpus params.cpu
 
-        input:
-        file knowlncRNAgtf from KnownLncRNAgtf
-        file novel_lncRNA_stringent_gtf from novel_lncRNA_stringent_gtf
-        file gencode_protein_coding_gtf from proteinCodingGTF
+    input:
+    file knowlncRNAgtf from KnownLncRNAgtf
+    file novel_lncRNA_stringent_Gtf from novel_lncRNA_stringent_gtf
+    file gencode_protein_coding_gtf from proteinCodingGTF
 
-        output:
-        file "protein_coding.final.gtf" into Protein_coding_final_gtf
-        shell:
-        cufflinks_threads = params.cpu.intdiv(2) - 1
-        '''
+    output:
+    //file "protein_coding.final.gtf" into Protein_coding_final_gtf
+    file "lncRNA.final.v2.gtf" into finalLncRNA_gtf
+    file "lncRNA.final.v2.map" into finalLncRNA_map
+    shell:
+    cufflinks_threads = params.cpu.intdiv(2) - 1
+    '''
         set -o pipefail
-        cuffcompare -o filter -r !{knowlncRNAgtf} -p !{cufflinks_threads} !{novel_lncRNA_stringent_gtf}
-        awk '$3 = ="u"||$3=="x"{print $5}' filter.novel.lncRNA.stringent.gtf.tmap |sort|uniq| \
-        perl !{baseDir}/bin/extract_gtf_by_name.pl !{novel_longRNA_stringent_gtf} - > novel.lncRNA.stringent.filter.gtf
+        cuffcompare -o filter -r !{knowlncRNAgtf} -p !{cufflinks_threads} !{novel_lncRNA_stringent_Gtf}
+        awk '$3 =="u"||$3=="x"{print $5}' filter.novel.lncRNA.stringent.gtf.tmap |sort|uniq| \
+        perl !{baseDir}/bin/extract_gtf_by_name.pl !{novel_lncRNA_stringent_Gtf} - > novel.lncRNA.stringent.filter.gtf
         
         #rename lncRNAs according to neighbouring protein coding genes
-        awk '$3 = ="gene"{print }' !{gencode_protein_coding_gtf} > gencode.protein_coding.gene.gtf
-        gtf2bed < gencode.protein_coding.gene.gtf |sort-bed - > gencode.protein_coding.gene.bed
+        #awk '$3 =="gene"{print }' !{gencode_protein_coding_gtf} > gencode.protein_coding.gene.gtf
+        #gtf2bed < gencode.protein_coding.gene.gtf |sort-bed - > gencode.protein_coding.gene.bed
+        awk '$3 =="gene"{print }' !{gencode_protein_coding_gtf} | perl -F'\\t' -lane '$F[8]=~/gene_id "(.*?)";/ && print join qq{\\t},@F[0,3,4],$1,@F[5,6,1,2,7,8,9]' - | sort-bed - > gencode.protein_coding.gene.bed
         gtf2bed < novel.lncRNA.stringent.filter.gtf |sort-bed - > novel.lncRNA.stringent.filter.bed
         gtf2bed < !{knowlncRNAgtf} |sort-bed - > known.lncRNA.bed
-        perl rename_lncRNA_2.pl
+        perl !{baseDir}/bin/rename_lncRNA_2.pl
         #perl rename_proteincoding.pl > protein_coding.final.gtf
         '''
 
-    }
+}
 //    // quantification using RSEM
 //    process qunantification_lncRNA{
 //        input:
