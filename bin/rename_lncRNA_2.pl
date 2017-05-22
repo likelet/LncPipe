@@ -6,7 +6,7 @@ use strict;
 my %exon;
 my %gene;
 
-open FH,"lncRNA/known.lncRNA.bed" or die;
+open FH,"known.lncRNA.bed" or die;
 while(<FH>){
 	chomp;
 	my @field=split "\t";
@@ -34,7 +34,7 @@ while(<FH>){
 	
 }
 
-open FH,"lncRNA/novel.lncRNA.stringent.filter.bed" or die;
+open FH,"novel.lncRNA.stringent.filter.bed" or die;
 while(<FH>){
 	chomp;
 	my @field=split "\t";
@@ -61,16 +61,16 @@ while(<FH>){
 	}
 	
 }
-open OUT,">lncRNA/lncRNA.for_anno.bed" or die;
+open OUT,">lncRNA.for_anno.bed" or die;
 foreach my $k (keys %gene){
 	print OUT $gene{$k}{CHR}."\t".$gene{$k}{START}."\t".$gene{$k}{END}."\t".$k."\t.\t".$gene{$k}{STRAND}."\n";
 }
 
-`sort-bed lncRNA/lncRNA.for_anno.bed > lncRNA/lncRNA.for_anno.srt.bed`;
+`sort-bed lncRNA.for_anno.bed > lncRNA.for_anno.srt.bed`;
 
-`closest-features --dist lncRNA/lncRNA.for_anno.srt.bed lncRNA/gencode.v24.protein_coding.gene.bed > lncRNA/lncRNA.for_anno.srt.neighbour.txt`;
+`closest-features --dist lncRNA.for_anno.srt.bed  gencode.protein_coding.gene.bed > lncRNA.for_anno.srt.neighbour.txt`;
 
-open FH,"lncRNA/lncRNA.for_anno.srt.neighbour.txt" or die;
+open FH,"lncRNA.for_anno.srt.neighbour.txt" or die;
 
 my %map;
 my $naidx=0;
@@ -152,8 +152,8 @@ while(<FH>){
 
 }
 
-open OUT1,">lncRNA/lncRNA.final.v2.gtf" or die;
-open OUT2,">lncRNA/lncRNA.final.v2.map" or die;
+open OUT1,">lncRNA.final.v2.gtf" or die;
+open OUT2,">lncRNA.final.v2.map" or die;
 foreach my $genename (keys %map){
 	my $tmp1=$map{$genename};
 	my %tmp1=%$tmp1;
