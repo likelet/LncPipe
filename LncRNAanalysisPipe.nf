@@ -182,7 +182,7 @@ if (params.merged_gtf==null) {
 
                 output:
                 set val(file_tag_new), file("STAR_${file_tag_new}") into STARmappedReads
-                file "${file_tag_new}_star_log.txt" into alignment_logs
+                file("STAR_${file_tag_new}/*final.out")into alignment_logs
 
                 shell:
                 file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
@@ -196,7 +196,7 @@ if (params.merged_gtf==null) {
                 --readFilesIn !{pair[0]} !{pair[1]} --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate \
                 --chimSegmentMin 20 --outFilterIntronMotifs RemoveNoncanonical --outFilterMultimapNmax 20 \
                 --alignIntronMin 20 --alignIntronMax 1000000 --alignMatesGapMax 1000000 --outFilterType BySJout \
-                --alignSJoverhangMin 8 --alignSJDBoverhangMin 1  --outFileNamePrefix !{file_tag_new} > !{file_tag_new}_star_log.txt
+                --alignSJoverhangMin 8 --alignSJDBoverhangMin 1  --outFileNamePrefix !{file_tag_new} 
                 mkdir STAR_!{file_tag_new}
                 mv !{file_tag_new}Aligned* STAR_!{file_tag_new}/.
                 mv !{file_tag_new}SJ* STAR_!{file_tag_new}/.
@@ -526,7 +526,7 @@ process multiqc {
     script:
     """
     cp $baseDir/conf/multiqc_config.yaml multiqc_config.yaml
-    multiqc -f . 2>&1
+    multiqc -f -n lncRNAanalysis_report . 2>&1
     """
 }
 
