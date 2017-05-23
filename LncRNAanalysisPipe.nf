@@ -182,7 +182,7 @@ if (params.merged_gtf==null) {
 
                 output:
                 set val(file_tag_new), file("STAR_${file_tag_new}") into STARmappedReads
-                file "!{file_tag_new}_star_log.txt" into alignment_logs
+                file "${file_tag_new}_star_log.txt" into alignment_logs
 
                 shell:
                 file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
@@ -524,7 +524,6 @@ process multiqc {
     file "*multiqc_data"
 
     script:
-    prefix = fastqc[0].toString() - '_fastqc.html' - 'fastqc/'
     """
     cp $baseDir/conf/multiqc_config.yaml multiqc_config.yaml
     multiqc -f . 2>&1
