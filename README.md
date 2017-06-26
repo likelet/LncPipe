@@ -69,4 +69,6 @@ Here, we show the step by step installation of NextFlow in linux system as an ex
       export PATH=/home/user/CPAT/usr/local/bin:$PATH #setup PATH
       ```
 
+## Interactive reports
+See [MultiIP](https://github.com/bioinformatist/multiIP).
 
