@@ -1,0 +1,3 @@
+[submodule "multiIP"]
+	path = multiIP
+	url = https://github.com/bioinformatist/multiIP.git
