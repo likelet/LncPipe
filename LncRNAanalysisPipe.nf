@@ -89,7 +89,7 @@ process combine_public_annotation {
 
     output:
     file "gencode_protein_coding.gtf" into proteinCodingGTF
-    file "merged.filter.gtf" into KnownLncRNAgtf
+    file "known.lncRNA.gtf" into KnownLncRNAgtf
 
     shell:
     cufflinks_threads = params.cpu.intdiv(2) - 1
@@ -100,6 +100,7 @@ process combine_public_annotation {
         cuffcompare -o merged_lncRNA -r !{gencode_annotation_gtf} -p !{cufflinks_threads} merged_lncRNA/merged.gtf
         awk '$3 =="u"||$3=="x"{print $5}' merged_lncRNA/merged_lncRNA.merged.gtf.tmap \
         |sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl merged_lncRNA/merged.gtf - > merged.filter.gtf
+        mv  merged.filter.gtf known.lncRNA.gtf
         
         '''
 
@@ -132,7 +133,7 @@ if (params.merged_gtf==null) {
 
     if (mode == 'fastq') {
         println "Analysis from fastq file"
-        println "Start mapping by Star"
+        println "Start mapping with STAR aligner"
 //
         keys1 = file(params.input_folder).listFiles().findAll {
             it.name ==~ /.*${params.suffix1}.${params.fastq_ext}/
@@ -160,9 +161,9 @@ if (params.merged_gtf==null) {
 //prepare annotations
 // combine public lnRNA annotation
         //required files
-        //#lncRNA.gtflist
-        //#gencode.v24.long_noncoding_RNAs.gtf
-        //#lncipedia_4_0_hg38.gtf
+                //#lncRNA.gtflist
+                //#gencode.v24.long_noncoding_RNAs.gtf
+                //#lncipedia_4_0_hg38.gtf
 
 
 
@@ -181,8 +182,8 @@ if (params.merged_gtf==null) {
                 file star_idex
 
                 output:
-                set val(file_tag_new), file("STAR_${file_tag_new}") into STARmappedReads
-                file("STAR_${file_tag_new}/*final.out")into alignment_logs
+                set val(file_tag_new), file("STAR_${file_tag_new}") into STARmappedReads,alignment_logs
+//                file("STAR_${file_tag_new}/*final.out")into alignment_logs
 
                 shell:
                 file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
@@ -214,8 +215,8 @@ if (params.merged_gtf==null) {
                 file star_idex
 
                 output:
-                set val(file_tag_new), file("STAR_${file_tag_new}") into STARmappedReads
-                file "!{file_tag_new}_star_log.txt" into alignment_logs
+                set val(file_tag_new), file("STAR_${file_tag_new}") into STARmappedReads,alignment_logs
+//                file "!{file_tag_new}_star_log.txt" into alignment_logs
                 shell:
                 file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
                 file_tag_new = file_tag
@@ -249,7 +250,7 @@ if (params.merged_gtf==null) {
             set val(file_tag), file(Star_alignment) from STARmappedReads
             file fasta_ref
             file gencode_annotation_gtf
-//file rRNAmaskfile
+            file rRNAmaskfile
 
             output:
 
@@ -325,8 +326,8 @@ process cuffcompare_GenCODE {
 
     output:
 // file "gencode.v25.protein_coding.gtf" into knownProteinCoding
-    file "merged.filter.gtf" into knownLncRNA
     file "CUFFCOMPARE_GENCODE" into cuffcomparegencodeDir
+    file ""
     shell:
 
     cufflinks_threads = params.cpu.intdiv(2) - 1
@@ -335,7 +336,6 @@ process cuffcompare_GenCODE {
         mkdir CUFFCOMPARE_GENCODE
         #!/bin/sh
         cuffcompare -o CUFFCOMPARE_GENCODE/merged_lncRNA -r !{gencode_annotation_gtf} -p !{cufflinks_threads} !{cuffmergefile}
-        awk '$3 =="u"||$3=="x"{print $5}' merged_lncRNA.merged.gtf.tmap|sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl CUFFCOMPARE_GENCODE/merged_lncRNA.combined.gtf - > merged.filter.gtf
         mv merged_lncRNA.merged.gtf.tmap CUFFCOMPARE_GENCODE/
         '''
 }
@@ -455,7 +455,7 @@ process merge_filter_by_coding_potential {
 
 //Further  novel lncRNA based on annotated database
 process Filter_lncRNA_based_annotationbaes {
-    publishDir "${baseDir}/Result", mode: 'link'
+    publishDir "${baseDir}/Result", mode: 'copy'
     cpus params.cpu
 
     input:
@@ -485,50 +485,25 @@ process Filter_lncRNA_based_annotationbaes {
         '''
 
 }
-//    // quantification using RSEM
-//    process qunantification_lncRNA{
-//        input:
-//        output:
-//        shell:
-//        '''
-//            !{baseDir}/bin/rsem_index_star_lncRNA.sh
-//            !{baseDir}/bin/rsem_index_star_pc.sh
-//            perl !{baseDir}/bin/run_RSEM_STAR.pl
-//            Rscript !{baseDir}/bin/get_rsem_matrix.R
-//
-//        '''
-//    }
-//    // (optional )Coding potential by CPAT for final lncRNA set and protein_coding set
-//
-//    process predicting_cd_CPAT{
-//        input:
-//        output:
-//        shell:
-//        '''
-//        sh !{baseDir}/bin/run_CPAT_for_lncRNA_final_gtf.sh
-//        sh !{baseDir}/bin/run_CPAT_for_pc_final_gtf.sh
-//
-//         '''
-//
-//    }
 
-process multiqc {
-    publishDir "${params.outdir}/MultiQC", mode: 'copy'
-    echo true
 
-    input:
-    file ('alignment/*') from alignment_logs.collect()
-
-    output:
-    file "*multiqc_report.html" into multiqc_report
-    file "*multiqc_data"
-
-    script:
-    """
-    cp $baseDir/conf/multiqc_config.yaml multiqc_config.yaml
-    multiqc -f -n lncRNAanalysis_report . 2>&1
-    """
-}
+//process multiqc {
+//    publishDir "${baseDir}/Result", mode: 'copy'
+//    echo true
+//
+//    input:
+//    file ('alignment/*') from alignment_logs.collect().filter( ~/.final.log/ )
+//
+//    output:
+//    file "*multiqc_report.html" into multiqc_report
+//    file "*multiqc_data"
+//
+//    script:
+//    """
+//    cp $baseDir/conf/multiqc_config.yaml multiqc_config.yaml
+//    multiqc -f -n lncRNAanalysis_report . 2>&1
+//    """
+//}
 
 
 
