@@ -2,6 +2,9 @@
 ## 1. Description
 A collection of self-developed bioinformatics analysis pipeline coding by a DSL language, nextflow.
 To run the pipeline files with nf suffixed, plz just type the following command.
+## Schematic diagram
+ ![Nothing shown here](./image/LncRNApipe.png)
+
 
 ```
 nextflow <your nf file> -c nextflow.config -with-trace
@@ -66,4 +69,6 @@ Here, we show the step by step installation of NextFlow in linux system as an ex
       export PATH=/home/user/CPAT/usr/local/bin:$PATH #setup PATH
       ```
 
+## 3. Interactive reports
+See [MultiIP](https://github.com/bioinformatist/multiIP).
 
