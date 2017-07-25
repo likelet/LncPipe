@@ -14,7 +14,7 @@ version = '0.0.4'
 if (params.help) {
     log.info ''
     log.info '-------------------------------------------------------------'
-    log.info 'NEXTFLOW Long non-coding RNA analysis PIPELINE v!{version}'
+    log.info 'NEXTFLOW Long non-coding RNA analysis PIPELINE v${version}'
     log.info '-------------------------------------------------------------'
     log.info ''
     log.info 'Usage: '
@@ -46,7 +46,19 @@ params.rRNAmask = "/data/database/hg38/lncRNAanalysisPipeFile/rRNA_hg38.gtf";
 params.plekpath = '/data/software/PLEK.1.2'
 params.cncipath = '/data/software/CNCI-master'
 params.cpatpath = '/data/software/CPAT-1.2.2/'
-//
+
+
+//Checking parameters
+log.info "Checking parameters ..."
+log.info "====================================="
+log.info "Input folder                   : ${params.input_folder}"
+log.info "Output folder                 : ${params.out_folder}"
+log.info "Genome sequence location                  : ${params.fasta_ref}"
+log.info "Star index path             : ${params.star_idex}"
+log.info "GENCODE annotation location         : ${params.gencode_annotation_gtf}"
+log.info "output                 : ${params.output}"
+log.info "\n"
+
 
 // fastq file
 params.fastq_ext = "fastq.gz"
@@ -76,12 +88,13 @@ rRNAmaskfile = file(params.rRNAmask)
 
 
 
+//Prepare annotations
+
 annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
 annotation_channel.collectFile { file -> ['lncRNA.gtflist', file.name + '\n'] }
         .set { LncRNA_gtflist }
 process combine_public_annotation {
     cpus params.cpu
-
     input:
     file lncRNA_gtflistfile from LncRNA_gtflist
     file gencode_annotation_gtf
@@ -391,7 +404,7 @@ process run_PLEK {
     plek_threads = params.cpu.intdiv(2) - 1
     '''
         python !{plekpath}/PLEK.py -fasta !{novel_lncRNA_fasta} -out novel.longRNA.PLEK.out -thread !{plek_threads}
-	#exit 0
+	    exit 0
         '''
 
 }
@@ -460,8 +473,9 @@ process Filter_lncRNA_based_annotationbaes {
 
     input:
     file knowlncRNAgtf from KnownLncRNAgtf
-    file novel_lncRNA_stringent_Gtf from novel_lncRNA_stringent_gtf
     file gencode_protein_coding_gtf from proteinCodingGTF
+    file novel_lncRNA_stringent_Gtf from novel_lncRNA_stringent_gtf
+
 
     output:
     file "lncRNA.final.v2.gtf" into finalLncRNA_gtf
@@ -477,7 +491,8 @@ process Filter_lncRNA_based_annotationbaes {
         #rename lncRNAs according to neighbouring protein coding genes
         #awk '$3 =="gene"{print }' !{gencode_protein_coding_gtf} > gencode.protein_coding.gene.gtf
         #gtf2bed < gencode.protein_coding.gene.gtf |sort-bed - > gencode.protein_coding.gene.bed
-        awk '$3 =="gene"{print }' !{gencode_protein_coding_gtf} | perl -F'\\t' -lane '$F[8]=~/gene_id "(.*?)";/ && print join qq{\\t},@F[0,3,4],$1,@F[5,6,1,2,7,8,9]' - | sort-bed - > gencode.protein_coding.gene.bed
+        awk '$3 =="gene"{print }' !{gencode_protein_coding_gtf} | perl -F'\\t' -lane '$F[8]=~/gene_id "(.*?)";/ && print join qq{\\t},@F[0,3,4],$1,@F[5,6,1,2,7,8,9]' - | \
+            sort-bed - > gencode.protein_coding.gene.bed
         gtf2bed < novel.lncRNA.stringent.filter.gtf |sort-bed - > novel.lncRNA.stringent.filter.bed
         gtf2bed < !{knowlncRNAgtf} |sort-bed - > known.lncRNA.bed
         perl !{baseDir}/bin/rename_lncRNA_2.pl

@@ -59,6 +59,7 @@ cuffmerge -o /data/public_data/hg38/merged_lncRNA /data/public_data/hg38/lncRNA.
 
 cat /data/public_data/hg38/gencode.v24.annotation.gtf |grep "protein_coding" > /data/public_data/hg38/gencode.v24.protein_coding.gtf
 
+#run cuffcompare  merged gtf with gencode annotation
 cuffcompare -o /data/public_data/hg38/merged_lncRNA -r /data/public_data/hg38/gencode.v24.protein_coding.gtf -p 12 /data/public_data/hg38/merged_lncRNA/merged.gtf
 
 awk '$3=="u"||$3=="x"{print $5}' /data/public_data/hg38/merged_lncRNA/merged_lncRNA.merged.gtf.tmap |sort|uniq|perl extract_gtf_by_name.pl /data/public_data/hg38/merged_lncRNA/merged.gtf - > /data/public_data/hg38/merged_lncRNA/merged.filter.gtf
@@ -73,6 +74,8 @@ awk '$3=="u"||$3=="x"{print $5}' lncRNA/filter.novel.lncRNA.stringent.gtf.tmap |
 #rename lncRNAs according to neighbouring protein coding genes
 
  awk '$3=="gene"{print }' lncRNA/gencode.v24.protein_coding.gtf > lncRNA/gencode.v24.protein_coding.gene.gtf
+
+ #############################
 
 gtf2bed < lncRNA/gencode.v24.protein_coding.gene.gtf |sort-bed - > lncRNA/gencode.v24.protein_coding.gene.bed
 gtf2bed < lncRNA/novel.lncRNA.stringent.filter.gtf |sort-bed - > lncRNA/novel.lncRNA.stringent.filter.bed
