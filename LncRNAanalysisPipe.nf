@@ -10,6 +10,28 @@
 // Pipeline version
 version = '0.0.4'
 
+//pre-defined functions for render command
+//=======================================================================================
+ANSI_RESET = "\u001B[0m";
+ANSI_BLACK = "\u001B[30m";
+ANSI_RED = "\u001B[31m";
+ANSI_GREEN = "\u001B[32m";
+ANSI_YELLOW = "\u001B[33m";
+ANSI_BLUE = "\u001B[34m";
+ANSI_PURPLE = "\u001B[35m";
+ANSI_CYAN = "\u001B[36m";
+ANSI_WHITE = "\u001B[37m";
+
+
+def print_red = { String str-> ANSI_RED+str+ANSI_RESET }
+def print_black = { String str-> ANSI_BLACK+str+ANSI_RESET }
+def print_green = { String str-> ANSI_GREEN+str+ANSI_RESET }
+def print_yellow = { String str-> ANSI_YELLOW+str+ANSI_RESET }
+def print_blue = { String str-> ANSI_BLUE+str+ANSI_RESET }
+def print_cyan= { String str-> ANSI_CYAN+str+ANSI_RESET }
+def print_purple = { String str-> ANSI_PURPLE+str+ANSI_RESET }
+def print_white = { String str-> ANSI_WHITE+str+ANSI_RESET }
+//=======================================================================================
 //user options
 if (params.help) {
     log.info ''
@@ -17,11 +39,14 @@ if (params.help) {
     log.info 'NEXTFLOW Long non-coding RNA analysis PIPELINE v${version}'
     log.info '-------------------------------------------------------------'
     log.info ''
-    log.info 'Usage: '
-    log.info 'Nextflow lncRNApipe.nf '
+    log.info print_yellow('Usage: ')
+    log.info print_green('Nextflow lncRNApipe.nf ')
+    log.info '-------------------------------------------------------------'
+    log.info '-------------------------------------------------------------'
 
     exit 1
 }
+
 
 
 
@@ -48,21 +73,22 @@ params.cncipath = '/data/software/CNCI-master'
 params.cpatpath = '/data/software/CPAT-1.2.2/'
 
 
+
 //Checking parameters
 log.info "Checking parameters ..."
-log.info "====================================="
-log.info "Input folder                   : ${params.input_folder}"
-log.info "Output folder                 : ${params.out_folder}"
-log.info "Genome sequence location                  : ${params.fasta_ref}"
-log.info "Star index path             : ${params.star_idex}"
-log.info "GENCODE annotation location         : ${params.gencode_annotation_gtf}"
-log.info "output                 : ${params.output}"
+log.info print_yellow("=====================================")
+log.info print_yellow("Input folder                  :")+ print_green(params.input_folder)
+log.info print_yellow("Output folder                 :")+ print_green(params.out_folder)
+log.info print_yellow("Genome sequence location      :")+ print_green(params.fasta_ref)
+log.info print_yellow("Star index path               :")+ print_green(params.star_idex)
+log.info print_yellow("GENCODE annotation location   :")+ print_green(params.gencode_annotation_gtf)
+log.info print_yellow("lncipedia anntation location  :")+ print_green(params.lncipedia_gtf)
+log.info print_yellow("=====================================")
 log.info "\n"
 
 
 // fastq file
 params.fastq_ext = "fastq.gz"
-
 params.merged_gtf=null
 //params.fastq_ext2 = "fq.gz"
 params.suffix1 = "_1"
@@ -71,8 +97,9 @@ params.suffix2 = "_2"
 params.cpu = 16
 params.mem = 32
 
-// read file
 
+
+// read file
 fasta_ref = file(params.fasta_ref)
 star_idex = file(params.star_idex)
 input_folder = file(params.input_folder)
@@ -81,18 +108,19 @@ lncipedia_gtf = file(params.lncipedia_gtf)
 plekpath = file(params.plekpath)
 cncipath = file(params.cncipath)
 cpatpath = file(params.cpatpath)
-
 rRNAmaskfile = file(params.rRNAmask)
+
 
 //specify  weather the merged file was already generated
 
 
 
 //Prepare annotations
-
 annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
 annotation_channel.collectFile { file -> ['lncRNA.gtflist', file.name + '\n'] }
         .set { LncRNA_gtflist }
+
+
 process combine_public_annotation {
     cpus params.cpu
     input:
@@ -119,13 +147,9 @@ process combine_public_annotation {
 
 }
 
+
 // whether the merged gtf have already produced.
 if (params.merged_gtf==null) {
-//gene_annotation=file(params.gene_annotation)
-
-
-
-
 //Star index
 //star_ref = file(params.params.star_idex_ref)
 
@@ -164,19 +188,10 @@ if (params.merged_gtf==null) {
         println keys1
 // parse paired files _1
         reads1 = Channel.fromPath(params.input_folder + '/*' + params.suffix1 + '.' + params.fastq_ext).map { path -> [path.name.replace("${params.suffix1}.${params.fastq_ext}", ""), path] }
-
 // parse paired files _2
         reads2 = Channel.fromPath(params.input_folder + '/*' + params.suffix2 + '.' + params.fastq_ext).map { path -> [path.name.replace("${params.suffix2}.${params.fastq_ext}", ""), path] }
-
 // Match the pairs on two channels
         readPairs = reads1.phase(reads2).map { pair1, pair2 -> [pair1[1], pair2[1]] }
-
-//prepare annotations
-// combine public lnRNA annotation
-        //required files
-                //#lncRNA.gtflist
-                //#gencode.v24.long_noncoding_RNAs.gtf
-                //#lncipedia_4_0_hg38.gtf
 
 
 
