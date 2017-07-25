@@ -36,11 +36,33 @@ def print_white = { String str-> ANSI_WHITE+str+ANSI_RESET }
 if (params.help) {
     log.info ''
     log.info '-------------------------------------------------------------'
-    log.info 'NEXTFLOW Long non-coding RNA analysis PIPELINE v${version}'
+    log.info 'Nextflow-based Long non-coding RNA analysis PIPELINE v${version}'
     log.info '-------------------------------------------------------------'
     log.info ''
     log.info print_yellow('Usage: ')
-    log.info print_green('Nextflow lncRNApipe.nf ')
+    log.info '    The typical command for running the pipeline is as follows:\n' +
+            print_green('               Nextflow lncRNApipe.nf \n') +
+
+            print_yellow('    Mandatory arguments:\n') +
+            print_cyan('      --input_folder                ')+print_green('Path to input data(optional), current path default\n') +
+            '\n'+
+
+            print_yellow('    Options:\n') +
+            print_cyan('      --singleEnd                   ')+print_green('Specifies that the input is single end reads(optional), paired end mode default\n') +
+            '\n'+
+
+            print_yellow('    References                      If not specified in the configuration file or you wish to overwrite any of the references.\n') +
+            print_cyan('      --star_index                  ')+print_green('Path to STAR index(required)\n') +
+            print_cyan('      --fasta                       ')+print_green('Path to Fasta reference(required)\n') +
+            print_cyan('      --gencode_annotation_gtf      ')+print_green('An annotation file from GENCODE database for annotating lncRNAs(required)\n')+
+            print_cyan('      --lncipedia_gtf               ')+print_green('An annotation file from LNCipedia database for annotating lncRNAs(required)\n')+
+            print_cyan('      --rRNAmask                    ')+print_green('rRNA GTF for removing rRNA transcript from gtf files(required)\n')+
+            '\n'+
+
+            print_yellow('    Other options:\n') +
+            print_cyan('      --outdir                      ')+print_green('The output directory where the results will be saved(optional), current path default\n') +
+            print_cyan('      --email                       ')+print_green('Set  e-mail address to get a summary when the workflow finished\n') +
+            print_cyan('      -name                         ')+print_green('Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.\n')
     log.info '-------------------------------------------------------------'
     log.info '-------------------------------------------------------------'
 
