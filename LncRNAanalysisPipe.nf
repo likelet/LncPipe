@@ -1,11 +1,38 @@
 #! /usr/bin/env nextflow
 
-// usage : ./alignment.nf --input_folder input/ --cpu 8 --mem 32 --ref hg19.fasta --RG "PL:ILLUMINA"
+/*
+ * Copyright (c) 2013-2017, Sun Yat-sen University Cancer center  and the authors.
+ *
+ *
+ *   LncPipe is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *      See the GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with RNA-Toy.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * LncPipe: A nextflow-based lncRNA identification and analysis pipeline from RNA sequencing data
+ *
+ * Authors:
+ * Qi ZHAO <zhaoqi@sysucc.org.cn>
+ * Yu Sun <sun_yu@mail.nankai.edu.cn>
+ * Zhixiang Zuo <zuozhx@sysucc.org.cn>
+ */
+
+
+
 
 // requirement:
 // - STAR
 // - Cufflinks
 // - Bedops
+// - CPAT
+// - PLEK
 
 // Pipeline version
 version = '0.0.4'
@@ -32,7 +59,10 @@ def print_cyan= { String str-> ANSI_CYAN+str+ANSI_RESET }
 def print_purple = { String str-> ANSI_PURPLE+str+ANSI_RESET }
 def print_white = { String str-> ANSI_WHITE+str+ANSI_RESET }
 //=======================================================================================
-//user options
+
+
+
+//Help informations options
 if (params.help) {
     log.info ''
     log.info '-------------------------------------------------------------'
@@ -49,7 +79,11 @@ if (params.help) {
 
             print_yellow('    Options:\n') +
             print_cyan('      --singleEnd                   ')+print_green('Specifies that the input is single end reads(optional), paired end mode default\n') +
+            print_cyan('      --merged_gtf                  ')+print_green('Start analysis with assemblies already produced and skip fastqc/alignment step, DEFAOUL off\n') +
+            print_cyan('      --mode                        ')+print_green('Start analysis with fastq or bam mode, can not set with --merged_gtf, values should be \'fastq\' or \'bam\'\n') +
+
             '\n'+
+
 
             print_yellow('    References                      If not specified in the configuration file or you wish to overwrite any of the references.\n') +
             print_cyan('      --star_index                  ')+print_green('Path to STAR index(required)\n') +
@@ -63,6 +97,9 @@ if (params.help) {
             print_cyan('      --outdir                      ')+print_green('The output directory where the results will be saved(optional), current path default\n') +
             print_cyan('      --email                       ')+print_green('Set  e-mail address to get a summary when the workflow finished\n') +
             print_cyan('      -name                         ')+print_green('Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.\n')
+            print_cyan('      -cpu                          ')+print_green('Number of cpu used in analysis. DEFAULT, 16.\n')
+            print_cyan('      -mem                          ')+print_green('Memory setting for each analysis run. DEFAULT, 32G.\n')
+
     log.info '-------------------------------------------------------------'
     log.info '-------------------------------------------------------------'
 
@@ -78,17 +115,13 @@ params.help = null
 params.input_folder = './'
 params.out_folder = './'
 
-// HG38 genome ref files
+// HG38
+// Set reference information here if you don't want to pass them from parameter any longer, we recommand users using the latest reference and the annotation file with the sample genome version.
 params.fasta_ref = '/data/database/hg38/genome.fa'
 params.star_idex = '/data/database/hg38/GENCODE/STARIndex'
 params.gencode_annotation_gtf = "/data/database/hg38/GENCODE/gencode.v25.annotation.gtf"
 params.lncipedia_gtf = "/data/database/hg38/LNCipedia/lncipedia_4_0_hc_hg38.gtf"
 params.rRNAmask = "/data/database/hg38/lncRNAanalysisPipeFile/rRNA_hg38.gtf";
-// hg19 genome ref files
-//params.fasta_ref = '/data/database/hg19/genome.fa'
-//params.star_idex = '/data/database/hg38/GENCODE/STARIndex'
-//params.gencode_annotation_gtf = "/data/database/hg38/GENCODE/gencode.v25.annotation.gtf"
-//params.lncipedia_gtf = "/data/database/hg38/LNCipedia/lncipedia_4_0_hc_hg38.gtf"
 // software
 params.plekpath = '/data/software/PLEK.1.2'
 params.cncipath = '/data/software/CNCI-master'
@@ -112,10 +145,10 @@ log.info "\n"
 // fastq file
 params.fastq_ext = "fastq.gz"
 params.merged_gtf=null
-//params.fastq_ext2 = "fq.gz"
+params.mode="fastq"
 params.suffix1 = "_1"
 params.suffix2 = "_2"
-// run information of systemfile
+// run information of system file
 params.cpu = 16
 params.mem = 32
 
@@ -176,7 +209,6 @@ if (params.merged_gtf==null) {
 //star_ref = file(params.params.star_idex_ref)
 
 // Check whether fastq file is available
-    mode = 'fastq'
     if (file(params.input_folder).listFiles().findAll { it.name ==~ /.*${params.fastq_ext}/ }.size() > 0 ||
             file(params.input_folder).listFiles().findAll { it.name ==~ /.*${params.fastq_ext2}/ }.size() > 0) {
         println "fastq files found, proceed with alignment"
@@ -190,7 +222,7 @@ if (params.merged_gtf==null) {
     }
 
 
-    if (mode == 'fastq') {
+    if (params.mode == 'fastq') {
         println "Analysis from fastq file"
         println "Start mapping with STAR aligner"
 //
@@ -369,19 +401,16 @@ if (params.merged_gtf!=null) {
 process cuffcompare_GenCODE {
     cpus params.cpu
     tag { file_tag }
-//
     input:
     file cuffmergefile from cuffmergeTranscripts_forCompare
     file gencode_annotation_gtf
 
     output:
-// file "gencode.v25.protein_coding.gtf" into knownProteinCoding
     file "CUFFCOMPARE_GENCODE" into cuffcomparegencodeDir
     file ""
     shell:
 
     cufflinks_threads = params.cpu.intdiv(2) - 1
-//
     '''
         mkdir CUFFCOMPARE_GENCODE
         #!/bin/sh
@@ -401,7 +430,6 @@ process ExtractGTF {
     file mergedGTF from cuffmergeTranscripts_forExtract
 
     output:
-    //file "transcript_exoncount.txt" into exoncount
     file "novel.gtf.tmap" into noveltmap
     file "novel.longRNA.fa" into novelLncRnaFasta
     file "novel.longRNA.exoncount.txt" into novelLncRnaExonCount
@@ -428,6 +456,8 @@ process ExtractGTF {
 // predicting coding potential _ parallel
 // copy fasta channel into three
 novelLncRnaFasta.into { novelLncRnaFasta_for_PLEK; novelLncRnaFasta_for_CPAT; novelLncRnaFasta_for_CNCI }
+
+
 
 process run_PLEK {
     cpus params.cpu
@@ -505,7 +535,7 @@ process merge_filter_by_coding_potential {
 
 //Further  novel lncRNA based on annotated database
 process Filter_lncRNA_based_annotationbaes {
-    publishDir "${baseDir}/Result", mode: 'copy'
+    publishDir "${baseDir}/Result/Identified_lncRNA", mode: 'copy'
     cpus params.cpu
 
     input:
