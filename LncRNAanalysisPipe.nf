@@ -149,8 +149,9 @@ params.mode="fastq"
 params.suffix1 = "_1"
 params.suffix2 = "_2"
 // run information of system file
-params.cpu = 16
-params.mem = 32
+//automatic set optimize resource for analysis based on current system resources
+params.cpu = 8
+params.mem = 10
 
 
 
@@ -256,6 +257,7 @@ if (params.merged_gtf==null) {
             process fastq_star_alignment_para {
                 cpus params.cpu
                 tag { file_tag }
+                maxForks 1
 
 
                 input:
