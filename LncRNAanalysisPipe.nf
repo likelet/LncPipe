@@ -33,6 +33,7 @@
 // - Bedops
 // - CPAT
 // - PLEK
+// - FEELnc
 
 // Pipeline version
 version = '0.0.4'
@@ -185,7 +186,7 @@ process combine_public_annotation {
     file lncipedia_gtf
 
     output:
-    file "gencode_protein_coding.gtf" into proteinCodingGTF
+    file "gencode_protein_coding.gtf" into proteinCodingGTF,proteinCodingGTF_forClass
     file "known.lncRNA.gtf" into KnownLncRNAgtf
 
     shell:
@@ -549,6 +550,7 @@ process Filter_lncRNA_based_annotationbaes {
     output:
     file "lncRNA.final.v2.gtf" into finalLncRNA_gtf
     file "lncRNA.final.v2.map" into finalLncRNA_map
+    file "all_lncRNA_for_classifier.gtf" into finalLncRNA_for_class_gtf
     shell:
     cufflinks_threads = params.cpu.intdiv(2) - 1
     '''
@@ -565,9 +567,29 @@ process Filter_lncRNA_based_annotationbaes {
         gtf2bed < novel.lncRNA.stringent.filter.gtf |sort-bed - > novel.lncRNA.stringent.filter.bed
         gtf2bed < !{knowlncRNAgtf} |sort-bed - > known.lncRNA.bed
         perl !{baseDir}/bin/rename_lncRNA_2.pl
+        cat novel.lncRNA.stringent.filter.gtf !{knowlncRNAgtf} > all_lncRNA_for_classifier.gtf
         #perl rename_proteincoding.pl > protein_coding.final.gtf
         '''
 
+}
+
+process classifier_lncRNA_by_FEElnc{
+
+    publishDir "${baseDir}/Result/Classifier", mode: 'copy'
+    cpus params.cpu
+
+    input:
+    file final_lncRNA_gtf from finalLncRNA_for_class_gtf
+    file gencode_protein_coding_gtf from proteinCodingGTF_forClass
+
+
+    output:
+    file "FEElnc_lncRNA_classes.txt" into finalLncRNA_gtf
+
+    shell:
+    '''
+    FEELnc_classifier.pl -i !{finalLncRNA_gtf} -a !{proteinCodingGTF} 1> FEElnc_lncRNA_classes.txt
+    '''
 }
 
 
