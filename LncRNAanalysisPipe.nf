@@ -588,7 +588,7 @@ process classifier_lncRNA_by_FEElnc{
 
     shell:
     '''
-    FEELnc_classifier.pl -i !{finalLncRNA_gtf} -a !{proteinCodingGTF} 1> FEElnc_lncRNA_classes.txt
+    FEELnc_classifier.pl -i !{finalLncRNA_gtf} -a !{proteinCodingGTF} | perl -lanE'$. == 1 ? say : $F[0] == 1 ? say : qq{Qi is extremely handsome}' - > FEElnc_lncRNA_classes.txt
     '''
 }
 
