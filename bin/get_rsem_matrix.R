@@ -1,3 +1,4 @@
+library(data.table)
 rsem.files=dir("RSEM")
 
 pc.rsem=rsem.files[grep("pc.genes.results",rsem.files)]
@@ -45,26 +46,34 @@ colnames(lncRNA.rsem.fpkm)=lncRNA.samples
 colnames(lncRNA.rsem.count)=lncRNA.samples
 colnames(lncRNA.rsem.TPM)=lncRNA.samples
 
+#write rpkm matrix of protein coding
 pc.sample.order=c(grep("A",pc.samples),grep("D",pc.samples),grep("B",pc.samples),grep("C",pc.samples))
 pc.rsem.fpkm=pc.rsem.fpkm[,pc.sample.order]
-write.table(pc.rsem.fpkm,file="lncRNA/pc.rsem.fpkm.txt",sep="\t",quote=F)
+pc.rsem.fpkm=data.frame(ID=row.names(pc.rsem.fpkm),pc.rsem.fpkm)
+fwrite(pc.rsem.fpkm,file="pc.rsem.fpkm.txt",sep="\t",quote=F,row.names=F)
 
+#write reads count matrix of protein coding
 pc.rsem.count=pc.rsem.count[,pc.sample.order]
-write.table(pc.rsem.count,file="lncRNA/pc.rsem.count.txt",sep="\t",quote=F)
-
+pc.rsem.count=data.frame(ID=row.names(pc.rsem.count),pc.rsem.count)
+fwrite(pc.rsem.count,file="pc.rsem.count.txt",sep="\t",quote=F,row.names=F)
+#write tpm matrix of protein coding
 pc.rsem.TPM=pc.rsem.TPM[,pc.sample.order]
-write.table(pc.rsem.TPM,file="lncRNA/pc.rsem.TPM.txt",sep="\t",quote=F)
+pc.rsem.TPM=data.frame(ID=row.names(pc.rsem.TPM),pc.rsem.TPM)
+fwrite(pc.rsem.TPM,file="pc.rsem.TPM.txt",sep="\t",quote=F,row.names=F)
 
 
-
+#write rpkm matrix of long non coding RNAS
 lncRNA.sample.order=c(grep("A",lncRNA.samples),grep("D",lncRNA.samples),grep("B",lncRNA.samples),grep("C",lncRNA.samples))
 lncRNA.rsem.fpkm=lncRNA.rsem.fpkm[,lncRNA.sample.order]
-write.table(lncRNA.rsem.fpkm,file="lncRNA/lncRNA.rsem.fpkm.txt",sep="\t",quote=F)
-
+lncRNA.rsem.fpkm=data.frame(ID=row.names(lncRNA.rsem.fpkm),lncRNA.rsem.fpkm)
+fwrite(lncRNA.rsem.fpkm,file="lncRNA.rsem.fpkm.txt",sep="\t",quote=F,row.names=F)
+#write reads count matrix of  long non coding RNAS
 lncRNA.rsem.count=lncRNA.rsem.count[,lncRNA.sample.order]
-write.table(lncRNA.rsem.count,file="lncRNA/lncRNA.rsem.count.txt",sep="\t",quote=F)
-
+lncRNA.rsem.count=data.frame(ID=row.names(lncRNA.rsem.count),lncRNA.rsem.count)
+fwrite(lncRNA.rsem.count,file="lncRNA.rsem.count.txt",sep="\t",quote=F,row.names=F)
+#write tpm  matrix of long non-coding RNAS
 lncRNA.rsem.TPM=lncRNA.rsem.TPM[,lncRNA.sample.order]
-write.table(lncRNA.rsem.TPM,file="lncRNA/lncRNA.rsem.TPM.txt",sep="\t",quote=F)
+lncRNA.rsem.TPM=data.frame(ID=row.names(lncRNA.rsem.TPM),lncRNA.rsem.TPM)
+fwrite(lncRNA.rsem.TPM,file="lncRNA.rsem.TPM.txt",sep="\t",quote=F,row.names=F)
 
 
