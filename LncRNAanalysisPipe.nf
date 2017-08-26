@@ -83,10 +83,7 @@ if (params.help) {
             print_cyan('      --singleEnd                   ')+print_green('Specifies that the input is single end reads(optional), paired end mode default \n') +
             print_cyan('      --merged_gtf                  ')+print_green('Start analysis with assemblies already produced and skip fastqc/alignment step, DEFAOUL NULL\n') +
             print_cyan('      --mode                        ')+print_green('Start analysis with fastq or bam mode, can not set with --merged_gtf, values should be \'fastq\' or \'bam\'\n') +
-
             '\n'+
-
-
             print_yellow('    References                      If not specified in the configuration file or you wish to overwrite any of the references.\n') +
             print_cyan('      --star_index                  ')+print_green('Path to STAR index(required)\n') +
             print_cyan('      --fasta                       ')+print_green('Path to Fasta reference(required)\n') +
@@ -216,9 +213,12 @@ process combine_public_annotation {
     cufflinks_threads = ava_cpu.intdiv(2) - 1
     '''
         set -o pipefail
-        cuffmerge -o merged_lncRNA !{lncRNA_gtflistfile}
+        cuffmerge -o merged_lncRNA \
+                    !{lncRNA_gtflistfile}
         cat !{gencode_annotation_gtf} |grep "protein_coding" > gencode_protein_coding.gtf
-        cuffcompare -o merged_lncRNA -r !{gencode_annotation_gtf} -p !{cufflinks_threads} merged_lncRNA/merged.gtf
+        cuffcompare -o merged_lncRNA \
+                    -r !{gencode_annotation_gtf} \
+                    -p !{cufflinks_threads} merged_lncRNA/merged.gtf
         awk '$3 =="u"||$3=="x"{print $5}' merged_lncRNA/merged_lncRNA.merged.gtf.tmap \
         |sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl merged_lncRNA/merged.gtf - > merged.filter.gtf
         mv  merged.filter.gtf known.lncRNA.gtf
@@ -475,7 +475,9 @@ process run_PLEK {
     shell:
     plek_threads = ava_cpu.intdiv(2) - 1
     '''
-        python !{plekpath}/PLEK.py -fasta !{novel_lncRNA_fasta} -out novel.longRNA.PLEK.out -thread !{plek_threads}
+        python !{plekpath}/PLEK.py -fasta !{novel_lncRNA_fasta} \
+                                   -out novel.longRNA.PLEK.out \
+                                   -thread !{plek_threads}
 	    exit 0
         '''
 
@@ -488,9 +490,9 @@ process run_CPAT {
     file "novel.longRNA.CPAT.out" into novel_longRNA_CPAT_result
     shell:
     '''
-        python !{cpatpath}/bin/cpat.py -g !{novel_lncRNA_fasta} 、
+        python !{cpatpath}/bin/cpat.py -g !{novel_lncRNA_fasta} \
                                        -x !{cpatpath}/dat/Human_Hexamer.tsv \
-                                       -d !{cpatpath}/dat/Human_logitModel.RData 
+                                       -d !{cpatpath}/dat/Human_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
 }
@@ -562,7 +564,7 @@ process Filter_lncRNA_based_annotationbaes {
                     -r !{knowlncRNAgtf} \
                     -p !{cufflinks_threads} !{novel_lncRNA_stringent_Gtf}
         awk '$3 =="u"||$3=="x"{print $5}' filter.novel.lncRNA.stringent.gtf.tmap |sort|uniq| \
-        perl !{baseDir}/bin/extract_gtf_by_name.pl !{novel_lncRNA_stringent_Gtf} - > novel.lncRNA.stringent.filter.gtf
+                    perl !{baseDir}/bin/extract_gtf_by_name.pl !{novel_lncRNA_stringent_Gtf} - > novel.lncRNA.stringent.filter.gtf
         
         #rename lncRNAs according to neighbouring protein coding genes
         #awk '$3 =="gene"{print }' !{gencode_protein_coding_gtf} > gencode.protein_coding.gene.gtf
