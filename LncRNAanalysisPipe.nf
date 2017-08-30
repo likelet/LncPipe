@@ -35,6 +35,7 @@ GroovySystem.
 // - CPAT
 // - PLEK
 // - CNCI
+// - kallisto [https://pachterlab.github.io/kallisto/starting]
 
 // Pipeline version
 version = '0.0.4'
@@ -556,6 +557,7 @@ process Filter_lncRNA_based_annotationbaes {
     file "protein_coding.final.gtf" into final_protein_coding_gtf
     file "all_lncRNA_for_classifier.gtf" into finalLncRNA_for_class_gtf
     file "final_all.gtf" into finalGTF_for_quantification_gtf
+    file "final_all.fa" into finalFasta_for_quantification_gtf
     shell:
     cufflinks_threads = ava_cpu.intdiv(2) - 1
     '''
@@ -584,36 +586,29 @@ process Filter_lncRNA_based_annotationbaes {
 
 // star index and quantification by RSEM
 // please make sure that RSEM is installed into your $PATH environment
-process Reindex_Star_index_of_finalGtf_for_quantification{
-    cpus ava_cpu
+process Reindex_kallisto_index_of_finalGtf_for_quantification{
     input:
-    file final_gtf from finalGTF_for_quantification_gtf
-    file fasta_ref
-    file pair from readPairs_for_discovery
+    file transript_fasta from finalFasta_for_quantification_gtf
+
     output:
-    file "lncRNA.coding.novel.star" into final_star_index
+    file "transcripts.idx" into final_kallisto_index
 
     shell:
-    cufflinks_threads = ava_cpu.intdiv(2) - 1
     '''
     #index star reference 
-    rsem-prepare-reference -p !{cufflinks_threads} --star \
-                           --gtf !{final_gtf}  !{fasta_ref} lncRNA.coding.novel.star
+    kallisto index -i transcripts.idx ${transript_fasta}
     '''
 }
 
-process Run_RSEM_for_quantification{
+process Run_kallisto_for_quantification{
     cpus ava_cpu
     maxForks 1
     tag {file_tag}
     input:
-    file final_lncRNA_gtf from finalLncRNA_gtf
-    file fasta_ref
-    file rsem_star_index from final_star_index
+    file kallistoIndex from final_kallisto_index
     file pair from readPairs_for_discovery
-
     output:
-    file "lncRNA.final.v2.RSEM.star" into lncRNA_star_index
+    file("${file_tag_new}_kallisto") into kallisto_tcv_collection
 
     shell:
     file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
@@ -621,12 +616,7 @@ process Run_RSEM_for_quantification{
     cufflinks_threads = ava_cpu.intdiv(2) - 1
     '''
     #quantification by rsem 
-    rsem-calculate-expression --paired-end \
-                              --no-bam-output \
-                              -p !{cufflinks_threads} \
-                              --forward-prob 0 \
-                              --star \
-                              --gzipped-read-file !{pair[0]} !{pair[1]}  !{rsem_star_index} !{file_tag}
+    kallisto quant -i ${kallistoIndex} -o !{file_tag_new}_kallisto -b 100 <(gzcat !{pair[0]} ) <(gzcat !{pair[1]})
     '''
 }
 
