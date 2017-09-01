@@ -1,7 +1,7 @@
-#! /usr/bin/env nextflow
+#!/usr/bin/env nextflow
 
 /*
- * Copyright (c) 2013-2017, Sun Yat-sen University Cancer center  and the authors.
+ * Copyright (c) 2013-2017, Sun Yat-sen University Cancer Center.
  *
  *
  *   LncPipe is free software: you can redistribute it and/or modify
@@ -19,12 +19,11 @@
  * LncPipe: A nextflow-based lncRNA identification and analysis pipeline from RNA sequencing data
  *
  * Authors:
- * Qi ZHAO <zhaoqi@sysucc.org.cn>
+ * Qi Zhao <zhaoqi@sysucc.org.cn>
  * Yu Sun <sun_yu@mail.nankai.edu.cn>
  * Zhixiang Zuo <zuozhx@sysucc.org.cn>
  */
 
-GroovySystem.
 
 // requirement:
 // - utadapt
@@ -37,8 +36,7 @@ GroovySystem.
 // - CNCI
 // - kallisto [https://pachterlab.github.io/kallisto/starting]
 
-// Pipeline version
-version = '0.0.4'
+
 
 //pre-defined functions for render command
 //=======================================================================================
@@ -61,118 +59,130 @@ def print_blue = { String str-> ANSI_BLUE+str+ANSI_RESET }
 def print_cyan= { String str-> ANSI_CYAN+str+ANSI_RESET }
 def print_purple = { String str-> ANSI_PURPLE+str+ANSI_RESET }
 def print_white = { String str-> ANSI_WHITE+str+ANSI_RESET }
+
+version = '0.0.4'
+//Help information
+    // Pipeline version
+
+
+
 //=======================================================================================
-
-
-
-//Help informations options
-if (params.help) {
+//help information
+if (params.help){
     log.info ''
-    log.info '-------------------------------------------------------------'
-    log.info 'Nextflow-based Long non-coding RNA analysis PIPELINE v${version}'
-    log.info '-------------------------------------------------------------'
+    log.info print_purple('------------------------------------------------------------------------')
+    log.info "LncPipe: a Nextflow-based Long non-coding RNA analysis PIPELINE v$version"
+    log.info "LncPipe integrates several NGS processing tools to identify novel long non-coding RNAs from"
+    log.info "unprocessed RNA sequencing data. Before run this pipeline, users need to install several tools"
+    log.info "unprocessed RNA sequencing data. Before run this pipeline, users need to install several tools"
+    log.info print_purple('------------------------------------------------------------------------')
     log.info ''
     log.info print_yellow('Usage: ')
-    log.info '    The typical command for running the pipeline is as follows:\n' +
-            print_green('               Nextflow lncRNApipe.nf \n') +
+    log.info print_yellow('    The typical command for running the pipeline is as follows:\n') +
+            print_purple('       Nextflow lncRNApipe.nf \n') +
 
-            print_yellow('    Mandatory arguments:\n') +
+            print_yellow('    Mandatory arguments:             Input and output setting\n') +
             print_cyan('      --input_folder                ')+print_green('Path to input data(optional), current path default\n') +
+            print_cyan('      --out_folder                  ')+print_green('The output directory where the results will be saved(optional), current path is default\n') +
+            print_cyan('      --aligner                     ')+print_green('Aligner for reads mapping (optional), STAR is default\n') +
             '\n'+
-
-            print_yellow('    Options:\n') +
+            print_yellow('    Options:                         General options for run this pipeline\n') +
             print_cyan('      --singleEnd                   ')+print_green('Specifies that the input is single end reads(optional), paired end mode default \n') +
             print_cyan('      --merged_gtf                  ')+print_green('Start analysis with assemblies already produced and skip fastqc/alignment step, DEFAOUL NULL\n') +
             print_cyan('      --mode                        ')+print_green('Start analysis with fastq or bam mode, can not set with --merged_gtf, values should be \'fastq\' or \'bam\'\n') +
             '\n'+
-            print_yellow('    References                      If not specified in the configuration file or you wish to overwrite any of the references.\n') +
+            print_yellow('    References:                      If not specified in the configuration file or you wish to overwrite any of the references.\n') +
             print_cyan('      --star_index                  ')+print_green('Path to STAR index(required)\n') +
             print_cyan('      --fasta                       ')+print_green('Path to Fasta reference(required)\n') +
             print_cyan('      --gencode_annotation_gtf      ')+print_green('An annotation file from GENCODE database for annotating lncRNAs(required)\n')+
             print_cyan('      --lncipedia_gtf               ')+print_green('An annotation file from LNCipedia database for annotating lncRNAs(required)\n')+
             print_cyan('      --rRNAmask                    ')+print_green('rRNA GTF for removing rRNA transcript from gtf files(required)\n')+
             '\n'+
-            print_yellow('    Skip options:\n') +
+            print_yellow('    Skip options:                    Skip the certain step when necessary \n') +
             print_cyan('      --skip_mapping                ')+print_green('Skip mapping step by directly providing bam files\n') +
             print_cyan('      --skip_QC                     ')+print_green('Skip QC step when the reads are clean reads\n') +
             print_cyan('      --skip_DE                     ')+print_green('Skip differential expression analysis step  \n')+
             '\n'+
-            print_yellow('    Other options:\n') +
-            print_cyan('      --outdir                      ')+print_green('The output directory where the results will be saved(optional), current path default\n') +
+            print_yellow('    Other options:                   Specify the email and \n') +
             print_cyan('      --email                       ')+print_green('Set  e-mail address to get a summary when the workflow finished\n') +
-            print_cyan('      -name                         ')+print_green('Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.\n')
-            print_cyan('      -cpu                          ')+print_green('Number of cpu used in analysis. DEFAULT, 16.\n')
-            print_cyan('      -mem                          ')+print_green('Memory setting for each analysis run. DEFAULT, 32G.\n')
+            print_cyan('      --name                         ')+print_green('Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.\n')
+            print_cyan('      --cpu                          ')+print_green('Number of cpu used in analysis. DEFAULT, 16.\n')
+            print_cyan('      --mem                          ')+print_green('Memory setting for each analysis run. DEFAULT, 32G.\n')
 
 
-    log.info '-------------------------------------------------------------'
-    log.info '-------------------------------------------------------------'
-
-    exit 1
+    log.info '------------------------------------------------------------------------'
+    log.info print_yellow('Contact information: zhaoqi@sysucc.org.cn')
+    log.info print_yellow('Copyright (c) 2013-2017, Sun Yat-sen University Cancer Center.')
+    log.info '------------------------------------------------------------------------'
+    exit 0
 }
+
 
 
 
 
 
 //default values
-params.help = null
 params.input_folder = './'
 params.out_folder = './'
 
-// HG38
+// Reference
 // Set reference information here if you don't want to pass them from parameter any longer, we recommand users using the latest reference and the annotation file with the sample genome version.
-params.fasta_ref = '/data/database/hg38/genome.fa'
-params.star_idex = '/data/database/hg38/GENCODE/STARIndex'
-params.gencode_annotation_gtf = "/data/database/hg38/GENCODE/gencode.v25.annotation.gtf"
-params.lncipedia_gtf = "/data/database/hg38/LNCipedia/lncipedia_4_0_hc_hg38.gtf"
-params.rRNAmask = "/data/database/hg38/lncRNAanalysisPipeFile/rRNA_hg38.gtf";
-// software
-params.plekpath = '/data/software/PLEK.1.2'
-params.cncipath = '/data/software/CNCI-master'
-params.cpatpath = '/data/software/CPAT-1.2.2/'
-
+params.fasta_ref = '/data/database/human/hg38/genome.fa'
+params.star_idex = '/data/database/human/hg38/RSEM_STAR_Index'
+params.gencode_annotation_gtf = "/data/database/human/hg38/annotation/gencode.v24.annotation.gtf"
+params.lncipedia_gtf = "/data/database/human/hg38/annotation/lncipedia_4_0_hg38.gtf"
+params.rRNAmask = "/data/database/human/hg38/annotation/hg38_rRNA.gtf";
+// software path
+params.plekpath = '/home/zhaoqi/software/PLEK.1.2/'
+//params.cncipath = '/data/software/CNCI-master'
+params.cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2/'
+// other options
 params.cpu = null
 params.mem = null
-
+params.singleEnd = false
 
 
 //Checking parameters
-log.info "Checking parameters ..."
+log.info print_purple("You are running LncPipe with the following parameters:")
+log.info print_purple("Checking parameters ...")
 log.info print_yellow("=====================================")
-log.info print_yellow("Input folder                  :")+ print_green(params.input_folder)
-log.info print_yellow("Output folder                 :")+ print_green(params.out_folder)
-log.info print_yellow("Genome sequence location      :")+ print_green(params.fasta_ref)
-log.info print_yellow("Star index path               :")+ print_green(params.star_idex)
-log.info print_yellow("GENCODE annotation location   :")+ print_green(params.gencode_annotation_gtf)
-log.info print_yellow("lncipedia anntation location  :")+ print_green(params.lncipedia_gtf)
+log.info print_yellow("Input folder:                   ")+ print_green(params.input_folder)
+log.info print_yellow("Output folder:                  ")+ print_green(params.out_folder)
+log.info print_yellow("Genome sequence location:       ")+ print_green(params.fasta_ref)
+log.info print_yellow("Star index path:                ")+ print_green(params.star_idex)
+log.info print_yellow("GENCODE annotation location:    ")+ print_green(params.gencode_annotation_gtf)
+log.info print_yellow("lncipedia ann0tation location:  ")+ print_green(params.lncipedia_gtf)
+log.info print_yellow("rRNA annotation location:       ")+ print_green(params.rRNAmask)
 log.info print_yellow("=====================================")
 log.info "\n"
 
 
 // fastq file
 params.fastq_ext = "fastq.gz"
+params.suffix1='_{1,2}'
 params.merged_gtf=null
 params.mode="fastq"
+//aligner
+params.aligner="star"
 
 
 // run information of system file
 //automatic set optimize resource for analysis based on current system resources
-ava_mem = double(Runtime.getRuntime().freeMemory())
+ava_mem = (double)(Runtime.getRuntime().freeMemory())
 ava_cpu = Runtime.getRuntime().availableProcessors()
 if(params.cpu!=null && ava_cpu > params.cpu ){
     ava_cpu = params.cpu
 }else if(params.cpu!=null && ava_cpu < params.cpu ) {
-    print "cpu number set in command is not used for exceeding the max available processors, \n use default parameter to run pipe. "
+    print print_red("cpu number set in command is not used for exceeding the max available processors, \n use default parameter to run pipe. ")
 }
-
 if(params.mem!=null && ava_mem > params.mem ){
     ava_mem = params.mem
 }else if(params.mem!=null && ava_mem < params.mem ) {
-    print "memory set in command is not used for exceeding the max available processors, \n use default parameter to run pipe. "
+    print print_red("memory set in command is not used for exceeding the max available processors, \n use default parameter to run pipe. ")
 }
 // set individual cpu for fork run
-idv_cpu=8
+idv_cpu=40
 int fork_number=ava_cpu/idv_cpu
 if(fork_number<1){
     fork_number=1
@@ -186,9 +196,7 @@ star_idex = file(params.star_idex)
 input_folder = file(params.input_folder)
 gencode_annotation_gtf = file(params.gencode_annotation_gtf)
 lncipedia_gtf = file(params.lncipedia_gtf)
-plekpath = file(params.plekpath)
-cncipath = file(params.cncipath)
-cpatpath = file(params.cpatpath)
+//cncipath = file(params.cncipath)
 rRNAmaskfile = file(params.rRNAmask)
 
 
@@ -236,19 +244,21 @@ if (params.merged_gtf==null) {
 
 
     if (params.mode == 'fastq') {
-        println "Analysis from fastq file"
-        println "Start mapping with STAR aligner"
+        println print_purple("Analysis from fastq file")
+        println print_purple("Start mapping with STAR aligner")
 //
 
-// Match the pairs on two channels
-        Channel.fromFilePairs(params.input_folder+'*_{1,2}.'+params.fastq_ext).into{readPairs_for_discovery;readPairs_for_quatification}
+//Match the pairs on two channels
+        reads=params.input_folder+'*'+params.suffix1+'.'+params.fastq_ext
+        Channel.fromFilePairs(reads,size: params.singleEnd ? 1 : 2)
+                .ifEmpty { exit 1, print_red("Cannot find any reads matching: ${reads}\nNB: Path needs to be enclosed in quotes!\n" )}
+                .into{readPairs_for_discovery;readPairs_for_quatification}
 
 //star_index if not exist
-        if(params.aligner == 'star' && !params.star_idex && fasta_ref){
+        if(params.aligner == 'star' && params.star_idex==null && fasta_ref){
             process makeSTARindex {
                 tag fasta_ref
                 cpus ava_cpu
-
 
                 input:
                 file fasta_ref from fasta_ref
@@ -260,24 +270,22 @@ if (params.merged_gtf==null) {
                 script:
                 star_threads = ava_cpu.intdiv(2) - 1
                 """
-                mkdir star_
+                mkdir star_index
                 STAR \
                     --runMode genomeGenerate \
                     --runThreadN ${star_threads} \
                     --sjdbGTFfile $gtf \
                     --sjdbOverhang 149 \
-                    --genomeDir star/ \
+                    --genomeDir star_index/ \
                     --genomeFastaFiles $fasta_ref
                 """
             }
         }
 
-
-
-// Star alignment
+//Star alignment
 
             process fastq_star_alignment_For_discovery {
-                cpus ava_cpu
+                cpus idv_cpu
                 tag { file_tag }
                 maxForks fork_number
 
@@ -289,45 +297,68 @@ if (params.merged_gtf==null) {
                 output:
                 set val(file_tag_new), file("STAR_${file_tag_new}") into STARmappedReads,alignment_logs
                 shell:
-                file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
+                file_tag = pair[0].name.replace("${params.suffix1}"+"."+"${params.fastq_ext}", "")
                 file_tag_new = file_tag
-                star_threads = ava_cpu.intdiv(2) - 1
+                star_threads = idv_cpu.intdiv(2) - 1
 
-                '''
-                for every pair in ${pair}
-                do
-                    STAR --runThreadN !{star_threads}  \
-                         --twopassMode Basic --genomeDir !{star_idex} \
-                         --readFilesIn !{pair[0]} !{pair[1]} \
-                         --readFilesCommand zcat \
-                         --outSAMtype BAM SortedByCoordinate \
-                         --chimSegmentMin 20 \
-                         --outFilterIntronMotifs RemoveNoncanonical \
-                         --outFilterMultimapNmax 20 \
-                         --alignIntronMin 20 \
-                         --alignIntronMax 1000000 \
-                         --alignMatesGapMax 1000000 \
-                         --outFilterType BySJout \
-                         --alignSJoverhangMin 8 \
-                         --alignSJDBoverhangMin 1 \
-                         --outFileNamePrefix !{file_tag_new} > !{file_tag_new}_star_log.txt
-                         
-                    mkdir STAR_!{file_tag_new}
-                    mv !{file_tag_new}Aligned* STAR_!{file_tag_new}/.
-                    mv !{file_tag_new}SJ* STAR_!{file_tag_new}/.
-                    mv !{file_tag_new}Log* STAR_!{file_tag_new}/.
-                done
-        
-                '''
+                if (params.singleEnd) {
+                    """
+                         STAR --runThreadN !{star_threads} \
+                            --twopassMode Basic \
+                            --genomeDir !{star_idex} \
+                            --readFilesIn !{pair[0]} \
+                            --readFilesCommand zcat \
+                            --outSAMtype BAM SortedByCoordinate \
+                            --chimSegmentMin 20 \
+                            --outFilterIntronMotifs RemoveNoncanonical \
+                            --outFilterMultimapNmax 20 \
+                            --alignIntronMin 20 \
+                            --alignIntronMax 1000000 \
+                            --alignMatesGapMax 1000000 \
+                            --outFilterType BySJout \
+                            --alignSJoverhangMin 8 \
+                            --alignSJDBoverhangMin 1 \
+                            --outFileNamePrefix !{file_tag_new} > !{file_tag_new}_star_log.txt
+                                 
+                            mkdir STAR_!{file_tag_new}
+                            mv !{file_tag_new}Aligned* STAR_!{file_tag_new}/.
+                            mv !{file_tag_new}SJ* STAR_!{file_tag_new}/.
+                            mv !{file_tag_new}Log* STAR_!{file_tag_new}/.
+                    """
+                }else {
+
+                    '''
+                            STAR --runThreadN !{star_threads}  \
+                                 --twopassMode Basic --genomeDir !{star_idex} \
+                                 --readFilesIn !{pair[0]} !{pair[1]} \
+                                 --readFilesCommand zcat \
+                                 --outSAMtype BAM SortedByCoordinate \
+                                 --chimSegmentMin 20 \
+                                 --outFilterIntronMotifs RemoveNoncanonical \
+                                 --outFilterMultimapNmax 20 \
+                                 --alignIntronMin 20 \
+                                 --alignIntronMax 1000000 \
+                                 --alignMatesGapMax 1000000 \
+                                 --outFilterType BySJout \
+                                 --alignSJoverhangMin 8 \
+                                 --alignSJDBoverhangMin 1 \
+                                 --outFileNamePrefix !{file_tag_new} > !{file_tag_new}_star_log.txt
+                                 
+                            mkdir STAR_!{file_tag_new}
+                            mv !{file_tag_new}Aligned* STAR_!{file_tag_new}/.
+                            mv !{file_tag_new}SJ* STAR_!{file_tag_new}/.
+                            mv !{file_tag_new}Log* STAR_!{file_tag_new}/.
+                    '''
+                }
             }
 
 
 
-// cufflinks
+// Cufflinks assembly
         process cufflinks_assembly {
-            cpus ava_cpu
+            cpus idv_cpu
             tag { file_tag }
-
+            maxForks fork_number
             input:
             set val(file_tag), file(Star_alignment) from STARmappedReads
             file fasta_ref
@@ -340,7 +371,7 @@ if (params.merged_gtf==null) {
 
             shell:
             file_tag_new = file_tag
-            cufflinks_threads = ava_cpu.intdiv(2) - 1
+            cufflinks_threads = idv_cpu.intdiv(2) - 1
 
             '''
             #run cufflinks
@@ -403,7 +434,7 @@ if (params.merged_gtf!=null) {
 }
 
 // run cuffcompare  merged gtf with gencode annotation
-process cuffcompare_GenCODE {
+process cuffcompare_GENCODE {
     cpus ava_cpu
     tag { file_tag }
     input:
@@ -441,9 +472,7 @@ process ExtractGTF {
     file "novel.longRNA.fa" into novelLncRnaFasta
     file "novel.longRNA.exoncount.txt" into novelLncRnaExonCount
 
-
     shell:
-
     '''
         # filtering novel lncRNA based on cuffmerged trascripts
         set -o pipefail
@@ -457,11 +486,11 @@ process ExtractGTF {
         #check whether required
         # get fasta from gtf
         gffread novel.longRNA.gtf -g !{fasta_ref} -w novel.longRNA.fa -W
-        '''
+     '''
 }
 
 // predicting coding potential _ parallel
-// copy fasta channel into three
+// Divide fasta channel into three for parallel running
 
 novelLncRnaFasta.into { novelLncRnaFasta_for_PLEK; novelLncRnaFasta_for_CPAT; novelLncRnaFasta_for_CNCI }
 
@@ -470,13 +499,12 @@ process run_PLEK {
     validExitStatus 0,1,2
     input:
     file novel_lncRNA_fasta from novelLncRnaFasta_for_PLEK
-    file plekpath
     output:
     file "novel.longRNA.PLEK.out" into novel_longRNA_PLEK_result
     shell:
     plek_threads = ava_cpu.intdiv(2) - 1
     '''
-        python !{plekpath}/PLEK.py -fasta !{novel_lncRNA_fasta} \
+        python !{params.plekpath}/PLEK.py -fasta !{novel_lncRNA_fasta} \
                                    -out novel.longRNA.PLEK.out \
                                    -thread !{plek_threads}
 	    exit 0
@@ -486,18 +514,16 @@ process run_PLEK {
 process run_CPAT {
     input:
     file novel_lncRNA_fasta from novelLncRnaFasta_for_CPAT
-    file cpatpath
     output:
     file "novel.longRNA.CPAT.out" into novel_longRNA_CPAT_result
     shell:
     '''
-        python !{cpatpath}/bin/cpat.py -g !{novel_lncRNA_fasta} \
-                                       -x !{cpatpath}/dat/Human_Hexamer.tsv \
-                                       -d !{cpatpath}/dat/Human_logitModel.RData \
+        python !{params.cpatpath}/bin/cpat.py -g !{novel_lncRNA_fasta} \
+                                       -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
+                                       -d !{params.cpatpath}/dat/Human_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
 }
-
 //    process run_CNCI{
 //        cpus ava_cpu
 //        input:
@@ -512,7 +538,7 @@ process run_CPAT {
 //        '''
 //    }
 
-// merge transcripts and retian lncRNA only by coding ability
+// merge transcripts and retain lncRNA only by coding ability
 process merge_filter_by_coding_potential {
     input:
     file novel_longRNA_PLEK_ from novel_longRNA_PLEK_result
@@ -520,15 +546,14 @@ process merge_filter_by_coding_potential {
     file longRNA_novel_exoncount from novelLncRnaExonCount
     file cuffmergegtf from cuffmergeTranscripts_forCodeingProtential
     file gencode_annotation_gtf
+    file fasta_ref
 
     output:
     file "novel.longRNA.stringent.gtf" into Novel_longRNA_stringent_gtf // not used
     file "novel.lncRNA.stringent.gtf" into novel_lncRNA_stringent_gtf
     file "novel.TUCP.stringent.gtf" into novel_TUCP_stringent_gtf // not used
 
-
     shell:
-
     '''
         set -o pipefail
         #merged transcripts
@@ -540,7 +565,7 @@ process merge_filter_by_coding_potential {
         '''
 }
 
-//Further  novel lncRNA based on annotated database
+//Further  identify novel lncRNA based on annotated database
 process Filter_lncRNA_based_annotationbaes {
    // publishDir "${baseDir}/Result/Identified_lncRNA", mode: 'copy'
     cpus ava_cpu
@@ -550,7 +575,6 @@ process Filter_lncRNA_based_annotationbaes {
     file gencode_protein_coding_gtf from proteinCodingGTF
     file novel_lncRNA_stringent_Gtf from novel_lncRNA_stringent_gtf
 
-
     output:
     file "lncRNA.final.v2.gtf" into finalLncRNA_gtf
     file "lncRNA.final.v2.map" into finalLncRNA_map
@@ -558,8 +582,13 @@ process Filter_lncRNA_based_annotationbaes {
     file "all_lncRNA_for_classifier.gtf" into finalLncRNA_for_class_gtf
     file "final_all.gtf" into finalGTF_for_quantification_gtf
     file "final_all.fa" into finalFasta_for_quantification_gtf
+    file "lncRNA.final.CPAT.out" into lncRNA_CPAT_statistic
+    file "protein_coding.final.CPAT.out" into protein_coding_CPAT_statistic
+
     shell:
+
     cufflinks_threads = ava_cpu.intdiv(2) - 1
+
     '''
         set -o pipefail
         cuffcompare -o filter \
@@ -579,13 +608,17 @@ process Filter_lncRNA_based_annotationbaes {
         cat novel.lncRNA.stringent.filter.gtf !{knowlncRNAgtf} > all_lncRNA_for_classifier.gtf
         perl rename_proteincoding.pl > protein_coding.final.gtf
         cat all_lncRNA_for_classifier.gtf protein_coding.final.gtf > final_all.gtf
+        gffread final_all.gtf -g !{fasta_ref} -w final_all.fa -W
+        
+        #run statistic 
+        perl compare_basic_charac.pl > basic_charac.txt
         '''
-
 }
 
 
 // star index and quantification by RSEM
 // please make sure that RSEM is installed into your $PATH environment
+
 process Reindex_kallisto_index_of_finalGtf_for_quantification{
     input:
     file transript_fasta from finalFasta_for_quantification_gtf
@@ -597,49 +630,53 @@ process Reindex_kallisto_index_of_finalGtf_for_quantification{
     '''
     #index star reference 
     kallisto index -i transcripts.idx ${transript_fasta}
+    
     '''
 }
 
 process Run_kallisto_for_quantification{
-    cpus ava_cpu
-    maxForks 1
+    cpus idv_cpu
+    maxForks fork_number
     tag {file_tag}
     input:
     file kallistoIndex from final_kallisto_index
-    file pair from readPairs_for_discovery
+    file pair from readPairs_for_quatification
     output:
     file("${file_tag_new}_kallisto") into kallisto_tcv_collection
 
     shell:
-    file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
+    file_tag = pair[0].name.replace("${params.suffix1}"+"."+"${params.fastq_ext}", "")
     file_tag_new = file_tag
-    cufflinks_threads = ava_cpu.intdiv(2) - 1
-    '''
-    #quantification by rsem 
-    kallisto quant -i ${kallistoIndex} -o !{file_tag_new}_kallisto -b 100 <(gzcat !{pair[0]} ) <(gzcat !{pair[1]})
-    '''
+    kallisto_threads = ava_cpu.intdiv(2) - 1
+    if (params.singleEnd) {
+        '''
+        #quantification by kallisto in single end mode
+        kallisto quant -i ${kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  <(zcat !{pair[0]} ) 
+        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
+        '''
+    } else {
+        '''
+        #quantification by kallisto 
+        kallisto quant -i ${kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 <(zcat !{pair[0]} ) <(zcat !{pair[1]})
+        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
+        '''
+    }
 }
 
 // combine matrix and for further evaluation
-process Run_RSEM_for_quantification{
-    cpus ava_cpu
-    maxForks 1
+process get_kallisto_matrix{
     tag {file_tag}
+
     input:
-    file final_lncRNA_gtf from finalLncRNA_gtf
-    file fasta_ref
-    file rsem_star_index from final_star_index
-    file pair from readPairs_for_discovery
+    file abundance_tsv_matrix from kallisto_tcv_collection
 
     output:
-    file "*genes.results" into RSEM_result_filelists
+    file "kallisto.count.txt" into expression_matrixfile_count
+    file "kallisto.tpm.txt" into expression_matrixfile_tpm
 
     shell:
-    file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
-    file_tag_new = file_tag
-    cufflinks_threads = ava_cpu.intdiv(2) - 1
     '''
-    
+    R CMD BATCH !{baseDir}/bin/get_kallisto_matrix.R
     '''
 }
 
