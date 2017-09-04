@@ -1,4 +1,6 @@
 #!/usr/bin/env nextflow
+import org.apache.tools.ant.taskdefs.Jar
+import org.testng.FileAssert
 
 /*
  * Copyright (c) 2013-2017, Sun Yat-sen University Cancer Center.
@@ -161,7 +163,6 @@ log.info "\n"
 // fastq file
 params.fastq_ext = "fastq.gz"
 params.suffix1='_{1,2}'
-params.merged_gtf=null
 params.mode="fastq"
 //aligner
 params.aligner="star"
@@ -238,7 +239,7 @@ process combine_public_annotation {
 
 
 // whether the merged gtf have already produced.
-if (params.merged_gtf==null) {
+if (!params.merged_gtf) {
 //Star index
 //star_ref = file(params.params.star_idex_ref)
 
@@ -252,10 +253,10 @@ if (params.merged_gtf==null) {
         reads=params.input_folder+'*'+params.suffix1+'.'+params.fastq_ext
         Channel.fromFilePairs(reads,size: params.singleEnd ? 1 : 2)
                 .ifEmpty { exit 1, print_red("Cannot find any reads matching: ${reads}\nNB: Path needs to be enclosed in quotes!\n" )}
-                .into{readPairs_for_discovery;readPairs_for_quatification}
+                .set{readPairs_for_discovery}
 
 //star_index if not exist
-        if(params.aligner == 'star' && params.star_idex==null && fasta_ref){
+        if(params.aligner == 'star' && params.star_idex==false && fasta_ref){
             process makeSTARindex {
                 tag fasta_ref
                 cpus ava_cpu
@@ -280,7 +281,10 @@ if (params.merged_gtf==null) {
                     --genomeFastaFiles $fasta_ref
                 """
             }
+        }else if (params.aligner == 'star' && params.star_idex==false && !fasta_ref){
+            println print_red("No reference sequence loaded! plz check your input.")
         }
+
 
 //Star alignment
 
@@ -288,20 +292,24 @@ if (params.merged_gtf==null) {
                 cpus idv_cpu
                 tag { file_tag }
                 maxForks fork_number
+                publishDir pattern:"",
+                           path:{params.out_folder+"/Result/Star_alignment"}, mode: 'copy', overwrite: true
 
                 input:
-                file pair from readPairs_for_discovery
+                set val(samplename),file(pair) from readPairs_for_discovery
                 file fasta_ref
                 file star_idex
 
                 output:
                 set val(file_tag_new), file("STAR_${file_tag_new}") into STARmappedReads,alignment_logs
                 shell:
-                file_tag = pair[0].name.replace("${params.suffix1}"+"."+"${params.fastq_ext}", "")
+                //file_tag = pair[0].name.replace("${params.suffix1}"+"."+"${params.fastq_ext}", "")
+                file_tag=samplename
                 file_tag_new = file_tag
                 star_threads = idv_cpu.intdiv(2) - 1
 
                 if (params.singleEnd) {
+                    println print_purple("Initial reads mapping of "+samplename+" performed by STAR in single-end mode")
                     """
                          STAR --runThreadN !{star_threads} \
                             --twopassMode Basic \
@@ -326,7 +334,7 @@ if (params.merged_gtf==null) {
                             mv !{file_tag_new}Log* STAR_!{file_tag_new}/.
                     """
                 }else {
-
+                    println print_purple("Initial reads mapping of "+samplename+" performed by STAR in paired-end mode")
                     '''
                             STAR --runThreadN !{star_threads}  \
                                  --twopassMode Basic --genomeDir !{star_idex} \
@@ -426,11 +434,13 @@ if (params.merged_gtf==null) {
     }
 }
 
-if (params.merged_gtf!=null) {
+if (params.merged_gtf) {
+    merged_gtf=file(params.merged_gtf)
 
-    Channel.fromPath(params.merged_gtf)
-            .ifEmpty { exit 1, "Cannot find merged gtf : ${params.merged_gtf}" }
+    Channel.fromPath(merged_gtf)
+            .ifEmpty { exit 1, "Cannot find merged gtf : ${merged_gtf}" }
             .into { cuffmergeTranscripts_forCompare;cuffmergeTranscripts_forExtract;cuffmergeTranscripts_forCodeingProtential}
+
 }
 
 // run cuffcompare  merged gtf with gencode annotation
@@ -567,7 +577,7 @@ process merge_filter_by_coding_potential {
 
 //Further  identify novel lncRNA based on annotated database
 process Filter_lncRNA_based_annotationbaes {
-   // publishDir "${baseDir}/Result/Identified_lncRNA", mode: 'copy'
+    publishDir "${baseDir}/Result/Identified_lncRNA", mode: 'copy'
     cpus ava_cpu
 
     input:
@@ -576,14 +586,14 @@ process Filter_lncRNA_based_annotationbaes {
     file novel_lncRNA_stringent_Gtf from novel_lncRNA_stringent_gtf
 
     output:
-    file "lncRNA.final.v2.gtf" into finalLncRNA_gtf
-    file "lncRNA.final.v2.map" into finalLncRNA_map
+//    file "lncRNA.final.v2.gtf" into finalLncRNA_gtf
+//    file "lncRNA.final.v2.map" into finalLncRNA_map
     file "protein_coding.final.gtf" into final_protein_coding_gtf
     file "all_lncRNA_for_classifier.gtf" into finalLncRNA_for_class_gtf
     file "final_all.gtf" into finalGTF_for_quantification_gtf
     file "final_all.fa" into finalFasta_for_quantification_gtf
-    file "lncRNA.final.CPAT.out" into lncRNA_CPAT_statistic
-    file "protein_coding.final.CPAT.out" into protein_coding_CPAT_statistic
+    //file "lncRNA.final.CPAT.out" into lncRNA_CPAT_statistic
+    //file "protein_coding.final.CPAT.out" into protein_coding_CPAT_statistic
 
     shell:
 
@@ -605,13 +615,13 @@ process Filter_lncRNA_based_annotationbaes {
         gtf2bed < novel.lncRNA.stringent.filter.gtf |sort-bed - > novel.lncRNA.stringent.filter.bed
         gtf2bed < !{knowlncRNAgtf} |sort-bed - > known.lncRNA.bed
         perl !{baseDir}/bin/rename_lncRNA_2.pl
-        cat novel.lncRNA.stringent.filter.gtf !{knowlncRNAgtf} > all_lncRNA_for_classifier.gtf
-        perl rename_proteincoding.pl > protein_coding.final.gtf
+        mv lncRNA.final.v2.gtf all_lncRNA_for_classifier.gtf
+        perl !{baseDir}/bin/rename_proteincoding.pl !{gencode_protein_coding_gtf}> protein_coding.final.gtf
         cat all_lncRNA_for_classifier.gtf protein_coding.final.gtf > final_all.gtf
         gffread final_all.gtf -g !{fasta_ref} -w final_all.fa -W
         
         #run statistic 
-        perl compare_basic_charac.pl > basic_charac.txt
+        #perl !{baseDir}/bin/compare_basic_charac.pl > basic_charac.txt
         '''
 }
 
@@ -619,7 +629,7 @@ process Filter_lncRNA_based_annotationbaes {
 // star index and quantification by RSEM
 // please make sure that RSEM is installed into your $PATH environment
 
-process Reindex_kallisto_index_of_finalGtf_for_quantification{
+process Build_kallisto_index_of_finalGtf_for_quantification{
     input:
     file transript_fasta from finalFasta_for_quantification_gtf
 
@@ -634,27 +644,37 @@ process Reindex_kallisto_index_of_finalGtf_for_quantification{
     '''
 }
 
+reads=params.input_folder+'*'+params.suffix1+'.'+params.fastq_ext
+Channel.fromFilePairs(reads,size: params.singleEnd ? 1 : 2)
+        .ifEmpty { exit 1, print_red("Cannot find any reads matching: ${reads}\nNB: Path needs to be enclosed in quotes!\n" )}
+        .set{readPairs_for_quatification}
+
+
 process Run_kallisto_for_quantification{
-    cpus idv_cpu
-    maxForks fork_number
+    cpus ava_cpu
+    maxForks 1
     tag {file_tag}
+
     input:
     file kallistoIndex from final_kallisto_index
-    file pair from readPairs_for_quatification
+    set val(samplename),file(pair) from readPairs_for_quatification
+
     output:
-    file("${file_tag_new}_kallisto") into kallisto_tcv_collection
+    file("${file_tag_new}_abundance.tsv") into kallisto_tcv_collection
 
     shell:
-    file_tag = pair[0].name.replace("${params.suffix1}"+"."+"${params.fastq_ext}", "")
+    file_tag = samplename
     file_tag_new = file_tag
     kallisto_threads = ava_cpu.intdiv(2) - 1
     if (params.singleEnd) {
+        println print_purple("Quantification by kallisto in single end mode")
         '''
         #quantification by kallisto in single end mode
         kallisto quant -i ${kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  <(zcat !{pair[0]} ) 
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
         '''
     } else {
+        println print_purple("quantification by kallisto in paired end mode")
         '''
         #quantification by kallisto 
         kallisto quant -i ${kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 <(zcat !{pair[0]} ) <(zcat !{pair[1]})
