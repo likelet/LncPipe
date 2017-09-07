@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-open FH,"lncRNA/lncRNA.final.gtf" or die;
+open FH,"all_lncRNA_for_classifier.gtf" or die;
 
 my %class;
 my %g2t;
@@ -20,7 +20,7 @@ while(<FH>){
 	$trans_len{$tid}=(exists $trans_len{$tid})?$trans_len{$tid}+$len:$len;
 	$exon_num{$tid}=(exists $exon_num{$tid})?$exon_num{$tid}+1:1;
 }
-open FH,"lncRNA/protein_coding.final.gtf" or die;
+open FH,"protein_coding.final.gtf" or die;
 
 while(<FH>){
 	chomp;
@@ -36,7 +36,7 @@ while(<FH>){
 	$exon_num{$tid}=(exists $exon_num{$tid})?$exon_num{$tid}+1:1;
 }
 
-open FH,"lncRNA/lncRNA.final.CPAT.out" or die;
+open FH,"lncRNA.final.CPAT.out" or die;
 
 <FH>;
 
@@ -47,7 +47,7 @@ while(<FH>){
 	print $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\n";
 }
 
-open FH,"lncRNA/protein_coding.final.CPAT.out" or die;
+open FH,"protein_coding.final.CPAT.out" or die;
 
 <FH>;
 
