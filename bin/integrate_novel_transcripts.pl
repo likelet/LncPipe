@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-open FH,"lncRNA/novel.longRNA.CPAT.out" or die;
+open FH,"novel.longRNA.CPAT.out" or die;
 
 <FH>;
 my %info;
@@ -15,7 +15,7 @@ while(<FH>){
 	}
 }
 
-open FH,"lncRNA/novel.longRNA.PLEK.out" or die;
+open FH,"novel.longRNA.PLEK.out" or die;
 
 while(<FH>){
 	chomp;
@@ -29,7 +29,7 @@ while(<FH>){
 	}
 }
 
-open FH,"lncRNA/novel.longRNA.exoncount.txt" or die;
+open FH,"novel.longRNA.exoncount.txt" or die;
 
 while(<FH>){
 	chomp;

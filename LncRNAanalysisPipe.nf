@@ -70,6 +70,7 @@ version = '0.0.4'
 
 //=======================================================================================
 //help information
+params.help = null
 if (params.help){
     log.info ''
     log.info print_purple('------------------------------------------------------------------------')
@@ -92,6 +93,8 @@ if (params.help){
             print_yellow('    Options:                         General options for run this pipeline\n') +
             print_cyan('      --singleEnd                   ')+print_green('Specifies that the input is single end reads(optional), paired end mode default \n') +
             print_cyan('      --merged_gtf                  ')+print_green('Start analysis with assemblies already produced and skip fastqc/alignment step, DEFAOUL NULL\n') +
+            print_cyan('      --design                      ')+print_green('A flat file stored the experimental design information ( required when perform differential expression analysis)\n') +
+
             '\n'+
             print_yellow('    References:                      If not specified in the configuration file or you wish to overwrite any of the references.\n') +
             print_cyan('      --star_index                  ')+print_green('Path to STAR index(required)\n') +
@@ -187,7 +190,7 @@ if(params.mem!=null && ava_mem > params.mem ){
     print print_red("Memory set in command is not used for exceeding the max available processors, \n use default parameter to run pipe. ")
 }
 // set individual cpu for fork run
-idv_cpu=8
+idv_cpu=40
 int fork_number=ava_cpu/idv_cpu
 if(fork_number<1){
     fork_number=1
@@ -254,9 +257,10 @@ if(params.skip_combine){
         
         '''
 
-        println print_yellow("Integrated could be reused to avoid rerun this step by add parameter: ") +
-                print_green("--skip_combine")
+
     }
+    println print_yellow("Integrated annotation files could be reused to avoid rerun this step by add parameter next time : ") +
+            print_green("--skip_combine")
 
 }
 
@@ -274,7 +278,7 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
     * Step 2: FastQC raw reads
     */
         if(params.skip_QC || params.skip_mapping){
-            fastqc_for_waiting = Channel.create()
+            fastqc_for_waiting= Channel.fromPath("Nothing").first()
             println print_yellow("FastaQC step was skipped due to ")+print_green("--skip_QC")+print_yellow(" option ")
         }else {
             println print_purple("Perform quality control of raw fastq files ")
@@ -297,6 +301,7 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
                     fastqc -t !{fastq_threads} !{fastq_file[0]} !{fastq_file[1]}
                 """
             }
+            fastqc_for_waiting= Channel.fromPath("Nothing").first()
         }
 
 
@@ -330,7 +335,8 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
                 """
             }
         }else if (params.aligner == 'star' && params.star_idex==false && !fasta_ref){
-            println print_red("No reference sequence loaded! plz check your input.")
+            println print_red("No reference sequence loaded! plz specify ")+print_red("--fasta_ref")+print_red(" with reference.")
+
         }
 
             /*
@@ -416,7 +422,7 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
         * Step 5: Reads assembling by using cufflinks
         */
         process cufflinks_assembly {
-            cpus idv_cpu
+            cpus ava_cpu
             tag { file_tag }
             maxForks fork_number
             input:
@@ -431,7 +437,7 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
 
             shell:
             file_tag_new = file_tag
-            cufflinks_threads = idv_cpu.intdiv(2) - 1
+            cufflinks_threads = ava_cpu.intdiv(2) - 1
 
             '''
             #run cufflinks

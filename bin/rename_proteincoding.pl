@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-open FH,"lncRNA/gencode.v24.protein_coding.gtf" or die;
+open FH,shift or die;
 
 while(<FH>){
 	$_=~/gene_name "(.+?)";/;

@@ -5,7 +5,7 @@ To run the pipeline files with nf suffixed, plz just type the following command.
 ## Schematic diagram
  ![Nothing shown here](./image/LncRNApipe.png)
 
-
+## Nextflow
 ```
 nextflow <your nf file> -c nextflow.config -with-trace
 ```
@@ -72,3 +72,18 @@ Here, we show the step by step installation of NextFlow in linux system as an ex
 ## 3. Interactive reports
 See [MultiIP](https://github.com/bioinformatist/multiIP).
 
+## Usage
+### --fastq_ext
+### --star_idex
+### --design
+Experimental design file matrix for differential expression analysis. Default: `null`
+Format:
+```
+WT:Sample1,Sample2,Sample3
+KO:Sample1,Sample2,Sample3
+```
+While `KO/WT` represents the two experimental condition, and sample1, sample2, sample3 are replicates which should be comma-delimited in the same line .
+For sample names, it should be the sample as the prefix of fastq files which was trimmed by `--fastq_ext`.
+For example:
+ if fastq file names are `Sample1_1.fq.gz, Sample1_2.fq.gz` that comes from one sample; your `--fastq_ext` are `*_{1,2}.fq.gz`, the sample name
+should be Sample1.
