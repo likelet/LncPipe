@@ -1,11 +1,22 @@
-# Workflow
+# [LncPipe](https://gitee.com/likelet/workflow) 
 ## 1. Description
-A collection of self-developed bioinformatics analysis pipeline coding by a DSL language, nextflow.
-To run the pipeline files with nf suffixed, plz just type the following command.
+Recently, long noncoding RNA molecules (lncRNA) captured widespread attentions for its critical 
+roles in diverse biological process and important implications in variety of human diseases and 
+cancers. Identification and profiling of lncRNAs is a fundamental step to advance our knowledge 
+on their function and regulatory mechanisms. However, RNA sequencing based lncRNA discovery is 
+limited due to complicated operations and implementation. Therefore, we presented a one-stop 
+pipeline called [LncPipe](https://gitee.com/likelet/workflow) focused on characterizing lncRNAs from raw transcriptome sequencing 
+data. The pipeline was developed based on a popular workflow framework [Nextflow](https://github.com/nextflow-io/nextflow), composed of 
+four core procedures including reads alignment, assembly, identification and quantification. 
+It contains various unique features such as well-designed lncRNAs annotation strategy, optimized 
+calculating efficiency, diversified classification and interactive analysis report. Additionally, 
+[LncPipe](https://gitee.com/likelet/workflow)  allows users cancel pipeline, reset parameters from command or modifying main script 
+directly and resume analysis from continues checkpoint. 
+
 ## Schematic diagram
  ![Nothing shown here](./image/LncRNApipe.png)
 
-## Nextflow
+## [Nextflow](https://github.com/nextflow-io/nextflow)
 ```
 nextflow <your nf file> -c nextflow.config -with-trace
 ```
@@ -15,41 +26,51 @@ If the pipeline fails at any point and you fix the issue, you can revoke the pro
 nextflow <your nf file> -c nextflow.config -with-trace -resume
 ```
 
-All those pipelines were written in Nextflow commands. For more details, please see the following link:
+All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see the following link:
 https://www.nextflow.io/
 
+## 2. Run [LncPipe](https://gitee.com/likelet/workflow)  .
 
+## 2. Installation of dependencies (Run [LncPipe](https://gitee.com/likelet/workflow)  at host environment ).
+### Install [Nextflow](https://github.com/nextflow-io/nextflow)
+To run our pipelines. [Nextflow](https://github.com/nextflow-io/nextflow) should be pre-installed at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.
+Here, we show the step by step installation of [Nextflow](https://github.com/nextflow-io/nextflow) in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
 
-## 2. Installation of dependencies.
-### Install NextFlow
-To run our pipelines. NextFlow should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.
-Here, we show the step by step installation of NextFlow in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
-
-1. Download the executable package by copying and pasting the following command in your terminal window: ```wget -qO- get.nextflow.io | bash```. It will create the nextflow main executable file in the current directory.
-2. Optionally, move the nextflow file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
-3. Download the lastest binary verion of NextFlow from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
+1. Download the executable package by copying and pasting the following command in your terminal window: ```wget -qO- get.[Nextflow](https://github.com/nextflow-io/nextflow).io | bash```. It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
+2. Optionally, move the ```nextflow``` file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
+3. Download the lastest binary version of NextFlow from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
 ### Install third-party software and database required by each pipe.
 #### Pipe 1
 ##### introduction
 ##### References, index and annotation files（required）
-1. STAR index (hg38 genome index etc.)
+1. [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.)
 2. Genome reference (genome fasta file with suffix .fa , UCSC etc).
 3. GENCODE gene annotation file in GTF format:
       [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
 4. LNCipedia gene annotation file in GTF format:
       [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
 ##### software and tools (required)
-1. [STAR](https://github.com/alexdobin/STAR), Reference https://www.ncbi.nlm.nih.gov/pubmed/23104886
-2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks), Reference https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/
-3. [Bedops](http://bedops.readthedocs.io/en/latest/), Reference https://www.ncbi.nlm.nih.gov/pubmed/22576172/
-4. [PLEK](www.ibiomedical.net), Reference 
+1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
+    <br>
+           *Installation*
+     ```
+     
+
+     ```
+2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/)
+3. [Bedops](http://bedops.readthedocs.io/en/latest/):[Citation](https://www.ncbi.nlm.nih.gov/pubmed/22576172/)
+4. [PLEK](www.ibiomedical.net): [Citation](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-311)
+      <br>
+       *Installation*
       ```Shell
       wget https://sourceforge.net/projects/plek/files/PLEK.1.2.tar.gz/download
       tar -zvxf PLEK.1.2.tar.gz 
       cd PLEK.1.2
       python PLEK_setup.py 
       ```
-5. [CNCI](https://github.com/www-bioinfo-org/CNCI), Renference
+5. [CNCI](https://github.com/www-bioinfo-org/CNCI): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783192/)
+      <br>
+      *Installation*
       ``` Shell
       git clone git@github.com:www-bioinfo-org/CNCI.git
       cd CNCI
@@ -58,7 +79,9 @@ Here, we show the step by step installation of NextFlow in linux system as an ex
       make
       cd ..
       ```
-6. [CPAT](http://rna-cpat.sourceforge.net), Reference 
+6. [CPAT](http://rna-cpat.sourceforge.net):[Citation](https://academic.oup.com/nar/article/41/6/e74/2902455/CPAT-Coding-Potential-Assessment-Tool-using-an)
+      <br>
+            *Installation*
       ```Shell
       wget https://sourceforge.net/projects/rna-cpat/files/?source=navbar
       tar zxf CPAT-VERSION.tar.gz
@@ -68,13 +91,31 @@ Here, we show the step by step installation of NextFlow in linux system as an ex
       export PYTHONPATH=/home/user/CPAT/usr/local/lib/python2.7/site-packages:$PYTHONPATH.
       export PATH=/home/user/CPAT/usr/local/bin:$PATH #setup PATH
       ```
+7. [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc)
 
 ## 3. Interactive reports
 See [MultiIP](https://github.com/bioinformatist/multiIP).
 
-## Usage
+## 4. Usage and input parameters 
 ### --fastq_ext
+Required information based on your raw fastq files.
+Suppose your paired end sequence files are compressed with `.gz` suffixed.
+For example:
+```
+Sample1_1.fq.gz
+Sample1_2.fq.gz
+Sample2_1.fq.gz
+Sample2_2.fq.gz
+```
+Then you can input pattern `*_{1,2}.fq.gz` to make the all paired end file recognized by [LncPipe](https://gitee.com/likelet/workflow) .
+
+
 ### --star_idex
+
+Required. This parameter specify the Star index folder built before running [LncPipe](https://gitee.com/likelet/workflow) . If you don't know what it is.
+You can use `--fasta` to specify the reference sequence data. The index file would be built by [LncPipe](https://gitee.com/likelet/workflow)  automatically.
+
+
 ### --design
 Experimental design file matrix for differential expression analysis. Default: `null`
 Format:
@@ -83,7 +124,21 @@ WT:Sample1,Sample2,Sample3
 KO:Sample1,Sample2,Sample3
 ```
 While `KO/WT` represents the two experimental condition, and sample1, sample2, sample3 are replicates which should be comma-delimited in the same line .
+
 For sample names, it should be the sample as the prefix of fastq files which was trimmed by `--fastq_ext`.
+
 For example:
+
  if fastq file names are `Sample1_1.fq.gz, Sample1_2.fq.gz` that comes from one sample; your `--fastq_ext` are `*_{1,2}.fq.gz`, the sample name
 should be Sample1.
+
+## About
+This pipe were written by [Qi Zhao](https://github.com/likelet) and [Yu Sun](http://icannotendure.space) from Sun Yat-sen University and Nan kai univerity. 
+For details and help, plz contact any one of us by zhaoqi@sysucc.org.cn and sun_yu@mail.nankai.edu.cn.
+
+Please feel free contact us. <br/>
+
+## License
+GPL3 license 
+## Citation 
+
