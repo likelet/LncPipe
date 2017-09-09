@@ -100,7 +100,7 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 7. [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc)
 
 ## Interactive reports
-LncPipe output were well summarized in an interactive html manner, which carried out by 
+LncPipe output was well-summarized in an interactive manner, which was carried out by 
 [MultiIP](https://github.com/bioinformatist/multiIP) which serve as a part of LncPipe.  
 
 ## Usage and input parameters 
