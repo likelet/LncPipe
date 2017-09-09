@@ -30,7 +30,7 @@ nextflow <your nf file> -c nextflow.config -with-trace -resume
 All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see the following link:
 https://www.nextflow.io/
 
-## Run [LncPipe](https://gitee.com/likelet/workflow)  .
+## Run [LncPipe](https://gitee.com/likelet/workflow)  with docker container  .
 
 ## Installation of dependencies (Run [LncPipe](https://gitee.com/likelet/workflow)  at host environment ).
 ### Install [Nextflow](https://github.com/nextflow-io/nextflow)
@@ -51,23 +51,22 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
       [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
 #### software and tools (required)
 1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
-    <br>
-           *Installation*
+    *Installation*
      ```
+     Sunyu finished
      ```
 2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/)
-<br>
-           *Installation*
+    *Installation*
      ```
+     Sunyu finished
      ```
 3. [Bedops](http://bedops.readthedocs.io/en/latest/):[Citation](https://www.ncbi.nlm.nih.gov/pubmed/22576172/)
-<br>
-           *Installation*
+   *Installation*
      ```
+     Sunyu finished
      ```
 4. [PLEK](www.ibiomedical.net): [Citation](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-311)
-      <br>
-       *Installation*
+    *Installation*
       ```Shell
       wget https://sourceforge.net/projects/plek/files/PLEK.1.2.tar.gz/download
       tar -zvxf PLEK.1.2.tar.gz 
