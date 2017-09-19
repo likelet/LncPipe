@@ -49,16 +49,22 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
       [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
 4. LNCipedia gene annotation file in GTF format:
       [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
-#### software and tools (required)
+#### Software and tools (required)
 1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
     *Installation*
-     ```
-     Sunyu finished
+     ```shell
+     $ sudo aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR && \
+	       chmod 755 /opt/STAR && \
+	       sudo ln -s /opt/STAR /usr/local/bin
      ```
 2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/)
     *Installation*
      ```
-     Sunyu finished
+     $ sudo aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz && \
+	     tar xf /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
+	     rm /opt/cufflinks-2.2.1.Linux_x86_64/README && \
+	     ln -s /opt/cufflinks-2.2.1.Linux_x86_64/* /usr/local/bin/ && \
+	     rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
      ```
 3. [Bedops](http://bedops.readthedocs.io/en/latest/):[Citation](https://www.ncbi.nlm.nih.gov/pubmed/22576172/)
    *Installation*
