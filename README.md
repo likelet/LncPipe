@@ -102,7 +102,44 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 LncPipe output was well-summarized in an interactive manner, which was carried out by 
 [MultiIP](https://github.com/bioinformatist/multiIP) which serve as a part of LncPipe.  
 
-## Usage and input parameters 
+## Parameters
+
+* #### Mandatory
+| Name | Example value | Description |
+|-----------|--------------:|-------------|
+|--input_folder | . | input folder |
+|--fastq_ext | *_{1,2}.fastq.gz | input raw paired reads |
+|--out_folder |  . | output folder |
+
+* #### References
+
+| Name | Default value | Description |
+|-----------|--------------|-------------|
+|--star_index  | starIndex | Path to STAR index(required)  |
+|--fasta  | merged.gtf | Path to Fasta reference(required)|
+|--gencode_annotation_gtf  | gencode.gtf | An annotation file from GENCODE database for annotating lncRNAs(required). e.g. [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz) |
+|--lncipedia_gtf  | lncipedia.gtf | An annotation file from LNCipedia database for annotating lncRNAs(required) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
+|--rRNAmask  | rRNAmask.gtf |rRNA GTF for removing rRNA transcript from gtf files(required) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
+
+* #### Optional
+
+| Name | Default value | Description |
+|-----------|--------------|-------------|
+|--singleEnd  | - | specify that the reads are single ended  |
+|--merged_gtf | merged.gtf |Skip mapping and assembly step by directly providing assembled merged gtf files|
+|--design     | design.txt | see details introduction about `--design` below |
+
+* #### Optional
+
+| Name | Default value | Description |
+|-----------|--------------|-------------|
+|--skip_combine  | FALSE | Skip known annotation combination step once it have already been generated. |
+|--skip_mapping | FALSE| Skip mapping and assembly step by directly providing assembled merged gtf files|
+|--skip_DE    | FALSE | Skip QC step when the reads are clean reads |
+|--skip_QC | FALSE| Skip differential expression analysis step |
+
+
+
 ### --fastq_ext
 Required information based on your raw fastq files.
 Suppose your paired end sequence files are compressed with `.gz` suffixed.

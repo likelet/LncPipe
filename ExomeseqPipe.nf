@@ -45,11 +45,7 @@ params.annovarpath = ''
 //
 
 // fastq file
-params.fastq_ext = "fastq.gz"
 
-//params.fastq_ext2 = "fq.gz"
-params.suffix1 = "_1"
-params.suffix2 = "_2"
 // run information of systemfile
 params.cpu = 24
 params.mem = 64
@@ -73,117 +69,63 @@ annovar_db = file(params.annovar_db)
 //star_ref = file(params.params.star_idex_ref)
 
 // Check whether fastq file is available
-    mode = 'fastq'
-    if (file(params.input_folder).listFiles().findAll { it.name ==~ /.*${params.fastq_ext}/ }.size() > 0 ||
-            file(params.input_folder).listFiles().findAll { it.name ==~ /.*${params.fastq_ext2}/ }.size() > 0) {
-        println "fastq files found, proceed with alignment"
-    } else {
-        if (file(params.input_folder).listFiles().findAll { it.name ==~ /.*bam/ }.size() > 0) {
-            println "BAM files found, proceed with realignment"; mode = 'bam';
-            files = Channel.fromPath(params.input_folder + '/*.bam')
-        } else {
-            println "ERROR: input folder contains no fastq nor BAM files"; System.exit(0)
-        }
-    }
-
-
-    if (mode == 'fastq') {
-        println "Analysis from fastq file"
-        println "Start mapping with STAR aligner"
-//
-        keys1 = file(params.input_folder).listFiles().findAll {
-            it.name ==~ /.*${params.suffix1}.${params.fastq_ext}/
-        }.collect { it.getName() }
-                .collect { it.replace("${params.suffix1}.${params.fastq_ext}", '') }
-        keys2 = file(params.input_folder).listFiles().findAll {
-            it.name ==~ /.*${params.suffix2}.${params.fastq_ext}/
-        }.collect { it.getName() }
-                .collect { it.replace("${params.suffix2}.${params.fastq_ext}", '') }
-        if (!(keys1.containsAll(keys2)) || !(keys2.containsAll(keys1))) {
-            println "\n ERROR : There is at least one fastq without its mate, please check your fastq files.";
-            System.exit(0)
-        }
-
-        println keys1
-// parse paired files _1
-        reads1 = Channel.fromPath(params.input_folder + '/*' + params.suffix1 + '.' + params.fastq_ext).map { path -> [path.name.replace("${params.suffix1}.${params.fastq_ext}", ""), path] }
-
-// parse paired files _2
-        reads2 = Channel.fromPath(params.input_folder + '/*' + params.suffix2 + '.' + params.fastq_ext).map { path -> [path.name.replace("${params.suffix2}.${params.fastq_ext}", ""), path] }
-
+params.reads = "*_{1,2}.fastq.gz"
 // Match the pairs on two channels
-        readPairs = reads1.phase(reads2).map { pair1, pair2 -> [pair1[1], pair2[1]] }
+reads=params.input_folder+params.reads
+Channel.fromFilePairs(reads,size: params.singleEnd ? 1 : 2)
+        .ifEmpty { exit 1, print_red("Cannot find any reads matching: ${reads}\nNB: Path needs to be enclosed in quotes!\n" )}
+        .into{reads_for_fastqc; readPairs_for_discovery}
 
 
-        process bwa_aligment{
-            cpus params.cpu
-            tag { file_tag }
-            input:
-            file pair from readPairs
-            file genome_bwa_idex
+    process bwa_aligment{
+        cpus params.cpu
+        tag { file_tag }
+        input:
+        file pair from readPairs
+        file genome_bwa_idex
 
 
-            output:
-            set val(file_tag_new), file("${file_tag_new}.bam") into mapped_bam
-            file
-            shell:
-            file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
-            file_tag_new = file_tag
-            bwa_threads = params.cpu.intdiv(2) - 1
+        output:
+        set val(file_tag_new), file("${file_tag_new}.bam") into mapped_bam
+        file
+        shell:
+        file_tag = pair[0].name.replace("${params.suffix1}.${params.fastq_ext}", "")
+        file_tag_new = file_tag
+        bwa_threads = params.cpu.intdiv(2) - 1
 
+        '''
+            TEMPDIR=${pwd}/tmp
+            mkdir $TEMPDIR
+            for every pair in ${pair}
+            do
+            bwa mem -t !{bwa_threads} !{genome_bwa_idex} !{pair[0]} !{pair[1]}  > !{file_tag_new}.sam
+            sambamba  view -S -f bam -t !{bwa_threads} !{file_tag_new}.sam > ${file_tag_new}.bam
+            
+            rm -rf !{file_tag_new}.sam
+            done
             '''
-                TEMPDIR=${pwd}/tmp
-                mkdir $TEMPDIR
-                for every pair in ${pair}
-                do
-                bwa mem -t !{bwa_threads} !{genome_bwa_idex} !{pair[0]} !{pair[1]}  > !{file_tag_new}.sam
-                sambamba  view -S -f bam -t !{bwa_threads} !{file_tag_new}.sam > ${file_tag_new}.bam
-                
-                rm -rf !{file_tag_new}.sam
-                done
-                '''
-        }
-
-        process bamfile_process{
-            cpus params.cpu
-            tag { file_tag }
-            input:
-            set val(file_tag), file(bamfile) from mapped_bam
-
-
-            output:
-            set val(file_tag_new), file("${file_tag_new}_sorted_dedup.bam") into mapped_sorted_dedup_bam_forsamtools
-            shell:
-            file_tag_new = file_tag
-            sambamba_threads = params.cpu.intdiv(2) - 1
-
-            '''
-                TEMPDIR=${pwd}/tmp
-                mkdir $TEMPDIR
-                sambamba sort  -t !{sambamba_threads} -o ${file_tag_new}_sorted.bam ${file_tag_new}.bam
-                sambamba markdup -t !{sambamba_threads}  ${file_tag_new}_sorted.bam ${file_tag_new}_sorted_dedup.bam
-                '''
-        }
-
-
-        process samtools_bcgtools_process{
-            cpus params.cpu
-            tag { file_tag }
-            //publishDir "${baseDir}/Result", mode: 'copy'
-            input:
-            set val(file_tag), file(bamfile) from mapped_bam
-            file genome_ref_exome
-
-            output:
-            set val(file_tag_new), file("${file_tag_new}.vcf") into samtools_vcf_file
-            shell:
-            file_tag_new = file_tag
-            sambamba_threads = params.cpu.intdiv(2) - 1
-            '''
-            set -o pipefail
-                samtools mpileup -C 0 -A -B -d 10000 -v -u -f !{genome_ref_exome} !{bamfile} | \
-                !{bcftoolspath}/bcftools call -O v -v -c -n 0.05 -p 1 -A -o !{file_tag_new}.vcf
-            '''
-        }
-
     }
+
+    process bamfile_process{
+        cpus params.cpu
+        tag { file_tag }
+        input:
+        set val(file_tag), file(bamfile) from mapped_bam
+
+
+        output:
+        set val(file_tag_new), file("${file_tag_new}_sorted_dedup.bam") into mapped_sorted_dedup_bam_forsamtools
+        shell:
+        file_tag_new = file_tag
+        sambamba_threads = params.cpu.intdiv(2) - 1
+
+        '''
+            TEMPDIR=${pwd}/tmp
+            mkdir $TEMPDIR
+            sambamba sort  -t !{sambamba_threads} -o ${file_tag_new}_sorted.bam ${file_tag_new}.bam
+            sambamba markdup -t !{sambamba_threads}  ${file_tag_new}_sorted.bam ${file_tag_new}_sorted_dedup.bam
+            '''
+    }
+
+
+

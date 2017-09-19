@@ -88,7 +88,7 @@ if (params.help){
             print_cyan('      --input_folder                ')+print_green('Path to input data(optional), current path default\n') +
             print_cyan('      --fastq_ext                   ')+print_green('Filename pattern for pairing raw reads, e.g: *_{1,2}.fastq.gz for paired reads\n') +
             print_cyan('      --out_folder                  ')+print_green('The output directory where the results will be saved(optional), current path is default\n') +
-            print_cyan('      --aligner                     ')+print_green('Aligner for reads mapping (optional), STAR is default\n') +
+            print_cyan('      --aligner                     ')+print_green('Aligner for reads mapping (optional), STAR is default and supported only at present\n') +
             '\n'+
             print_yellow('    Options:                         General options for run this pipeline\n') +
             print_cyan('      --singleEnd                   ')+print_green('Specifies that the input is single end reads(optional), paired end mode default \n') +
@@ -230,8 +230,7 @@ if(params.skip_combine){
     println print_purple("Combination of known annotations from GTFs")
     process combine_public_annotation {
         cpus ava_cpu
-        publishDir pattern: "*.gtf",
-                path: { params.out_folder + "/Combined_annotations" }, mode: 'copy', overwrite: true
+        storeDir { params.out_folder + "/Combined_annotations" }
         input:
         file lncRNA_gtflistfile from LncRNA_gtflist
         file gencode_annotation_gtf
@@ -313,6 +312,7 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
             process Make_STARindex {
                 tag fasta_ref
                 cpus ava_cpu
+                storeDir { params.out_folder + "/STARIndex" }
 
                 input:
                 file fasta_ref from fasta_ref
@@ -494,8 +494,8 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
 
 
 if (params.merged_gtf) {
-    println print_yellow("FastaQC step was skipped due to provided provided --merged_gtf option\n")
-    println print_yellow("Reads mapping step was skipped due to provided provided --merged_gtf option\n")
+    println print_yellow("FastaQC step was skipped due to provided ")+print_green("--merged_gtf")+print_yellow(" option\n")
+    println print_yellow("Reads mapping step was skipped due to provided ")+print_green("--merged_gtf")+print_yellow(" option\n")
 
     merged_gtf=file(params.merged_gtf)
     Channel.fromPath(merged_gtf)
@@ -887,6 +887,23 @@ process Get_kallisto_matrix{
 
     shell:
     file_tag="Kallisto"
+    '''
+    grep -v "protein_coding"  final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$2}' | sort | uniq | \
+        cat - <(grep "protein_coding" final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$14}' | sort | uniq)> map.file
+    R CMD BATCH !{baseDir}/bin/get_kallisto_matrix.R
+    '''
+}
+
+process parameters_for_multiP{
+    tag {file_tag}
+
+    input:
+
+    output:
+    file "parameters.txt" into expression_matrixfile_count
+
+    shell:
+
     '''
     grep -v "protein_coding"  final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$2}' | sort | uniq | \
         cat - <(grep "protein_coding" final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$14}' | sort | uniq)> map.file
