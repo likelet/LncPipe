@@ -151,19 +151,19 @@ params {
 
 | Name | Default value | Description |
 |-----------|--------------|-------------|
-|--star_index  | starIndex | Path to STAR index(required)  |
-|--fasta  | merged.gtf | Path to Fasta reference(required)|
-|--gencode_annotation_gtf  | gencode.gtf | An annotation file from GENCODE database for annotating lncRNAs(required). e.g. [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz) |
-|--lncipedia_gtf  | lncipedia.gtf | An annotation file from LNCipedia database for annotating lncRNAs(required) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
-|--rRNAmask  | rRNAmask.gtf |rRNA GTF for removing rRNA transcript from gtf files(required) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
+|--star_index  | -| Path to STAR index(required if not set in config file)  |
+|--fasta  | - | Path to Fasta reference(required if not set in config file)|
+|--gencode_annotation_gtf  | gencode.gtf | An annotation file from GENCODE database for annotating lncRNAs(required if not set in config file). e.g. [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz) |
+|--lncipedia_gtf  | lncipedia.gtf | An annotation file from LNCipedia database for annotating lncRNAs(required if not set in config file) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
+|--rRNAmask  | rRNAmask.gtf |rRNA GTF for removing rRNA transcript from gtf files(required if not set in config file) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
 
 * #### Optional
 
 | Name | Default value | Description |
 |-----------|--------------|-------------|
 |--singleEnd  | - | specify that the reads are single ended  |
-|--merged_gtf | merged.gtf |Skip mapping and assembly step by directly providing assembled merged gtf files|
-|--design     | design.txt | see details introduction about `--design` below |
+|--merged_gtf | - |Skip mapping and assembly step by directly providing assembled merged gtf files|
+|--design     | - | a txt file that stored experimental design information, plz see details from `--design` section below |
 
 * #### Optional
 
