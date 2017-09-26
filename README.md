@@ -43,11 +43,16 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 3. Download the lastest binary version of NextFlow from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
 ### Install third-party software and database required by each pipe.
 #### References, index and annotation files（required）
+
 1. [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.)
+
 2. Genome reference (genome fasta file with suffix .fa , UCSC etc).
+
 3. GENCODE gene annotation file in GTF format:
       [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
+
 4. LNCipedia gene annotation file in GTF format:
+
       [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
 #### Software and tools (required)
 1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
@@ -108,6 +113,31 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 LncPipe output was well-summarized in an interactive manner, which was carried out by 
 [MultiIP](https://github.com/bioinformatist/multiIP) which serve as a part of LncPipe.  
 
+## Configuration for use at the first time 
+As a nextflow-based analysis pipeline, LncPipe allow users edit configure file `nextflow.config` to set the index files and default file path parameters instead of typing in command.
+For example, plz go to `params` line, and set the following information of your operation system and environment 
+```groovy
+params {
+
+   fasta_ref = 'your/genome/reference/path/genome.fa'
+   //star index
+   star_idex = 'your/STAR/reference/index/path'
+   //bowtie index
+      //bowtie2_index=''
+
+   gencode_annotation_gtf = "Path/to/gencode/annotation/gencode.v24.annotation.gtf"
+   lncipedia_gtf = "Path/to/lncipedia/annotation/lncipedia_4_0_hg38.gtf"
+   rRNAmask = "Path/to/rRNA/annotation/hg38_rRNA.gtf";
+
+// software path
+   plekpath = 'Path/to/PLEK/PLEK.1.2/'
+   cncipath = 'Path/to/CNCI-master'
+   cpatpath = 'Path/to/CPAT-1.2.2/'
+
+}
+
+``` 
+
 ## Parameters
 
 * #### Mandatory
@@ -147,7 +177,8 @@ LncPipe output was well-summarized in an interactive manner, which was carried o
 
 
 ### --fastq_ext
-Required information based on your raw fastq files.
+Raw fastq files were required for denovo analysis.This parameters should be setted according to your paired or
+singled reads file names. 
 Suppose your paired end sequence files are compressed with `.gz` suffixed.
 For example:
 ```
@@ -157,6 +188,8 @@ Sample2_1.fq.gz
 Sample2_2.fq.gz
 ```
 Then you can input pattern `*_{1,2}.fq.gz` to make the all paired end file recognized by [LncPipe](https://gitee.com/likelet/workflow) .
+
+For singled reads file, file pattern should be feed with `--singleEnd` specified. 
 
 
 ### --star_idex
