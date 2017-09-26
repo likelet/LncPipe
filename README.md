@@ -16,7 +16,7 @@ directly and resume analysis from continues checkpoint.
 ## Schematic diagram
  ![Nothing shown here](./image/LncRNApipe.png)
 
-## [Nextflow](https://github.com/nextflow-io/nextflow)
+## Install [Nextflow](https://github.com/nextflow-io/nextflow)
 Run inormation
 ```
 nextflow <your nf file> -c nextflow.config -with-trace
