@@ -16,7 +16,7 @@ directly and resume analysis from continues checkpoint.
 ## Schematic diagram
  ![Nothing shown here](./image/LncRNApipe.png)
 
-## [Nextflow](https://github.com/nextflow-io/nextflow)
+## Install [Nextflow](https://github.com/nextflow-io/nextflow)
 Run inormation
 ```
 nextflow <your nf file> -c nextflow.config -with-trace
@@ -37,17 +37,22 @@ https://www.nextflow.io/
 LncPipe is implemented with Nextflow pipeline manage system. To run our pipelines. [Nextflow](https://github.com/nextflow-io/nextflow) should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.
 Here, we show the step by step installation of [Nextflow](https://github.com/nextflow-io/nextflow) in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
 
-1. Download the executable package by copying and pasting the following command in your terminal window: 
+1. Download the executable package by copying and pasting the following command in your terminal window:
 ```wget -qO- get.[Nextflow](https://github.com/nextflow-io/nextflow).io | bash```. It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
 2. Optionally, move the ```nextflow``` file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
 3. Download the lastest binary version of NextFlow from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
 ### Install third-party software and database required by each pipe.
 #### References, index and annotation files（required）
+
 1. [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.)
+
 2. Genome reference (genome fasta file with suffix .fa , UCSC etc).
+
 3. GENCODE gene annotation file in GTF format:
       [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
+
 4. LNCipedia gene annotation file in GTF format:
+
       [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
 #### Software and tools (required)
 1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
@@ -75,9 +80,9 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
     *Installation*
       ```Shell
       wget https://sourceforge.net/projects/plek/files/PLEK.1.2.tar.gz/download
-      tar -zvxf PLEK.1.2.tar.gz 
+      tar -zvxf PLEK.1.2.tar.gz
       cd PLEK.1.2
-      python PLEK_setup.py 
+      python PLEK_setup.py
       ```
 5. [CNCI](https://github.com/www-bioinfo-org/CNCI): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783192/)
       <br>
@@ -105,8 +110,47 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 7. [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc)
 
 ## Interactive reports
-LncPipe output was well-summarized in an interactive manner, which was carried out by 
-[MultiIP](https://github.com/bioinformatist/multiIP) which serve as a part of LncPipe.  
+LncPipe output was well-summarized in an interactive manner, which was carried out by
+[MultiIP](https://github.com/bioinformatist/multiIP) which serve as a part of LncPipe.
+
+## Configuration for use at the first time
+As a nextflow-based analysis pipeline, LncPipe allow users edit configure file `nextflow.config` to set the index files and default file path parameters instead of typing in command.
+We strongly recommended that users using config file rather than command input to adjust their parameters.
+For example, plz go to `params` line, and set the following information of your operation system and environment
+```groovy
+params {
+
+   fasta_ref = 'your/genome/reference/path/genome.fa'
+   //star index
+   star_idex = 'your/STAR/reference/index/path'
+   //bowtie index
+      //bowtie2_index=''
+
+   gencode_annotation_gtf = "Path/to/gencode/annotation/gencode.v24.annotation.gtf"
+   lncipedia_gtf = "Path/to/lncipedia/annotation/lncipedia_4_0_hg38.gtf"
+   rRNAmask = "Path/to/rRNA/annotation/hg38_rRNA.gtf";
+
+// software path
+   plekpath = 'Path/to/PLEK/PLEK.1.2/'
+   cncipath = 'Path/to/CNCI-master'
+   cpatpath = 'Path/to/CPAT-1.2.2/'
+// set aligner
+   aligner="star"
+
+//other options
+  //sequencing strategy
+   singleEnd = false
+  //skip options
+   skip_combine=false
+   skip_QC=false
+   skip_mapping=false
+
+  //resource information
+   mem=50
+   cpu=40
+}
+
+```
 
 ## Parameters
 
@@ -121,19 +165,19 @@ LncPipe output was well-summarized in an interactive manner, which was carried o
 
 | Name | Default value | Description |
 |-----------|--------------|-------------|
-|--star_index  | starIndex | Path to STAR index(required)  |
-|--fasta  | merged.gtf | Path to Fasta reference(required)|
-|--gencode_annotation_gtf  | gencode.gtf | An annotation file from GENCODE database for annotating lncRNAs(required). e.g. [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz) |
-|--lncipedia_gtf  | lncipedia.gtf | An annotation file from LNCipedia database for annotating lncRNAs(required) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
-|--rRNAmask  | rRNAmask.gtf |rRNA GTF for removing rRNA transcript from gtf files(required) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
+|--star_index  | -| Path to STAR index(required if not set in config file)  |
+|--fasta  | - | Path to Fasta reference(required if not set in config file)|
+|--gencode_annotation_gtf  | gencode.gtf | An annotation file from GENCODE database for annotating lncRNAs(required if not set in config file). e.g. [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz) |
+|--lncipedia_gtf  | lncipedia.gtf | An annotation file from LNCipedia database for annotating lncRNAs(required if not set in config file) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
+|--rRNAmask  | rRNAmask.gtf |rRNA GTF for removing rRNA transcript from gtf files(required if not set in config file) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
 
 * #### Optional
 
 | Name | Default value | Description |
 |-----------|--------------|-------------|
 |--singleEnd  | - | specify that the reads are single ended  |
-|--merged_gtf | merged.gtf |Skip mapping and assembly step by directly providing assembled merged gtf files|
-|--design     | design.txt | see details introduction about `--design` below |
+|--merged_gtf | - |Skip mapping and assembly step by directly providing assembled merged gtf files|
+|--design     | - | a txt file that stored experimental design information, plz see details from `--design` section below |
 
 * #### Optional
 
@@ -147,7 +191,8 @@ LncPipe output was well-summarized in an interactive manner, which was carried o
 
 
 ### --fastq_ext
-Required information based on your raw fastq files.
+Raw fastq files were required for denovo analysis.This parameters should be setted according to your paired or
+singled reads file names.
 Suppose your paired end sequence files are compressed with `.gz` suffixed.
 For example:
 ```
@@ -157,6 +202,8 @@ Sample2_1.fq.gz
 Sample2_2.fq.gz
 ```
 Then you can input pattern `*_{1,2}.fq.gz` to make the all paired end file recognized by [LncPipe](https://gitee.com/likelet/workflow) .
+
+For singled reads file, file pattern should be feed with `--singleEnd` specified.
 
 
 ### --star_idex
