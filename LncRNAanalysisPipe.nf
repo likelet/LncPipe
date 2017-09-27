@@ -28,9 +28,7 @@
 
 // requirement:
 // - fastqc
-// - cutadapt
-// - STAR
-// - RSEM
+// - STAR/tophat2/bowtie2
 // - Cufflinks
 // - Bedops
 // - CPAT
@@ -133,35 +131,56 @@ params.input_folder = './'
 params.out_folder = './'
 
 // Reference
+// already defined in nextflow.config file
 // Set reference information here if you don't want to pass them from parameter any longer, we recommand users using the latest reference and the annotation file with the sample genome version.
-params.fasta_ref = '/data/database/human/hg38/genome.fa'
-params.star_idex = '/data/database/human/hg38/RSEM_STAR_Index'
-params.gencode_annotation_gtf = "/data/database/human/hg38/annotation/gencode.v24.annotation.gtf"
-params.lncipedia_gtf = "/data/database/human/hg38/annotation/lncipedia_4_0_hg38.gtf"
-params.rRNAmask = "/data/database/human/hg38/annotation/hg38_rRNA.gtf";
-// software path
-params.plekpath = '/home/zhaoqi/software/PLEK.1.2/'
-//params.cncipath = '/data/software/CNCI-master'
-params.cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2/'
+//params.fasta_ref = '/data/database/human/hg38/genome.fa'
+//params.star_idex = '/data/database/human/hg38/RSEM_STAR_Index'
+//params.bowtie2_index=false
+//params.gencode_annotation_gtf = "/data/database/human/hg38/annotation/gencode.v24.annotation.gtf"
+//params.lncipedia_gtf = "/data/database/human/hg38/annotation/lncipedia_4_0_hg38.gtf"
+//params.rRNAmask = "/data/database/human/hg38/annotation/hg38_rRNA.gtf";
+//// software path
+//params.plekpath = '/home/zhaoqi/software/PLEK.1.2/'
+////params.cncipath = '/data/software/CNCI-master'
+//params.cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2/'
+params.fasta_ref=null
+params.star_idex=null
+params.bowtie2_index=null
+params.gencode_annotation_gtf=null
+params.lncipedia_gtf=null
+params.rRNAmask=null
+params.fastq_ext=null
+params.cpatpath=null
+params.plekpath=null
+//aligner
+params.fastq_ext = '*_{1,2}.clean.fq.gz'
+params.aligner="star"
+
 // other options
 params.cpu = null
 params.mem = null
-params.singleEnd = false
-params.skip_combine=false
-params.merged_gtf=null
-params.skip_QC=false
-params.skip_mapping=false
 
+params.merged_gtf=null
+
+if(params.singleEnd){
+    singleEnd= "true"
+}else{
+    singleEnd="false"
+}
+singleEnd=params.singleEnd ? "true":"false"
+skip_combine=params.skip_combine ? "true":"false"
+skip_mapping=params.skip_mapping ? "true":"false"
+skip_QC=params.skip_QC ? "true":"false"
 
 //Checking parameters
 log.info print_purple("You are running LncPipe with the following parameters:")
 log.info print_purple("Checking parameters ...")
 log.info print_yellow("=====================================")
 log.info print_yellow("Fastq file extention:           ")+ print_green(params.fastq_ext)
-log.info print_yellow("Single end :                    ")+ print_green(params.singleEnd)
-log.info print_yellow("skip annotation process:        ")+ print_green(params.skip_combine)
-log.info print_yellow("skip mapping:                   ")+ print_green(params.skip_mapping)
-log.info print_yellow("skip fastQC:                    ")+ print_green(params.skip_QC)
+log.info print_yellow("Single end :                    ")+ print_green(singleEnd)
+log.info print_yellow("skip annotation process:        ")+ print_green(skip_combine)
+log.info print_yellow("skip mapping:                   ")+ print_green(skip_mapping)
+log.info print_yellow("skip fastQC:                    ")+ print_green(skip_QC)
 log.info print_yellow("Input folder:                   ")+ print_green(params.input_folder)
 log.info print_yellow("Output folder:                  ")+ print_green(params.out_folder)
 log.info print_yellow("Genome sequence location:       ")+ print_green(params.fasta_ref)
@@ -175,10 +194,7 @@ log.info print_yellow("=====================================")
 log.info "\n"
 
 
-// fastq file
-params.fastq_ext = "*_{1,2}.fastq.gz"
-//aligner
-params.aligner="star"
+
 
 
 // run information of system file
@@ -206,7 +222,16 @@ if(fork_number<1){
 
 // read file
 fasta_ref = file(params.fasta_ref)
-star_idex = file(params.star_idex)
+if( !fasta_ref.exists() ) exit 1, "Reference genome not found: ${params.bowtie2_index}"
+
+if(params.star_idex){
+    star_idex = file(params.star_idex)
+    if( !star_idex.exists() ) exit 1, "Reference genome star index not found: ${params.bowtie2_index}"
+}
+
+
+
+
 input_folder = file(params.input_folder)
 gencode_annotation_gtf = file(params.gencode_annotation_gtf)
 lncipedia_gtf = file(params.lncipedia_gtf)
@@ -236,6 +261,8 @@ if(params.skip_combine){
     println print_purple("Combination of known annotations from GTFs")
     process combine_public_annotation {
         cpus ava_cpu
+        memory { 5.GB * task.attempt }
+        errorStrategy 'retry'
         storeDir { params.out_folder + "/Combined_annotations" }
         input:
         file lncRNA_gtflistfile from LncRNA_gtflist
@@ -283,7 +310,7 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
     * Step 2: FastQC raw reads
     */
         if(params.skip_QC || params.skip_mapping){
-            fastqc_for_waiting= Channel.fromPath("Nothing").first()
+            fastqc_for_waiting= Channel.fromPath(null).first()
             println print_yellow("FastaQC step was skipped due to ")+print_green("--skip_QC")+print_yellow(" option ")
         }else {
             println print_purple("Perform quality control of raw fastq files ")
@@ -343,36 +370,55 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
         }else if (params.aligner == 'star' && params.star_idex==false && !fasta_ref){
             println print_red("No reference sequence loaded! plz specify ")+print_red("--fasta_ref")+print_red(" with reference.")
 
+        }else if (params.aligner == 'tophat' && params.bowtie2_index==false && !fasta_ref){
+            process Make_bowtie2_index {
+                tag fasta_ref
+                storeDir { params.out_folder + "/bowtie2Index" }
+
+                input:
+                file fasta_ref from fasta_ref
+
+                output:
+                file "genome_bt2.*" into bowtie2_index
+
+                shell:
+                """
+                bowtie2-build !{fasta_ref} genome_bt2
+                """
+            }
+        }else if (params.aligner == 'tophat' && params.bowtie2_index==false && !fasta_ref){
+            println print_red("No reference sequence loaded! plz specify ")+print_red("--fasta_ref")+print_red(" with reference.")
+
         }
 
             /*
             * Step 4: Initialized reads alignment by STAR
             */
+    if(params.aligner == 'star') {
+        process fastq_star_alignment_For_discovery {
+            cpus ava_cpu
+            tag { file_tag }
+            maxForks 1
+            publishDir pattern: "",
+                    path: { params.out_folder + "/Result/Star_alignment" }, mode: 'copy', overwrite: true
 
-            process fastq_star_alignment_For_discovery {
-                cpus ava_cpu
-                tag { file_tag }
-                maxForks 1
-                publishDir pattern:"",
-                           path:{params.out_folder+"/Result/Star_alignment"}, mode: 'copy', overwrite: true
+            input:
+            set val(samplename), file(pair) from readPairs_for_discovery
+            file tempfiles from fastqc_for_waiting // just for waiting
+            file fasta_ref
+            file star_idex
 
-                input:
-                set val(samplename),file(pair) from readPairs_for_discovery
-                file tempfiles from fastqc_for_waiting // just for waiting
-                file fasta_ref
-                file star_idex
+            output:
+            set val(file_tag_new), file("STAR_${file_tag_new}") into mappedReads, alignment_logs
+            shell:
+            println print_purple("Start mapping with STAR aligner " + samplename)
+            file_tag = samplename
+            file_tag_new = file_tag
+            star_threads = ava_cpu.intdiv(2) - 1
 
-                output:
-                set val(file_tag_new), file("STAR_${file_tag_new}") into STARmappedReads,alignment_logs
-                shell:
-                println print_purple("Start mapping with STAR aligner " + samplename)
-                file_tag=samplename
-                file_tag_new = file_tag
-                star_threads = ava_cpu.intdiv(2) - 1
-
-                if (params.singleEnd) {
-                    println print_purple("Initial reads mapping of "+samplename+" performed by STAR in single-end mode")
-                    """
+            if (params.singleEnd) {
+                println print_purple("Initial reads mapping of " + samplename + " performed by STAR in single-end mode")
+                """
                          STAR --runThreadN !{star_threads} \
                             --twopassMode Basic \
                             --genomeDir !{star_idex} \
@@ -395,9 +441,9 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
                             mv !{file_tag_new}SJ* STAR_!{file_tag_new}/.
                             mv !{file_tag_new}Log* STAR_!{file_tag_new}/.
                     """
-                }else {
-                    println print_purple("Initial reads mapping of "+samplename+" performed by STAR in paired-end mode")
-                    '''
+            } else {
+                println print_purple("Initial reads mapping of " + samplename + " performed by STAR in paired-end mode")
+                '''
                             STAR --runThreadN !{star_threads}  \
                                  --twopassMode Basic --genomeDir !{star_idex} \
                                  --readFilesIn !{pair[0]} !{pair[1]} \
@@ -419,10 +465,48 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
                             mv !{file_tag_new}SJ* STAR_!{file_tag_new}/.
                             mv !{file_tag_new}Log* STAR_!{file_tag_new}/.
                     '''
-                }
             }
+        }
 
+    }
+    else if(params.aligner=='tophat' ){
+        process fastq_tophat_alignment_For_discovery {
+            cpus ava_cpu
+            tag { file_tag }
+            maxForks 1
+            publishDir pattern: "",
+                    path: { params.out_folder + "/Result/tophat_alignment" }, mode: 'copy', overwrite: true
 
+            input:
+            set val(samplename), file(pair) from readPairs_for_discovery
+            file tempfiles from fastqc_for_waiting // just for waiting
+            file fasta_ref
+            file bowtie2_index
+            file gtf from gencode_annotation_gtf
+
+            output:
+            set val(file_tag_new), file("${file_tag_new}_thout") into mappedReads, alignment_logs
+            //align_summary.txt as log file
+            shell:
+            println print_purple("Start mapping with tophat2 aligner " + samplename)
+            file_tag = samplename
+            file_tag_new = file_tag
+            tophat_threads = ava_cpu.intdiv(2) - 1
+
+            if (params.singleEnd) {
+                println print_purple("Initial reads mapping of " + samplename + " performed by Tophat in single-end mode")
+               '''
+                         tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout !{bowtie2_index} !{pair[0]} 
+                         
+                '''
+            } else {
+                println print_purple("Initial reads mapping of " + samplename + " performed by Tophat in paired-end mode")
+                '''
+                     tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout !{bowtie2_index} !{pair[0]} !{pair[1]} 
+                '''
+            }
+        }
+    }
 
         /*
         * Step 5: Reads assembling by using cufflinks
@@ -432,7 +516,7 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
             tag { file_tag }
             maxForks fork_number
             input:
-            set val(file_tag), file(Star_alignment) from STARmappedReads
+            set val(file_tag), file(alignment) from mappedReads
             file fasta_ref
             file gencode_annotation_gtf
             file rRNAmaskfile
@@ -444,8 +528,8 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
             shell:
             file_tag_new = file_tag
             cufflinks_threads = ava_cpu.intdiv(2) - 1
-
-            '''
+            if(params.aligner=='tophat'){
+                '''
             #run cufflinks
             
             cufflinks -g !{gencode_annotation_gtf} \
@@ -454,10 +538,28 @@ if (params.merged_gtf==null || params.mode == 'fastq') {
                       --max-multiread-fraction 0.25 \
                       --3-overhang-tolerance 2000 \
                       -o Cufout_!{file_tag_new} \
-                      -p !{cufflinks_threads} !{Star_alignment}/!{file_tag_new}Aligned.sortedByCoord.out.bam
+                      -p !{cufflinks_threads} !{alignment}/accepted_hits.bam
                       
             mv Cufout_!{file_tag_new}/transcripts.gtf Cufout_!{file_tag_new}_transcripts.gtf
             '''
+
+            }else if(params.aligner=='star'){
+                '''
+            #run cufflinks
+            
+            cufflinks -g !{gencode_annotation_gtf} \
+                      -b !{fasta_ref} \
+                      --library-type fr-firststrand \
+                      --max-multiread-fraction 0.25 \
+                      --3-overhang-tolerance 2000 \
+                      -o Cufout_!{file_tag_new} \
+                      -p !{cufflinks_threads} !{alignment}/!{file_tag_new}Aligned.sortedByCoord.out.bam
+                      
+            mv Cufout_!{file_tag_new}/transcripts.gtf Cufout_!{file_tag_new}_transcripts.gtf
+            '''
+
+            }
+
 
         }
 
@@ -904,16 +1006,13 @@ process parameters_for_multiP{
     tag {file_tag}
 
     input:
-
+    file kallisto_count_matrix from expression_matrixfile_count
     output:
-    file "parameters.txt" into expression_matrixfile_count
+    file "parameters.txt" into parameter_out
 
     shell:
 
     '''
-    grep -v "protein_coding"  final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$2}' | sort | uniq | \
-        cat - <(grep "protein_coding" final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$14}' | sort | uniq)> map.file
-    R CMD BATCH !{baseDir}/bin/get_kallisto_matrix.R
     '''
 }
 
