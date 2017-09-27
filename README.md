@@ -54,7 +54,7 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 4. LNCipedia gene annotation file in GTF format:
 
       [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
-#### Software and tools (required)
+#### Software and tools (required when docker image is not favored)
 1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
     *Installation*
      ```shell
