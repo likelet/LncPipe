@@ -184,9 +184,6 @@ params {
 | Name | Default value | Description |
 |-----------|--------------|-------------|
 |--skip_combine  | FALSE | Skip known annotation combination step once it have already been generated. |
-|--skip_mapping | FALSE| Skip mapping and assembly step by directly providing assembled merged gtf files. |
-|--skip_DE    | FALSE | Skip QC step when the reads are clean reads. |
-|--skip_QC | FALSE| Skip differential expression analysis step. |
 
 
 
