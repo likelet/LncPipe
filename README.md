@@ -135,7 +135,7 @@ LncPipe output was well-summarized in an interactive manner, which was carried o
 |--merged_gtf | merged.gtf |Skip mapping and assembly step by directly providing assembled merged gtf files|
 |--design     | design.txt | see details introduction about `--design` below |
 
-* #### Skip operations
+* #### Optional
 
 | Name | Default value | Description |
 |-----------|--------------|-------------|
@@ -144,12 +144,6 @@ LncPipe output was well-summarized in an interactive manner, which was carried o
 |--skip_DE    | FALSE | Skip QC step when the reads are clean reads. |
 |--skip_QC | FALSE| Skip differential expression analysis step. |
 
-* #### Other options
-| Name | Default value | Description |
-|-----------|--------------|-------------|
-|--name | FALSE| Project Name. |
-|--cpu    | 16 | Number of cpu used in analysis. |
-|--mem | 32 | Memory setting for each processing step (G). |
 
 
 ### --fastq_ext
