@@ -88,6 +88,7 @@ while(<FH>){
 	my $down_gene="";
 	my $down_dist=999999;
 	my $down_strand;
+	my $closet_genename="";
 	if($field[1] ne "NA"){
 		$field[1]=~/gene_name "(.+?)"/;
 		$up_gene=$1;
