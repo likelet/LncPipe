@@ -399,7 +399,7 @@ if (!params.merged_gtf) {
             tag { file_tag }
             maxForks 1
             publishDir pattern: "",
-                    path: { params.out_folder + "/Result/Star_alignment" }, mode: 'copy', overwrite: true
+                    path: { params.out_folder + "/Result/Star_alignment" }, mode: 'move', overwrite: true
 
             input:
             set val(samplename), file(pair) from readPairs_for_discovery
