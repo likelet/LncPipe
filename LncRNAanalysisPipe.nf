@@ -25,7 +25,7 @@
  */
 
 // requirement:
-// - fastqc
+// - fastqc／AfterQC
 // - STAR/tophat2/bowtie2/hisat2
 // - samtools/sambamba
 // - Cufflinks
@@ -82,6 +82,7 @@ if (params.help) {
             print_cyan('      --fastq_ext                   ') + print_green('Filename pattern for pairing raw reads, e.g: *_{1,2}.fastq.gz for paired reads\n') +
             print_cyan('      --out_folder                  ') + print_green('The output directory where the results will be saved(optional), current path is default\n') +
             print_cyan('      --aligner                     ') + print_green('Aligner for reads mapping (optional), STAR is default and supported only at present\n') +
+            print_cyan('      --qctools                     ') + print_green('Tools for assess reads quality, fastqc/afterqc\n') +
             '\n' +
             print_yellow('    Options:                         General options for run this pipeline\n') +
             print_cyan('      --singleEnd                   ') + print_green('Specifies that the input is single end reads(optional), paired end mode default \n') +
@@ -206,6 +207,8 @@ if (params.star_idex) {
 
 
 
+
+
 input_folder = file(params.input_folder)
 gencode_annotation_gtf = file(params.gencode_annotation_gtf)
 lncipedia_gtf = file(params.lncipedia_gtf)
@@ -276,7 +279,7 @@ if (params.skip_combine) {
 if (!params.merged_gtf) {
 
     /*
-     * Step 2: Build STAR index if not provided
+     * Step 2: Build STAR/tophat/hisat2 index if not provided
      */
     //star_index if not exist
     if (params.aligner == 'star' && params.star_idex == false && fasta_ref) {
@@ -326,8 +329,7 @@ if (!params.merged_gtf) {
         }
     } else if (params.aligner == 'tophat' && params.bowtie2_index == false && !fasta_ref) {
         println print_red("No reference sequence loaded! plz specify ") + print_red("--fasta_ref") + print_red(" with reference.")
-
-    }else if (params.aligner == 'hisat2' && params.hisat2_index == false && !fasta_ref) {
+    } else if (params.aligner == 'hisat2' && params.hisat2_index == false && !fasta_ref) {
         process Make_hisat_index {
             tag fasta_ref
             cpus ava_cpu
@@ -358,37 +360,71 @@ if (!params.merged_gtf) {
 //Match the pairs on two channels
 
     reads = params.input_folder + params.fastq_ext
-    Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
-            .ifEmpty {
-        exit 1, print_red("Cannot find any reads matching: !{reads}\nNB: Path needs to be enclosed in quotes!\n")
-    }
-    .into { reads_for_fastqc; readPairs_for_discovery }
 
     /*
-    * Step 2: FastQC raw reads
+    * Step 2: FastQC/AfterQC raw reads
     */
     println print_purple("Perform quality control of raw fastq files ")
-    process Run_fastQC {
-        cpus idv_cpu
-        tag { fastq_tag }
-        maxForks fork_number
-        publishDir pattern: "*.html",
-                path: { params.out_folder + "/Result/FastQC" }, mode: 'copy', overwrite: true
+    if (params.aligner == 'fastqc') {
+        Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
+                .ifEmpty {
+            exit 1, print_red("Cannot find any reads matching: !{reads}\nNB: Path needs to be enclosed in quotes!\n")
+        }
+        .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
+        process Run_fastQC {
+            cpus idv_cpu
+            tag { fastq_tag }
+            maxForks fork_number
+            publishDir pattern: "*.html",
+                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
 
-        input:
-        set val(samplename), file(fastq_file) from reads_for_fastqc
+            input:
+            set val(samplename), file(fastq_file) from reads_for_fastqc
 
-        output:
-        file "*.html" into fastqc_logs, fastqc_for_waiting
-        shell:
-        fastq_tag = samplename
-        fastq_threads = idv_cpu- 1
-        """
+            output:
+            file "*.html" into fastqc_logs, fastqc_for_waiting
+            shell:
+            fastq_tag = samplename
+            fastq_threads = idv_cpu - 1
+            '''
             fastqc -t !{fastq_threads} !{fastq_file[0]} !{fastq_file[1]}
-        """
-    }
+        '''
+        }
+    } else {
+        Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
+                .ifEmpty {
+            exit 1, print_red("Cannot find any reads matching: !{reads}\nNB: Path needs to be enclosed in quotes!\n")
+        }
+        .into { reads_for_fastqc}
+            process Run_afterQC {
+            cpus idv_cpu
+            tag { fastq_tag }
+            maxForks fork_number
+            publishDir pattern: "*.html",
+                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
 
+            input:
+            set val(samplename), file(fastq_file) from reads_for_fastqc
+
+            output:
+            file "*.html" into fastqc_logs, fastqc_for_waiting
+            file "*.good.fq" into readPairs_for_discovery,readPairs_for_kallisto
+            shell:
+            fastq_tag = samplename
+            fastq_threads = idv_cpu - 1
+            if (params.singleEnd) {
+                '''
+            pypy !{params.afterqc_path}/after.py -1 !{fastq_file[0]} -g ./
+            '''
+            } else {
+                '''
+            pypy !{params.afterqc_path}/after.py -1 !{fastq_file[0]} -2 !{fastq_file[1]} -g ./
+            '''
+            }
+        }
+    }
     fastqc_for_waiting = fastqc_for_waiting.first()
+
 
     /*
     * Step 4: Initialized reads alignment by STAR
@@ -399,7 +435,7 @@ if (!params.merged_gtf) {
             tag { file_tag }
             maxForks 1
             publishDir pattern: "",
-                    path: { params.out_folder + "/Result/Star_alignment" }, mode: 'move', overwrite: true
+                    path: { params.out_folder + "/Result/Star_alignment" }, mode: 'copy', overwrite: true
 
             input:
             set val(samplename), file(pair) from readPairs_for_discovery
@@ -408,7 +444,8 @@ if (!params.merged_gtf) {
             file star_idex
 
             output:
-            set val(file_tag_new), file("STAR_${file_tag_new}") into mappedReads, alignment_logs
+            set val(file_tag_new), file("${file_tag_new}Aligned.sortedByCoord.out.bam") into mappedReads
+            set val(file_tag_new), file("${file_tag_new}Log.final.out") into alignment_logs
             shell:
             println print_purple("Start mapping with STAR aligner " + samplename)
             file_tag = samplename
@@ -421,7 +458,7 @@ if (!params.merged_gtf) {
                          STAR --runThreadN !{star_threads} \
                             --twopassMode Basic \
                             --genomeDir !{star_idex} \
-                            --readFilesIn !{pair[0]} \
+                            --readFilesIn !{pair} \
                             --readFilesCommand zcat \
                             --outSAMtype BAM SortedByCoordinate \
                             --chimSegmentMin 20 \
@@ -433,12 +470,7 @@ if (!params.merged_gtf) {
                             --outFilterType BySJout \
                             --alignSJoverhangMin 8 \
                             --alignSJDBoverhangMin 1 \
-                            --outFileNamePrefix !{file_tag_new} > !{file_tag_new}_star_log.txt
-                                 
-                            mkdir STAR_!{file_tag_new}
-                            mv !{file_tag_new}Aligned* STAR_!{file_tag_new}/.
-                            mv !{file_tag_new}SJ* STAR_!{file_tag_new}/.
-                            mv !{file_tag_new}Log* STAR_!{file_tag_new}/.
+                            --outFileNamePrefix !{file_tag_new} 
                     """
             } else {
                 println print_purple("Initial reads mapping of " + samplename + " performed by STAR in paired-end mode")
@@ -457,12 +489,7 @@ if (!params.merged_gtf) {
                                  --outFilterType BySJout \
                                  --alignSJoverhangMin 8 \
                                  --alignSJDBoverhangMin 1 \
-                                 --outFileNamePrefix !{file_tag_new} > !{file_tag_new}_star_log.txt
-                                 
-                            mkdir STAR_!{file_tag_new}
-                            mv !{file_tag_new}Aligned* STAR_!{file_tag_new}/.
-                            mv !{file_tag_new}SJ* STAR_!{file_tag_new}/.
-                            mv !{file_tag_new}Log* STAR_!{file_tag_new}/.
+                                 --outFileNamePrefix !{file_tag_new} 
                     '''
             }
         }
@@ -493,7 +520,7 @@ if (!params.merged_gtf) {
             if (params.singleEnd) {
                 println print_purple("Initial reads mapping of " + samplename + " performed by Tophat in single-end mode")
                 '''
-                         tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout !{bowtie2_index} !{pair[0]} 
+                         tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout !{bowtie2_index} !{pair} 
                          
                 '''
             } else {
@@ -530,7 +557,7 @@ if (!params.merged_gtf) {
             if (params.singleEnd) {
                 println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in single-end mode")
                 '''
-                   hisat2  -p !{hisat2_threads} --dta  -x  !{hisat2_index}  -U !{pair[0]}  -S !{file_tag_new}.sam > !{file_tag_new}.log
+                   hisat2  -p !{hisat2_threads} --dta  -x  !{hisat2_index}  -U !{pair}  -S !{file_tag_new}.sam > !{file_tag_new}.log
                    samtools sort -@ !{hisat2_threads} -o !{file_tag_new}.bam !{file_tag_new}.sam
                 '''
             } else {
@@ -551,7 +578,7 @@ if (!params.merged_gtf) {
         tag { file_tag }
         maxForks fork_number
         input:
-        set val(file_tag), file(alignment) from mappedReads
+        set val(file_tag), file(alignment_bam) from mappedReads
         file fasta_ref
         file gencode_annotation_gtf
         file rRNAmaskfile
@@ -573,7 +600,7 @@ if (!params.merged_gtf) {
                       --max-multiread-fraction 0.25 \
                       --3-overhang-tolerance 2000 \
                       -o Cufout_!{file_tag_new} \
-                      -p !{cufflinks_threads} !{alignment}/accepted_hits.bam
+                      -p !{cufflinks_threads} !{alignment_bam}
                       
             mv Cufout_!{file_tag_new}/transcripts.gtf Cufout_!{file_tag_new}_transcripts.gtf
             '''
@@ -588,7 +615,7 @@ if (!params.merged_gtf) {
                       --max-multiread-fraction 0.25 \
                       --3-overhang-tolerance 2000 \
                       -o Cufout_!{file_tag_new} \
-                      -p !{cufflinks_threads} !{alignment}/!{file_tag_new}Aligned.sortedByCoord.out.bam
+                      -p !{cufflinks_threads} !{alignment_bam}
                       
             mv Cufout_!{file_tag_new}/transcripts.gtf Cufout_!{file_tag_new}_transcripts.gtf
             '''
@@ -987,13 +1014,6 @@ process Build_kallisto_index_of_GTF_for_quantification {
     
     '''
 }
-//Reloading reads in case of non-fastq mode
-reads = params.input_folder + params.fastq_ext
-Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
-        .ifEmpty {
-    exit 1, print_red("Cannot find any reads matching: ${reads}\nNB: Path needs to be enclosed in quotes!\n")
-}
-.set { readPairs_for_quatification }
 
 //Keep the chanel as constant variable to be used several times in quantification analysis
 constant_kallisto_index = final_kallisto_index.first()
@@ -1005,7 +1025,7 @@ process Run_kallisto_for_quantification {
 
     input:
     file kallistoIndex from constant_kallisto_index
-    set val(samplename), file(pair) from readPairs_for_quatification
+    set val(samplename), file(pair) from readPairs_for_kallisto
 
     output:
     file "${file_tag_new}_abundance.tsv" into kallisto_tcv_collection
@@ -1016,18 +1036,35 @@ process Run_kallisto_for_quantification {
     kallisto_threads = ava_cpu- 1
     if (params.singleEnd) {
         println print_purple("Quantification by kallisto in single end mode")
-        '''
+        if(params.qctools=="fastqc"){
+            '''
         #quantification by kallisto in single end mode
-        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  <(zcat !{pair[0]} ) 
+        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  <(zcat !{pair} ) 
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
         '''
+        }else {
+            '''
+        #quantification by kallisto in single end mode
+        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  !{pair} 
+        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
+        '''
+        }
+
     } else {
         println print_purple("quantification by kallisto in paired end mode")
-        '''
+        if(params.qctools=="fastqc") {
+            '''
         #quantification by kallisto 
         kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 <(zcat !{pair[0]} ) <(zcat !{pair[1]})
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
         '''
+        }else{
+            '''
+        #quantification by kallisto 
+        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} !{pair[1]}
+        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
+        '''
+        }
     }
 }
 
