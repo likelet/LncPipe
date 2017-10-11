@@ -954,7 +954,7 @@ process Secondary_basic_statistic {
         }
         
         my %lin_class;
-        open IN,"out" or die;                 #change the file name
+        open IN,"lncRNA_classification.txt" or die;                 #change the file name
         while(<IN>){
         chomp;
         my @data = split /\\t/,$_;
