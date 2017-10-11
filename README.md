@@ -48,21 +48,18 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 
 2. Genome reference (genome fasta file with suffix .fa , UCSC etc).
 
-3. GENCODE gene annotation file in GTF format:
-      [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
+3. GENCODE gene annotation file in GTF format:[gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
 
-4. LNCipedia gene annotation file in GTF format:
-
-      [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
+4. LNCipedia gene annotation file in GTF format: [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
 #### Software and tools (required when docker image is not favored)
-*1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
+* 1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
     *Installation*
      ```shell
      $ sudo aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR && \
 	       chmod 755 /opt/STAR && \
 	       sudo ln -s /opt/STAR /usr/local/bin
      ```
-*2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/)
+* 2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/)
     *Installation*
      ```
      $ sudo aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz && \
@@ -71,12 +68,12 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 	     ln -s /opt/cufflinks-2.2.1.Linux_x86_64/* /usr/local/bin/ && \
 	     rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
      ```
-*3. [Bedops](http://bedops.readthedocs.io/en/latest/):[Citation](https://www.ncbi.nlm.nih.gov/pubmed/22576172/)
+* 3. [Bedops](http://bedops.readthedocs.io/en/latest/):[Citation](https://www.ncbi.nlm.nih.gov/pubmed/22576172/)
    *Installation*
      ```
      Sunyu finished
      ```
-*4. [PLEK](www.ibiomedical.net): [Citation](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-311)
+* 4. [PLEK](www.ibiomedical.net): [Citation](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-311)
     *Installation*
       ```Shell
       wget https://sourceforge.net/projects/plek/files/PLEK.1.2.tar.gz/download
@@ -84,7 +81,7 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
       cd PLEK.1.2
       python PLEK_setup.py
       ```
-*5. [CNCI](https://github.com/www-bioinfo-org/CNCI): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783192/)
+* 5. [CNCI](https://github.com/www-bioinfo-org/CNCI): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783192/)
       <br>
       *Installation*
       ``` Shell
@@ -95,7 +92,7 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
       make
       cd ..
       ```
-*6. [CPAT](http://rna-cpat.sourceforge.net):[Citation](https://academic.oup.com/nar/article/41/6/e74/2902455/CPAT-Coding-Potential-Assessment-Tool-using-an)
+* 6. [CPAT](http://rna-cpat.sourceforge.net):[Citation](https://academic.oup.com/nar/article/41/6/e74/2902455/CPAT-Coding-Potential-Assessment-Tool-using-an)
       <br>
             *Installation*
       ```Shell
@@ -107,10 +104,10 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
       export PYTHONPATH=/home/user/CPAT/usr/local/lib/python2.7/site-packages:$PYTHONPATH.
       export PATH=/home/user/CPAT/usr/local/bin:$PATH #setup PATH
       ```
-*7. [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc) or [AfterQC](https://github.com/OpenGene/AfterQC).
+* 7. [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc) or [AfterQC](https://github.com/OpenGene/AfterQC).
 When using afterQC, we recommended that users installed `pypy` in your system, which can accelerated 3X speed for raw reads processing, as suggested by author of [AfterQC](https://github.com/OpenGene/AfterQC)
 
-*8. Install R dependency packages for running [LncReporter](https://github.com/bioinformatist/LncPipe-Reporter)
+* 8. Install R dependency packages for running [LncReporter](https://github.com/bioinformatist/LncPipe-Reporter)
     <br>
         ```
         install.packages(c("curl", "httr", "data.table", "cowplot", "knitr", "heatmaply", "ggsci", "flexdashboard"))
@@ -121,8 +118,8 @@ When using afterQC, we recommended that users installed `pypy` in your system, w
         ```
 For detailed usage of LncReporter in case you are going to run it separately, plz refers to `Readme.MD` of [LncReporter](https://github.com/bioinformatist/LncPipe-Reporter)
 ## Interactive reports
-LncPipe output was well-summarized in an interactive manner, which was carried out by
-[MultiIP](https://github.com/bioinformatist/multiIP) which serve as a part of LncPipe.
+LncPipe output was well-summarized in an interactive manner, which was carried out by a novel-developing R package
+[LncReporter](https://github.com/bioinformatist/LncPipe-Reporter).
 
 ## Configuration for use at the first time
 As a nextflow-based analysis pipeline, LncPipe allow users edit configure file `nextflow.config` to set the index files and default file path parameters instead of typing in command.
@@ -146,16 +143,17 @@ params {
    cncipath = 'Path/to/CNCI-master'
    cpatpath = 'Path/to/CPAT-1.2.2/'
 // set aligner
-   aligner="star"
-   qctools = "afterqc"
-   sam_processor="sambamba"
+    aligner = "star"
+           sam_processor="sambamba" // If aligner is hisat, we need process sam file for downstream analysis
+    qctools = "afterqc"
+           afterqc_path="/data/software/afterQC/AfterQC-master/"
 
 
 //other options
   //sequencing strategy
    singleEnd = false
   //skip options
-   skip_combine=false
+   skip_combine = false
 
   //resource information
    mem=50
@@ -172,9 +170,9 @@ params {
 |--input_folder | `.` | input folder |
 |--fastq_ext | `*_{1,2}.fastq.gz` | input raw paired reads |
 |--out_folder |  `.` | output folder |
-|--aligner |  `star` | Aligner for reads mapping (optional), STAR is default and supported only at present,`star`/`tophat`/`hisat2`|
-|--qctools |  `afterqc` | Tools for assess raw reads quality or filtered by afterqc, `fastqc` or `afterqc`|
-* #### References(can be configured in `nextflow.config` file)
+|--aligner |  `star` | Aligner for reads mapping (optional), STAR is default and supported only at present,*star*/*tophat*/*hisat2*|
+|--qctools |  `afterqc` | Tools for assess raw reads quality or filtered by AfterQC, *fastqc* or *afterqc*|
+* #### References(can be configured in *nextflow.config* file)
 
 | Name | Default value | Description |
 |-----------|--------------|-------------|
@@ -182,15 +180,15 @@ params {
 |--fasta  | - | Path to Fasta reference(required if not set in config file)|
 |--gencode_annotation_gtf  | gencode.gtf | An annotation file from GENCODE database for annotating lncRNAs(required if not set in config file). e.g. [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz) |
 |--lncipedia_gtf  | lncipedia.gtf | An annotation file from LNCipedia database for annotating lncRNAs(required if not set in config file) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
-|--rRNAmask  | rRNAmask.gtf |rRNA GTF for removing rRNA transcript from gtf files(required if not set in config file) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
+|--rRNAmask  | rRNAmask.gtf |rRNA GTF for removing rRNA transcript from gtf files(required if not set in config file) e.g. |
 
 * #### Optional
 
 | Name | Default value | Description |
 |-----------|--------------|-------------|
-|--singleEnd  | false | specify that the reads are single ended  |
-|--merged_gtf | false |Skip mapping and assembly step by directly providing assembled merged gtf files|
-|--design     | false | a txt file that stored experimental design information, plz see details from `--design` section below |
+|--singleEnd  | FALSE | specify that the reads are single ended  |
+|--merged_gtf | FALSE | Skip mapping and assembly step by directly providing assembled merged gtf files|
+|--design     | FALSE | a txt file that stored experimental design information, plz see details from `--design` section below |
 
 * #### Optional
 
@@ -218,7 +216,7 @@ For singled reads file, file pattern should be feed with `--singleEnd` specified
 
 ### --star_idex／--bowtie2_index/--hisat2_index
 
-Required. This parameter specify the Star/tophat/hisat2(mutually exclusive) index folder built before running [LncPipe](https://gitee.com/likelet/workflow) .
+Required. This parameter specify the star/tophat/hisat2(mutually exclusive) index folder built before running [LncPipe](https://gitee.com/likelet/workflow) .
 If you don't know what it is，You can use `--fasta` to specify the reference sequence data. The index file would be built by [LncPipe](https://gitee.com/likelet/workflow)  automatically.
 
 
@@ -235,11 +233,11 @@ For sample names, it should be the sample as the prefix of fastq files which was
 
 For example:
 
- if fastq file names are `Sample1_1.fq.gz, Sample1_2.fq.gz` that comes from one sample; your `--fastq_ext` are `*_{1,2}.fq.gz`, the sample name
+ if fastq file names are `Sample1_1.fq.gz, Sample1_2.fq.gz` that comes from one sample and your `--fastq_ext` is set as `*_{1,2}.fq.gz`, the sample name
 should be Sample1.
 
 ## Output file
-While the whole pipeline is finished properly, their is `Result` folder under current path(default) or output_folder set by user. The basic structure of Result is follows:
+While the whole pipeline is finished properly, there is `Result` folder under current path(default) or output_folder set by user. The basic structure of Result is follows:
 ```
 Result/
 ├── QC
@@ -276,10 +274,10 @@ Result/
 ```
 
 * `QC` stored the Quality control output generated by FastQC or AfterQC software.<br>
-* `Identified_lncRNA` contains all assembled lncRNA and their sequences. `all_lncRNA_for_classifier.gtf` includes both novel and known lncRNA features in [GTF format](http://www.ensembl.org/info/website/upload/gff.html);
-`lncRNA.fa` is all lncRNA sequences in fasta format. `protein_coding.final.gtf` and `protein_coding.fa` are protein coding information extracted from gencode annotation. `final_all.gtf` and `final_all.fa` are combined files for further analysis.<br>
+* `Identified_lncRNA` contains all assembled lncRNA and their sequences. *all_lncRNA_for_classifier.gtf* includes both novel and known lncRNA features in [GTF format](http://www.ensembl.org/info/website/upload/gff.html);
+*lncRNA.fa* is all lncRNA sequences in fasta format. *protein_coding.final.gtf* and *protein_coding.fa* are protein coding information extracted from gencode annotation. *final_all.gtf* and *final_all.fa* are combined files for further analysis.<br>
 * `Star_alignment` are STAR aligner standard output<br>
-* `Quantification` are estimated abundance using kallisto. `kallisto.count.txt` are reads count matrix and `kallisto.tpm.txt` are tpm(Transcripts Per Kilobase Million) matrix.
+* `Quantification` are estimated abundance using kallisto. *kallisto.count.txt* are reads count matrix and *kallisto.tpm.txt* are tpm(Transcripts Per Kilobase Million) matrix.
 * `LncReporter` stored the interactive report file and differential expression matrix generated by EdgeR.
 
 ## About
