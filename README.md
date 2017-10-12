@@ -127,7 +127,8 @@ We strongly recommended that users using config file rather than command input t
 For example, plz go to `params` line, and set the following information of your operation system and environment
 ```groovy
 params {
-
+////////////////////////////////////
+//USER MODIFICATIONS //
    fasta_ref = 'your/genome/reference/path/genome.fa'
    //star index
    star_idex = 'your/STAR/reference/index/path'
@@ -147,8 +148,6 @@ params {
            sam_processor="sambamba" // If aligner is hisat, we need process sam file for downstream analysis
     qctools = "afterqc"
            afterqc_path="/data/software/afterQC/AfterQC-master/"
-
-
 //other options
   //sequencing strategy
    singleEnd = false
@@ -158,6 +157,8 @@ params {
   //resource information
    mem=50
    cpu=40
+////////////////////////////////
+
 }
 
 ```
