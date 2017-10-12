@@ -107,14 +107,11 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 * 7. [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc) or [AfterQC](https://github.com/OpenGene/AfterQC).
 When using afterQC, we recommended that users installed `pypy` in your system, which can accelerated 3X speed for raw reads processing, as suggested by author of [AfterQC](https://github.com/OpenGene/AfterQC)
 
-* 8. Install R dependency packages for running [LncReporter](https://github.com/bioinformatist/LncPipe-Reporter)
+* 8. Install [LncReporter](https://github.com/bioinformatist/LncPipe-Reporter)
     <br>
         ```
-        install.packages(c("curl", "httr", "data.table", "cowplot", "knitr", "heatmaply", "ggsci", "flexdashboard"))
         install.packages("devtools")
-        devtools::install_github(c('ramnathv/htmlwidgets', "ropensci/plotly", "vqv/ggbiplot"))
-        source("https://bioconductor.org/biocLite.R")
-        biocLite("edgeR")
+        devtools::install_github("bioinformatist/LncPipeReporter")
         ```
 For detailed usage of LncReporter in case you are going to run it separately, plz refers to `Readme.MD` of [LncReporter](https://github.com/bioinformatist/LncPipe-Reporter)
 ## Interactive reports
