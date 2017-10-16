@@ -38,7 +38,7 @@ LncPipe is implemented with Nextflow pipeline manage system. To run our pipeline
 Here, we show the step by step installation of [Nextflow](https://github.com/nextflow-io/nextflow) in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
 
 1. Download the executable package by copying and pasting the following command in your terminal window:
-```wget -qO- get.[Nextflow](https://github.com/nextflow-io/nextflow).io | bash```. It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
+```wget -qO- get.nextflow.io | bash```. It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
 2. Optionally, move the ```nextflow``` file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
 3. Download the lastest binary version of NextFlow from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
 ### Install third-party software and database required by each pipe.
