@@ -1097,6 +1097,7 @@ process Get_kallisto_matrix {
 Step 13: perform Differential Expression analysis and generated reported
  */
 
+/*
 process Run_report_process {
     tag { file_tag }
     publishDir pattern: "Report*",
@@ -1118,28 +1119,8 @@ process Run_report_process {
     Rscript -e "rmarkdown::render('./reporter.Rmd', params = list(output = 'Report.html',theme='npg'))"
     '''
 }
-
+*/
 // Write out command information
-
-//process gathering_Output_and_generate_Report {
-//    publishDir "${baseDir}/Result", mode: 'copy'
-//    echo true
-//
-//    input:
-//    file ('alignment/*') from alignment_logs.collect().filter( ~/.final.log/ )
-//
-//    output:
-//    file "*multiqc_report.html" into multiqc_report
-//    file "*multiqc_data"
-//
-//    script:
-//    """
-//    cp $baseDir/conf/multiqc_config.yaml multiqc_config.yaml
-//    multiqc -f -n lncRNAanalysis_report . 2>&1
-//    """
-//}
-
-
 
 
 
