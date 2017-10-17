@@ -239,9 +239,6 @@ if (params.skip_combine) {
 } else {
     println print_purple("Combination of known annotations from GTFs")
     process combine_public_annotation {
-        cpus ava_cpu
-        memory { 5.GB * task.attempt }
-        errorStrategy 'retry'
         storeDir { params.out_folder + "/Combined_annotations" }
         input:
         file lncRNA_gtflistfile from LncRNA_gtflist
@@ -285,7 +282,7 @@ if (!params.merged_gtf) {
     if (params.aligner == 'star' && params.star_idex == false && fasta_ref) {
         process Make_STARindex {
             tag fasta_ref
-            cpus ava_cpu
+            
             storeDir { params.out_folder + "/STARIndex" }
 
             input:
@@ -332,7 +329,7 @@ if (!params.merged_gtf) {
     } else if (params.aligner == 'hisat2' && params.hisat2_index == false && !fasta_ref) {
         process Make_hisat_index {
             tag fasta_ref
-            cpus ava_cpu
+            
             storeDir { params.out_folder + "/hisatIndex" }
 
             input:
@@ -372,9 +369,7 @@ if (!params.merged_gtf) {
         }
         .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
         process Run_fastQC {
-            cpus idv_cpu
             tag { fastq_tag }
-            maxForks fork_number
             publishDir pattern: "*.html",
                     path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
 
@@ -397,9 +392,9 @@ if (!params.merged_gtf) {
         }
         .into { reads_for_fastqc}
             process Run_afterQC {
-            cpus idv_cpu
+ 
             tag { fastq_tag }
-            maxForks fork_number
+            
             publishDir pattern: "*.html",
                     path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
 
@@ -431,9 +426,9 @@ if (!params.merged_gtf) {
     */
     if (params.aligner == 'star') {
         process fastq_star_alignment_For_discovery {
-            cpus ava_cpu
+            
             tag { file_tag }
-            maxForks 1
+            
             publishDir pattern: "",
                     path: { params.out_folder + "/Result/Star_alignment" }, mode: 'copy', overwrite: true
 
@@ -495,9 +490,9 @@ if (!params.merged_gtf) {
         }
     }else if (params.aligner == 'tophat') {
         process fastq_tophat_alignment_For_discovery {
-            cpus ava_cpu
+            
             tag { file_tag }
-            maxForks 1
+            
             publishDir pattern: "",
                     path: { params.out_folder + "/Result/tophat_alignment" }, mode: 'copy', overwrite: true
 
@@ -532,9 +527,9 @@ if (!params.merged_gtf) {
         }
     }else if (params.aligner == 'hisat2') {
         process fastq_hisat2_alignment_For_discovery {
-            cpus ava_cpu
+            
             tag { file_tag }
-            maxForks 1
+            
             publishDir pattern: "",
                     path: { params.out_folder + "/Result/hisat_alignment" }, mode: 'copy', overwrite: true
 
@@ -574,9 +569,9 @@ if (!params.merged_gtf) {
     * Step 5: Reads assembling by using cufflinks
     */
     process Cufflinks_assembly {
-        cpus ava_cpu
+        
         tag { file_tag }
-        maxForks fork_number
+        
         input:
         set val(file_tag), file(alignment_bam) from mappedReads
         file fasta_ref
@@ -634,7 +629,7 @@ if (!params.merged_gtf) {
     * Step 6: Merged GTFs into one
     */
     process cuffmerge_assembled_gtf {
-        cpus ava_cpu
+        
         tag { file_tag }
 
         input:
@@ -677,7 +672,7 @@ if (!params.merged_gtf) {
 *Step 7: Comparing assembled gtf with known ones (GENCODE)
 */
 process Merge_assembled_gtf_with_GENCODE {
-    cpus ava_cpu
+    
     tag { file_tag }
     input:
     file cuffmergefile from cuffmergeTranscripts_forCompare
@@ -737,7 +732,7 @@ process Identify_novel_lncRNA_with_criterions {
 novelLncRnaFasta.into { novelLncRnaFasta_for_PLEK; novelLncRnaFasta_for_CPAT; novelLncRnaFasta_for_CNCI }
 
 process Predict_coding_abbilities_by_PLEK {
-    cpus ava_cpu
+    
     // as PLEK can not return valid exit status even run smoothly, we manually set the exit status into 0 to promote analysis
     validExitStatus 0, 1, 2
     input:
@@ -768,7 +763,7 @@ process Predict_coding_abbilities_by_CPAT {
         '''
 }
 //    process run_CNCI{
-//        cpus ava_cpu
+//        
 //        input:
 //        file novel_lncRNA_fasta from novelLncRnaFasta_for_CNCI
 //        file cncipath
@@ -815,7 +810,7 @@ process Filter_lncRNA_by_coding_potential_result {
 */
 process Summary_renaming_and_classification {
     publishDir "${params.out_folder}/Result/Identified_lncRNA", mode: 'copy'
-    cpus ava_cpu
+    
 
     input:
     file knowlncRNAgtf from KnownLncRNAgtf
@@ -1019,8 +1014,8 @@ process Build_kallisto_index_of_GTF_for_quantification {
 constant_kallisto_index = final_kallisto_index.first()
 
 process Run_kallisto_for_quantification {
-    cpus ava_cpu
-    maxForks 1
+    
+    
     tag { file_tag }
 
     input:
@@ -1098,7 +1093,7 @@ Step 13: perform Differential Expression analysis and generated reported
  */
 
 /*
-process Run_report_process {
+process Run_LncPipeReporter {
     tag { file_tag }
     publishDir pattern: "Report*",
             path: "${params.out_folder}/Result/LncReporter", mode: 'mv'
