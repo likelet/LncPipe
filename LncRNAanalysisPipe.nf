@@ -197,12 +197,12 @@ if (fork_number < 1) {
 
 // read file
 fasta_ref = file(params.fasta_ref)
-if (!fasta_ref.exists()) exit 1, "Reference genome not found: ${params.bowtie2_index}"
+if (!fasta_ref.exists()) exit 1, "Reference genome not found: ${params.fasta_ref}"
 
-if (params.star_idex) {
+
     star_idex = file(params.star_idex)
-    if (!star_idex.exists()) exit 1, "Reference genome star index not found: ${params.bowtie2_index}"
-}
+    if (!star_idex.exists()) exit 1, "Reference genome star index not found: ${params.star_idex}"
+
 
 
 
@@ -362,7 +362,7 @@ if (!params.merged_gtf) {
     * Step 2: FastQC/AfterQC raw reads
     */
     println print_purple("Perform quality control of raw fastq files ")
-    if (params.aligner == 'fastqc') {
+    if (params.qctools == 'fastqc') {
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
             exit 1, print_red("Cannot find any reads matching: !{reads}\nNB: Path needs to be enclosed in quotes!\n")
@@ -388,21 +388,21 @@ if (!params.merged_gtf) {
     } else {
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: !{reads}\nNB: Path needs to be enclosed in quotes!\n")
+            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
-        .into { reads_for_fastqc}
+        .set { reads_for_fastqc}
             process Run_afterQC {
- 
+
             tag { fastq_tag }
             
-            publishDir pattern: "*.html",
+            publishDir pattern: "QC/*.html",
                     path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
 
             input:
             set val(samplename), file(fastq_file) from reads_for_fastqc
 
             output:
-            file "*.html" into fastqc_logs, fastqc_for_waiting
+            file "QC/*.html" into fastqc_logs, fastqc_for_waiting
             file "*.good.fq" into readPairs_for_discovery,readPairs_for_kallisto
             shell:
             fastq_tag = samplename
@@ -1066,6 +1066,7 @@ process Run_kallisto_for_quantification {
 /*
 *Step 12: Combine matrix for statistic  and differential expression analysis
 */
+
 process Get_kallisto_matrix {
     tag { file_tag }
     publishDir pattern: "kallisto*.txt",
@@ -1080,8 +1081,7 @@ process Get_kallisto_matrix {
     shell:
     file_tag = "Kallisto"
     '''
-    grep -v "protein_coding"  final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$2}' | sort | uniq | \
-        cat - <(grep "protein_coding" final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$14}' | sort | uniq)> map.file
+    grep -v "protein_coding"  final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$2}' | sort | uniq | cat - <(grep "protein_coding" final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$14}' | sort | uniq)> map.file
     R CMD BATCH !{baseDir}/bin/get_kallisto_matrix.R
     '''
 }
