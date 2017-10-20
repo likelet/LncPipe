@@ -142,9 +142,6 @@ params.out_folder = './'
 //params.plekpath = null
 //aligner
 
-params.aligner = "star"
-
-
 params.merged_gtf = null
 
 
