@@ -1,5 +1,5 @@
 # [LncPipe](https://github.com/likelet/LncPipe) 
-## Description
+## Overall
 Recently, long noncoding RNA molecules (lncRNA) captured widespread attentions for its critical 
 roles in diverse biological process and important implications in variety of human diseases and 
 cancers. Identification and profiling of lncRNAs is a fundamental step to advance our knowledge 
@@ -14,23 +14,23 @@ calculating efficiency, diversified classification and interactive analysis repo
 directly and resume analysis from continues checkpoint. 
 
 ## Schematic diagram
- ![Nothing shown here](./image/LncRNApipe.png)
+ ![LncRNApipe](./image/LncRNApipe.png)
 
-## Install [Nextflow](https://github.com/nextflow-io/nextflow)
-Run inormation
-```
-nextflow <your nf file> -c nextflow.config -with-trace
+## Run LncPipe
+Run the workflow
+```shell
+$ nextflow <your nf file> -c nextflow.config -with-trace
 ```
 
 If the pipeline fails at any point and you fix the issue, you can revoke the processes with job avoidance using this command:
-```
-nextflow <your nf file> -c nextflow.config -with-trace -resume
+```shell
+$ nextflow <your nf file> -c nextflow.config -with-trace -resume
 ```
 
-All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see the following link:
-https://www.nextflow.io/
+All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
 
-## Run [LncPipe](https://github.com/likelet/LncPipe)  with docker container  .
+
+## Run [LncPipe](https://github.com/likelet/LncPipe) from Docker image
 
 ## Installation of dependencies (Run [LncPipe](https://github.com/likelet/LncPipe)  at host environment ).
 ### Install [Nextflow](https://github.com/nextflow-io/nextflow)
@@ -38,89 +38,105 @@ LncPipe is implemented with Nextflow pipeline manage system. To run our pipeline
 Here, we show the step by step installation of [Nextflow](https://github.com/nextflow-io/nextflow) in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
 
 1. Download the executable package by copying and pasting the following command in your terminal window:
-``` 
-wget -qO- get.nextflow.io | bash
+```shell
+$ wget -qO- get.nextflow.io | bash
 ```
-It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
+      It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
 
 2. Optionally, move the ```nextflow``` file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
 
-3. Download the lastest binary version of NextFlow from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
-### Install third-party software and database required by each pipe.
+Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
+
+### Install third-party software and databases required by each pipe
 #### References, index and annotation files（required）
 
 1. [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.)
 
-2. Genome reference (genome fasta file with suffix .fa , UCSC etc). If index not provided.
+2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.). If index not provided.
 
 3. GENCODE gene annotation file in GTF format:[gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
 
-4. LNCipedia gene annotation file in GTF format: [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
+4. LNCipedia gene annotation file in GTF format:[lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
 
 5. rRNA feature files from UCSC in GTF format.
 
 #### Software and tools (required when docker image is not favored)
 * 1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
-     ```
-     $ sudo aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR && \
-	       chmod 755 /opt/STAR && \
-	       sudo ln -s /opt/STAR /usr/local/bin
-     ```
-* 2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/)
-     ```
-     $ sudo aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz && \
-	     tar xf /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
-	     rm /opt/cufflinks-2.2.1.Linux_x86_64/README && \
-	     ln -s /opt/cufflinks-2.2.1.Linux_x86_64/* /usr/local/bin/ && \
-	     rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
-     ```
-* 3. [Bedops](http://bedops.readthedocs.io/en/latest/):[Citation](https://www.ncbi.nlm.nih.gov/pubmed/22576172/)
-     ```
-     Sunyu finished
-     ```
-* 4. [PLEK](www.ibiomedical.net): [Citation](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-311)
+      ```shell
+      $ sudo aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR && \
+      chmod 755 /opt/STAR && \
+      sudo ln -s /opt/STAR /usr/local/bin
       ```
-      wget https://sourceforge.net/projects/plek/files/PLEK.1.2.tar.gz/download
-      tar -zvxf PLEK.1.2.tar.gz
-      cd PLEK.1.2
-      python PLEK_setup.py
+* 2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/)
+      ```shell
+      $ sudo aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz && \
+      tar xf /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
+      rm /opt/cufflinks-2.2.1.Linux_x86_64/README && \
+      sudo ln -s /opt/cufflinks-2.2.1.Linux_x86_64/* /usr/local/bin/ && \
+      rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
+      ```
+* 3. [Bedops](http://bedops.readthedocs.io/en/latest/):[Citation](https://www.ncbi.nlm.nih.gov/pubmed/22576172/)
+      ```shell
+      Coming: Waiting ysun's lastest docker file
+      ```
+* 4. [PLEK](www.ibiomedical.net): [Citation](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-311)
+      ```shell
+      sudo aria2c https://nchc.dl.sourceforge.net/project/plek/PLEK.1.2.tar.gz -q -o /opt/PLEK.1.2.tar.gz && \
+      tar xf /opt/PLEK.1.2.tar.gz --use-compress-prog=pigz -C /opt/ && \
+      cd /opt/PLEK.1.2/ && \
+      python PLEK_setup.py || : && \
+      # Remove documents, demo files, source files, object files and R scripts
+      rm *.pdf *.txt *.h *.c *.model *.range *.fa *.cpp *.o *.R *.doc PLEK_setup.py && \
+      chmod 755 * && \
+      # dos2unix in perl one-liner: remove BOM head and deal with \r problem
+      perl -CD -pi -e'tr/\x{feff}//d && s/[\r\n]+/\n/' *.py && \
+      sudo ln -s /opt/PLEK.1.2/* /usr/local/bin/ && \
+      rm /opt/PLEK.1.2.tar.gz
       ```
 * 5. [CNCI](https://github.com/www-bioinfo-org/CNCI): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783192/)
-      <br>
-      *Installation*
-      ``` 
-      git clone git@github.com:www-bioinfo-org/CNCI.git
-      cd CNCI
-      unzip libsvm-3.0.zip
-      cd libsvm-3.0
-      make
-      cd ..
+      ```shell
+      sudo aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /opt/CNCI-master.zip && \
+      unzip -qq /opt/CNCI-master.zip -d /opt/ && \
+      rm /opt/CNCI-master.zip && \
+      unzip -qq /opt/CNCI-master/libsvm-3.0.zip -d /opt/CNCI-master/ && \
+      rm /opt/CNCI-master/libsvm-3.0.zip && \
+      cd /opt/CNCI-master/libsvm-3.0 && \
+      make > /dev/null 2>&1 && \
+      # enable the extglob shell option
+      shopt -s extglob && \
+      # Parentheses and the pipe symbol should be escaped
+      rm -rfv !\("svm-predict"\|"svm-scale"\) && \
+      cd .. && \
+      rm draw_class_pie.R LICENSE README.md && \
+      chmod -R 755 * && \
+      sudo ln -s /opt/CNCI-master/*.py /usr/local/bin/
       ```
 * 6. [CPAT](http://rna-cpat.sourceforge.net):[Citation](https://academic.oup.com/nar/article/41/6/e74/2902455/CPAT-Coding-Potential-Assessment-Tool-using-an)
-      <br>
-            *Installation*
-      ```
-      wget https://sourceforge.net/projects/rna-cpat/files/?source=navbar
-      tar zxf CPAT-VERSION.tar.gz
-      cd CPAT-VERSION
-      python setup.py install
-      python setup.py install --root=/home/user/CPAT
-      export PYTHONPATH=/home/user/CPAT/usr/local/lib/python2.7/site-packages:$PYTHONPATH.
-      export PATH=/home/user/CPAT/usr/local/bin:$PATH #setup PATH
+      ```shell
+      sudo aria2c https://jaist.dl.sourceforge.net/project/rna-cpat/v1.2.3/CPAT-1.2.3.tar.gz -q -o /opt/CPAT-1.2.3.tar.gz && \
+      tar xf /opt/CPAT-1.2.3.tar.gz --use-compress-prog=pigz -C /opt/ && \
+      # DO NOT use absolute path here, changing directory is necessary, python interpreter will check current directory for dependencies
+      cd /opt/CPAT-1.2.3/ && \
+      mv dat/* /LncPipeDB/ && \
+      python setup.py install > /dev/null 2>&1 && \
+      rm -rf /opt/CPAT*
       ```
 * 7. [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc) or [AfterQC](https://github.com/OpenGene/AfterQC).
-When using afterQC, we recommended that users installed `pypy` in your system, which can accelerated 3X speed for raw reads processing, as suggested by author of [AfterQC](https://github.com/OpenGene/AfterQC)
+      ```shell
+      To be finish later.
+      ```
+When using afterQC, we recommended that users install `pypy` in your operation system, which can accelerated about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by author of AfterQC.
 
 * 8. Install [LncPipeReporter](https://github.com/bioinformatist/LncPipe-Reporter)
-      Install `pandoc` first. and open your R env, input following command.
-      ```R
-      install.packages("devtools")
-      devtools::install_github("bioinformatist/LncPipeReporter")
+
+      Install [pandoc](https://pandoc.org/installing.html) first. Then run commands:
+      ```shell
+      Rscript -e "install.packages('devtools'); devtools::install_github('bioinformatist/LncPipeReporter')"
       ```
-For detailed usage of LncReporter in case you are going to run it separately, plz refers to `Readme.MD` of [LncReporter](https://github.com/bioinformatist/LncPipe-Reporter)
+For detailed usage of LncPipeReporter in case you are going to run it separately, plz refers to [README](https://github.com/bioinformatist/LncPipeReporter#lncpipereporter) of LncPipeReporter.
 ## Interactive reports
 LncPipe output was well-summarized in an interactive manner, which was carried out by a novel-developing R package
-[LncPipeReporter](https://github.com/bioinformatist/LncPipe-Reporter).
+[LncPipeReporter](https://github.com/bioinformatist/LncPipeReporter).
 
 ## Configuration for use at the first time
 As a nextflow-based analysis pipeline, LncPipe allow users edit configure file `nextflow.config` to set the index files and default file path parameters instead of typing in command.
@@ -287,6 +303,6 @@ For details and help, plz contact any one of us by zhaoqi@sysucc.org.cn and sun_
 
 
 ## License
-GPL3 license 
+[GPL v3 license](LICENSE)
 ## Citation 
 
