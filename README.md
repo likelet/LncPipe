@@ -299,8 +299,8 @@ Result/
 ## Tips to improve analysis experience :punch:	
 * :blush:Plz keep the consistency of your genome sequence, index library and annotation files: genome version, chromosome format, gtf coordinated e.g. The third-party software may stop for any of the above reasons. 
 * :confused:Setting your analysis parameters always in config file, differ project should  corresponding to differ configurations for reproductive analysis. To rerun a project, you can just specify -c `your.config` in your command, which can also help you to record analysis parameters.
-* :open_mouth:Run analysis from docker container, no much to say.
-* :grimacing:Always use the latest version to be away from bugs by old distribute. 
+* :open_mouth:Run analysis on docker container, no much to say.
+* :grimacing:Always use the latest version to be away from the known bugs. 
 
 
 ## About
