@@ -80,6 +80,7 @@ Of course you can download the lastest binary version of NextFlow by yourself fr
       	rm /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz
       ```
 * 3.[gffcompare](http://www.ccb.jhu.edu/software/stringtie/gff.shtml#gffcompare)
+
       ```shell
       aria2c https://github.com/gpertea/gffcompare/archive/master.zip -q -o /opt/gffcompare-master.zip && \
       	aria2c https://github.com/gpertea/gclib/archive/master.zip -q -o /opt/gclib-master.zip && \
