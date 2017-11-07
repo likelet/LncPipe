@@ -50,7 +50,7 @@ Of course you can download the lastest binary version of NextFlow by yourself fr
 ### Install third-party software and databases required by each pipe
 #### References, index and annotation files（required）
 
-1. [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.)
+1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (can be downloaded from https://ccb.jhu.edu/software/hisat2/index.shtml ) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
 
 2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.). If index not provided.
 
@@ -137,7 +137,24 @@ Of course you can download the lastest binary version of NextFlow by yourself fr
       ```
 * 8. [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc) or [AfterQC](https://github.com/OpenGene/AfterQC).
       ```shell
-      To be finish later.
+      aria2c https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip -q -o /opt/fastqc_v0.11.5.zip && \
+      	unzip -qq /opt/fastqc_v0.11.5.zip -d /opt/ && \
+      	rm /opt/fastqc_v0.11.5.zip && \
+      	cd /opt/FastQC && \
+      	shopt -s extglob && \
+      	rm -rfv !\("fastqc"\|*.jar\) && \
+      	chmod 755 * && \
+      	ln -s /opt/FastQC/fastqc /usr/local/bin/
+      # or afterQC
+      	aria2c https://github.com/OpenGene/AfterQC/archive/v0.9.7.tar.gz -q -o /opt/AfterQC-0.9.7.tar.gz && \
+        	tar xf /opt/AfterQC-0.9.7.tar.gz --use-compress-prog=pigz -C /opt/ && \
+        	cd /opt/AfterQC-0.9.7 && \
+        	make && \
+        	perl -i -lape's/python/pypy/ if $. == 1' after.py && \
+        	rm -rf Dockerfile Makefile README.md testdata report_sample && \
+        	rm editdistance/*.cpp editdistance/*.h && \
+        	ln -s /opt/AfterQC-0.9.7/*.py /usr/local/bin/ && \
+        	rm /opt/AfterQC-0.9.7.tar.gz
       ```
 When using afterQC, we recommended that users install `pypy` in your operation system, which can accelerated about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by author of AfterQC.
 
@@ -333,7 +350,8 @@ Result/
 * :open_mouth:Run analysis on docker container, no much to say.
 * :grimacing:Always use the latest version to be away from the known bugs. 
 
-
+## Acknowledgement
+ Thanks to the author of [AfterQC](https://github.com/OpenGene/AfterQC), Shifu Chen, for his help on providing a gzip output support to meet the require of LncPipe.  Thanks to the internal test by Hongwan Zhang and Yan Wang from SYSUCC Cancer bioinformatics platform.
 ## About
 This pipe were written by [Qi Zhao](https://github.com/likelet) and [Yu Sun](http://icannotendure.space) from Sun Yat-sen University and Nan kai University.
 For details and help, plz contact any one of us by zhaoqi@sysucc.org.cn and sun_yu@mail.nankai.edu.cn.
