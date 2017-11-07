@@ -238,7 +238,28 @@ process combine_public_annotation {
 
     shell:
     cufflinks_threads = ava_cpu- 1
-    '''
+
+    if(params.aligner=='hisat'){
+        '''
+        set -o pipefail
+        touch filenames.txt
+        for file in *.gtf 
+        do
+        perl -lpe 's/ [^"](\\S+) ;/ "$1" ;/g\' $file > ${file}_mod.gtf 
+        echo ${file}_mod.gtf >>filenames.txt
+        
+        done
+        
+        stringtie --merge -o merged_lncRNA.gtf  filenames.txt
+        cat !{gencode_annotation_gtf}_mod.gtf  |grep "protein_coding" > gencode_protein_coding.gtf
+        gffcompare -r !{gencode_annotation_gtf} -p !{cufflinks_threads} merged_lncRNA.gtf
+        awk '$3 =="u"||$3=="x"{print $5}' gffcmp.merged_lncRNA.gtf.tmap |sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl merged_lncRNA.gtf - > merged.filter.gtf
+        mv  merged.filter.gtf known.lncRNA.gtf
+        
+        '''
+    }else {
+
+        '''
         set -o pipefail
         cuffmerge -o merged_lncRNA  !{lncRNA_gtflistfile}
         cat !{gencode_annotation_gtf} |grep "protein_coding" > gencode_protein_coding.gtf
@@ -247,7 +268,7 @@ process combine_public_annotation {
         mv  merged.filter.gtf known.lncRNA.gtf
         
         '''
-
+    }
 
 
 }
@@ -424,7 +445,7 @@ if (!params.merged_gtf) {
 
             output:
             set val(file_tag_new), file("${file_tag_new}Aligned.sortedByCoord.out.bam") into mappedReads
-            set val(file_tag_new), file("${file_tag_new}Log.final.out") into alignment_logs
+            file "${file_tag_new}Log.final.out" into alignment_logs
             shell:
             println print_purple("Start mapping with STAR aligner " + samplename)
             file_tag = samplename
@@ -490,7 +511,8 @@ if (!params.merged_gtf) {
             file gtf from gencode_annotation_gtf
 
             output:
-            set val(file_tag_new), file("${file_tag_new}_thout") into mappedReads, alignment_logs
+             file "${file_tag_new}_thout/accepted.bam" into mappedReads
+            file "${file_tag_new}_thout/Alignment_summary.txt" into alignment_logs
             //align_summary.txt as log file
             shell:
             println print_purple("Start mapping with tophat2 aligner " + samplename)
@@ -529,7 +551,7 @@ if (!params.merged_gtf) {
 
             output:
             set val(file_tag_new),file("${file_tag_new}.sort.bam") into hisat_mappedReads
-            set val(file_tag_new),file("${file_tag_new}.log") into alignment_logs
+            file "${file_tag_new}.hisat2_summary.txt" into alignment_logs
             //align_summary.txt as log file
             shell:
             println print_purple("Start mapping with hisat2 aligner " + samplename)
@@ -540,16 +562,19 @@ if (!params.merged_gtf) {
             if (params.singleEnd) {
                 println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in single-end mode")
                 '''
-                   hisat2  -p !{hisat2_threads} --dta  -x  !{index_base}  -U !{pair}  -S !{file_tag_new}.sam 2> !{file_tag_new}.log
-                  sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o /dev/stdout | sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} /dev/stdin
+                   hisat2  -p !{hisat2_threads} --dta  -x  !{index_base}  -U !{pair}  -S !{file_tag_new}.sam 2>!{file_tag_new}.hisat2_summary.txt
+                  sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam 
+                  sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} temp.bam
                   rm !{file_tag_new}.sam
+                  rm temp.bam
                   
                 '''
             } else {
-                println print_purple("Initial reads mapping of " + samplename + " performed by Tophat in paired-end mode")
+                println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in paired-end mode")
                 '''
-                  hisat2  -p !{hisat2_threads} --dta  -x  !{index_base}  -1 !{pair[0]}  -2 !{pair[1]}  -S !{file_tag_new}.sam 2>!{file_tag_new}.log
-                  sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o /dev/stdout | sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} /dev/stdin
+                  hisat2  -p !{hisat2_threads} --dta  -x  !{index_base}  -1 !{pair[0]}  -2 !{pair[1]}  -S !{file_tag_new}.sam 2> !{file_tag_new}.hisat2_summary.txt
+                  sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam
+                  sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} temp.bam
                   rm !{file_tag_new}.sam
                 '''
             }
@@ -1145,7 +1170,11 @@ lncRep_theme = params.lncRep_theme
 lncRep_cdf_percent = params.lncRep_cdf_percent
 lncRep_max_lnc_len = params.lncRep_max_lnc_len
 lncRep_min_expressed_sample = params.lncRep_min_expressed_sample
-
+design=null
+if(params.design){
+    design = file(params.design)
+    if (!design.exists()) exit 1, "Design file not found, plz check your design path: ${params.design}"
+}
 
 process Run_LncPipeReporter {
     tag { file_tag }
@@ -1153,6 +1182,7 @@ process Run_LncPipeReporter {
             path: "${params.out_folder}/Result/LncReporter", mode: 'mv'
     input:
     //alignmet log
+    file design
     file alignmetlogs from alignment_logs.collect()
     //gtf statistics
     file basic_charac from statistic_result
@@ -1160,12 +1190,12 @@ process Run_LncPipeReporter {
     file kallisto_count_matrix from expression_matrixfile_count
 
     output:
-
+    file "LncPipeReports" into final_output
     shell:
 
     '''
-    Rscript -e "library(LncPipeReporter);run_reporter(input='./', output = '!{lncRep_Output}',theme = '!{lncRep_theme}',cdf.percent = !{lncRep_cdf_percent},max.lncrna.len = !{lncRep_max_lnc_len},min.expressed.sample = !{lncRep_min_expressed_sample}, ask = FALSE)"
-    '''
+    Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',theme = 'npg',cdf.percent = 10,max.lncrna.len = 10000,min.expressed.sample = 50, ask = FALSE)"
+  '''
 }
 
 
