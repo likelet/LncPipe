@@ -50,7 +50,7 @@ Of course you can download the lastest binary version of NextFlow by yourself fr
 ### Install third-party software and databases required by each pipe
 #### References, index and annotation files（required）
 
-1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (can be downloaded from https://ccb.jhu.edu/software/hisat2/index.shtml ) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
+1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch37_tran.tar.gz ) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
 
 2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.). If index not provided.
 

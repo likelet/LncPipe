@@ -26,11 +26,11 @@ colnames(trans.kallisto.TPM) <- pc.samples
 #write reads count matrix of protein coding and lncRNA
 trans.kallisto.count <- data.frame(ID=row.names(trans.kallisto.count),trans.kallisto.count)
 #annoted transcript type
-trans.kallisto.count.merge <- merge(trans.kallisto.count,map.file,by="ID")
+trans.kallisto.count.merge <- merge(map.file,trans.kallisto.count,by="ID")
 fwrite(trans.kallisto.count.merge ,file="kallisto.count.txt",sep="\t",quote=F,row.names=F)
 #write tpm  matrix of  protein coding and lncRNA
 trans.kallisto.TPM <- data.frame(ID=row.names(trans.kallisto.TPM),trans.kallisto.TPM)
-trans.kallisto.TPM.merge <- merge(trans.kallisto.TPM,map.file,by="ID")
+trans.kallisto.TPM.merge <- merge(map.file,trans.kallisto.TPM,by="ID")
 #annoted transcript type
 fwrite(trans.kallisto.TPM.merge ,file="kallisto.tpm.txt",sep="\t",quote=F,row.names=F)
 
