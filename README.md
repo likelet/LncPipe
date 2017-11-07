@@ -24,7 +24,7 @@ $ nextflow <your nf file> -c nextflow.config -with-trace
 
 If the pipeline fails at any point and you fix the issue, you can revoke the processes with job avoidance using this command:
 ```shell
-$ nextflow <your nf file> -c nextflow.config -with-trace -resume
+$ nextflow <your nf file> -c nextflow.config -with-trace -resume [--design design.matrix]
 ```
 
 All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
