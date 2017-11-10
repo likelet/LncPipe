@@ -165,7 +165,16 @@ When using afterQC, we recommended that users install `pypy` in your operation s
       Rscript -e "install.packages('devtools'); devtools::install_github('bioinformatist/LncPipeReporter')"
       ```
 For detailed usage of LncPipeReporter in case you are going to run it separately, plz refers to [README](https://github.com/bioinformatist/LncPipeReporter#lncpipereporter) of LncPipeReporter.
-
+* 10. [kallisto](https://github.com/pachterlab/kallisto)
+    ```shell
+    aria2c https://github.com/pachterlab/kallisto/releases/download/v0.43.1/kallisto_linux-v0.43.1.tar.gz -q -o  /opt/kallisto_linux-v0.43.1.tar.gz && \
+    	tar xf /opt/kallisto_linux-v0.43.1.tar.gz --use-compress-prog=pigz -C /opt/ && \
+    	cd /opt && \
+    	rm ._* kallisto_linux-v0.43.1.tar.gz && \
+    	cd kallisto_linux-v0.43.1 && \
+    	rm -rf ._* 	README.md test && \
+    	ln -s /opt/kallisto_linux-v0.43.1/kallisto /usr/local/bin/
+    ```
 **Alternatively, when you are going to using STAR-Cufflinks in your system, the corresponding installation command should be as follows:**
 * 1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
       ```shell

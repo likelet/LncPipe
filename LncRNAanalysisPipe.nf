@@ -1190,7 +1190,7 @@ process Run_LncPipeReporter {
     file kallisto_count_matrix from expression_matrixfile_count
 
     output:
-    file "LncPipeReports" into final_output
+    file "*" into final_output
     shell:
 
     '''
