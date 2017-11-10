@@ -30,19 +30,21 @@ while(<IN1>){
 	my $result;
 	my $smname;
 	my @data = split /\t/,$_;
-	if ($data[8] !~ /transcript_id\s\"LINC/){        #remove not LINC
-		next;
-	}
+	#if ($data[8] !~ /transcript_id\s\"LINC/){        #remove not LINC
+	#	next;
+	#}
 	my @rna = split /;/,$data[8];
 	$rna[1] =~ /\"(.*)\"/;
 	my $linc = $1;
 	$rna[2] =~ /\"(\d+)\"/;
 	my $distance = $1;
+	$_ =~ /closet_gene "(.*)"/;
+	$smname = $1;
 	if ($distance > 1000){                             #c1
 		$result = $linc."\t"."Intergenic";
 		push(@results,$result);
 	}elsif($distance > 0){                             #c1 and c2      
-		if($gene_dir{$data[9]} eq $data[6]){
+		if($gene_dir{$smname} eq $data[6]){
 			$result = $linc."\t"."Intergenic";
 			push(@results,$result);
 		}else{
@@ -50,13 +52,13 @@ while(<IN1>){
 			push(@results,$result);
 		}
 	}elsif($distance == 0){                         #c3 and c4 and c5
-		if ($gene_dir{$data[9]} ne $data[6]){          #c3
+		if ($gene_dir{$smname} ne $data[6]){          #c3
 			$result = $linc."\t"."Antisense";
 			push(@results,$result);
 		}else{                                        #c4 and c5
 			my $m = 0;
 			foreach my $gename(keys %gene_data){
-				if($gename eq $data[9]){
+				if($gename eq $smname){
 					my @num = @{$gene_data{$gename}};
 					for (my $i =0;$i <= $#num;$i++){
 						if(($num[$i][0] < $data[4])&&($num[$i][1] > $data[3])){

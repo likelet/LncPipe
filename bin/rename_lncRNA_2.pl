@@ -73,6 +73,7 @@ foreach my $k (keys %gene){
 open FH,"lncRNA.for_anno.srt.neighbour.txt" or die;
 
 my %map;
+my %genename2gene;
 my $naidx=0;
 while(<FH>){
 	chomp;
@@ -114,6 +115,7 @@ while(<FH>){
 		if($up_dist==0){
 			if($strand ne $up_strand){
 				$genename=$up_gene."-AS";
+				$genename2gene{$genename} = $up_gene;
 				if(exists $map{$genename}{$geneid}){
 					$map{$genename}{$geneid}=$map{$genename}{$geneid} > $up_dist?$up_dist:$map{$genename}{$geneid};
 				}else{
@@ -123,6 +125,7 @@ while(<FH>){
 			}
 		}else{
 			$genename="LINC-".$up_gene;
+			$genename2gene{$genename} = $up_gene;
 			if(exists $map{$genename}{$geneid}){
 					$map{$genename}{$geneid}=$map{$genename}{$geneid} > $up_dist?$up_dist:$map{$genename}{$geneid};
 				}else{
@@ -134,6 +137,7 @@ while(<FH>){
 		if($down_dist==0){
 			if($strand ne $down_strand){
 				$genename=$down_gene."-AS";
+				$genename2gene{$genename} = $down_gene;
 				if(exists $map{$genename}{$geneid}){
 					$map{$genename}{$geneid}=$map{$genename}{$geneid} > $down_dist?$down_dist:$map{$genename}{$geneid};
 				}else{
@@ -142,6 +146,7 @@ while(<FH>){
 			}
 		}else{
 			$genename="LINC-".$down_gene;
+			$genename2gene{$genename} = $down_gene;
 			if(exists $map{$genename}{$geneid}){
 					$map{$genename}{$geneid}=$map{$genename}{$geneid} > $down_dist?$down_dist:$map{$genename}{$geneid};
 				}else{
@@ -159,6 +164,7 @@ foreach my $genename (keys %map){
 	my $tmp1=$map{$genename};
 	my %tmp1=%$tmp1;
 	my $gindex=0;
+	my $out_gene = $genename2gene{$genename};
 	foreach my $id (sort {$tmp1{$a}<=>$tmp1{$b}} keys %tmp1){
 		my ($class,$cuffid)=split ":",$id;
 		my $dist=$tmp1{$id};
@@ -175,7 +181,7 @@ foreach my $genename (keys %map){
 			my $transid=$geneid.":".$tindex;
 			foreach my $exon (keys %tmp3){
 				my @loc=split "\t",$exon;
-				print OUT1 $loc[0]."\t$class\texon\t".$loc[1]."\t".$loc[2]."\t.\t".$loc[3]."\t.\tgene_id \"$geneid\"; transcript_id \"$transid\"; dist \"$dist\";\n";
+				print OUT1 $loc[0]."\t$class\texon\t".$loc[1]."\t".$loc[2]."\t.\t".$loc[3]."\t.\tgene_id \"$geneid\"; transcript_id \"$transid\"; dist \"$dist\"; "."closet_gene \"".$out_gene."\";"."\n";
 			}
 
 		}
