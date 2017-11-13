@@ -57,7 +57,7 @@ def print_cyan = {  str -> ANSI_CYAN + str + ANSI_RESET }
 def print_purple = {  str -> ANSI_PURPLE + str + ANSI_RESET }
 def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
-version = '0.0.4'
+version = 'v0.1.0'
 //Help information
 // Pipeline version
 
@@ -210,10 +210,9 @@ if(params.aligner=='star'){
 
 
 input_folder = file(params.input_folder)
-gencode_annotation_gtf = file(params.gencode_annotation_gtf)
-lncipedia_gtf = file(params.lncipedia_gtf)
-//cncipath = file(params.cncipath)
-rRNAmaskfile = file(params.rRNAmask)
+gencode_annotation_gtf = val(params.gencode_annotation_gtf)
+lncipedia_gtf = val(params.lncipedia_gtf)
+rRNAmaskfile = val(params.rRNAmask)
 
 //Prepare annotations
 annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
@@ -229,8 +228,8 @@ process combine_public_annotation {
     storeDir { params.out_folder + "/Combined_annotations" }
     input:
     file lncRNA_gtflistfile from LncRNA_gtflist
-    file gencode_annotation_gtf
-    file lncipedia_gtf
+    val gencode_annotation_gtf
+    val lncipedia_gtf
 
     output:
     file "gencode_protein_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
@@ -335,7 +334,7 @@ if (!params.merged_gtf) {
 
             input:
             file fasta_ref from fasta_ref
-            file gencode_annotation_gtf from gencode_annotation_gtf
+            val gencode_annotation_gtf from gencode_annotation_gtf
 
             output:
             file "genome_ht2.*" into hisat2_index
@@ -592,7 +591,7 @@ if (!params.merged_gtf) {
             input:
             set val(samplename),file(alignment_bam) from hisat_mappedReads
             file fasta_ref
-            file gencode_annotation_gtf
+            val gencode_annotation_gtf
 
             output:
 
@@ -647,7 +646,7 @@ if (!params.merged_gtf) {
             input:
             set val(file_tag), file(alignment_bam) from mappedReads
             file fasta_ref
-            file gencode_annotation_gtf
+            val gencode_annotation_gtf
 
             output:
 
@@ -751,7 +750,7 @@ process Merge_assembled_gtf_with_GENCODE {
     tag { file_tag }
     input:
     file mergeGtfFile from mergeTranscripts_forCompare
-    file gencode_annotation_gtf
+    val gencode_annotation_gtf
 
     output:
     file "merged_lncRNA.merged.gtf.tmap" into comparedGTF_tmap
@@ -814,7 +813,7 @@ process Predict_coding_abbilities_by_PLEK {
     shell:
     plek_threads = ava_cpu- 1
     '''
-        python !{params.plekpath}/PLEK.py -fasta !{novel_lncRNA_fasta} \
+        PLEK.py -fasta !{novel_lncRNA_fasta} \
                                    -out novel.longRNA.PLEK.out \
                                    -thread !{plek_threads}
 	    exit 0
@@ -828,9 +827,9 @@ process Predict_coding_abbilities_by_CPAT {
     file "novel.longRNA.CPAT.out" into novel_longRNA_CPAT_result
     shell:
     '''
-        python !{params.cpatpath}/bin/cpat.py -g !{novel_lncRNA_fasta} \
-                                       -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Human_logitModel.RData \
+        cpat.py -g !{novel_lncRNA_fasta} \
+                                       -x /LncPipeDB/dat/Human_Hexamer.tsv \
+                                       -d /LncPipeDB/dat/Human_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
 }
@@ -857,7 +856,7 @@ process Filter_lncRNA_by_coding_potential_result {
     file novel_longRNA_CPAT_ from novel_longRNA_CPAT_result
     file longRNA_novel_exoncount from novelLncRnaExonCount
     file cuffmergegtf from mergeTranscripts_forCodeingProtential
-    file gencode_annotation_gtf
+    val gencode_annotation_gtf
     file fasta_ref
 
     output:
@@ -944,9 +943,9 @@ process Rerun_CPAT_to_evaluate_lncRNA {
     file "lncRNA.final.CPAT.out" into final_lncRNA_CPAT_result
     shell:
     '''
-        python !{params.cpatpath}/bin/cpat.py -g !{lncRNA_final_cpat_fasta} \
-                                       -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Human_logitModel.RData \
+        cpat.py -g !{lncRNA_final_cpat_fasta} \
+                                       -x /LncPipeDB/dat/Human_Hexamer.tsv \
+                                       -d /LncPipeDB/dat/Human_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
         '''
 
@@ -959,9 +958,9 @@ process Rerun_CPAT_to_evaluate_coding {
     file "protein_coding.final.CPAT.out" into final_coding_gene_CPAT_result
     shell:
     '''
-        python !{params.cpatpath}/bin/cpat.py -g !{final_coding_gene_for_CPAT} \
-                                       -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Human_logitModel.RData \
+        python cpat.py -g !{final_coding_gene_for_CPAT} \
+                                       -x /LncPipeDB/dat/Human_Hexamer.tsv \
+                                       -d /LncPipeDB/dat/Human_logitModel.RData \
                                        -o protein_coding.final.CPAT.out
         '''
 }
@@ -979,7 +978,7 @@ process Secondary_basic_statistic {
 
     shell:
     '''
-        #!/usr/bin/perl -w
+       #!/usr/bin/perl -w
          #since the CPAT arbitrary transformed gene names into upper case 
         #To make the gene names consistently, we apply 'uc' function to unity the gene names 
         use strict;
@@ -1025,6 +1024,7 @@ process Secondary_basic_statistic {
         while(<IN>){
         chomp;
         my @data = split /\\t/,$_;
+        $data[0] = uc($data[0]);
         $lin_class{$data[0]} = $data[1];
         }
         open FH,"lncRNA.final.CPAT.out" or die;
@@ -1041,7 +1041,8 @@ process Secondary_basic_statistic {
             }else{
                 $class = 'NA';
             }
-            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."\n";
+            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."
+";
         }
             
         open FH,"protein_coding.final.CPAT.out" or die;
@@ -1056,9 +1057,10 @@ process Secondary_basic_statistic {
             if (defined($lin_class{$tid})){
                 $class = $lin_class{$tid};
             }else{
-                $class = 'NA';
+                $class = 'protein_coding';
             }
-            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."\n";
+            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."
+";
          }
 
     '''
@@ -1170,10 +1172,12 @@ lncRep_theme = params.lncRep_theme
 lncRep_cdf_percent = params.lncRep_cdf_percent
 lncRep_max_lnc_len = params.lncRep_max_lnc_len
 lncRep_min_expressed_sample = params.lncRep_min_expressed_sample
-design=null
+design=file(params.design)
 if(params.design){
     design = file(params.design)
     if (!design.exists()) exit 1, "Design file not found, plz check your design path: ${params.design}"
+}else{
+
 }
 
 process Run_LncPipeReporter {
