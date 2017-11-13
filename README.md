@@ -195,7 +195,7 @@ For detailed usage of LncPipeReporter in case you are going to run it separately
 LncPipe output was well-summarized in an interactive manner, which was carried out by a novel-developing R package
 [LncPipeReporter](https://github.com/bioinformatist/LncPipeReporter).
 
-## Configuration for use at the first time
+## Configuration for using  at the first time
 As a nextflow-based analysis pipeline, LncPipe allow users edit configure file `nextflow.config` to set the index files and default file path parameters instead of typing in command.
 We strongly recommended that users using config file rather than command input to adjust their parameters.
 For example, plz go to `params` line, and set the following information of your operation system and environment
