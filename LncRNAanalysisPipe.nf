@@ -979,7 +979,7 @@ process Secondary_basic_statistic {
 
     shell:
     '''
-        #!/usr/bin/perl -w
+       #!/usr/bin/perl -w
          #since the CPAT arbitrary transformed gene names into upper case 
         #To make the gene names consistently, we apply 'uc' function to unity the gene names 
         use strict;
@@ -1025,6 +1025,7 @@ process Secondary_basic_statistic {
         while(<IN>){
         chomp;
         my @data = split /\\t/,$_;
+        $data[0] = uc($data[0]);
         $lin_class{$data[0]} = $data[1];
         }
         open FH,"lncRNA.final.CPAT.out" or die;
@@ -1041,7 +1042,8 @@ process Secondary_basic_statistic {
             }else{
                 $class = 'NA';
             }
-            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."\n";
+            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."
+";
         }
             
         open FH,"protein_coding.final.CPAT.out" or die;
@@ -1056,9 +1058,10 @@ process Secondary_basic_statistic {
             if (defined($lin_class{$tid})){
                 $class = $lin_class{$tid};
             }else{
-                $class = 'NA';
+                $class = 'protein_coding';
             }
-            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."\n";
+            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."
+";
          }
 
     '''
