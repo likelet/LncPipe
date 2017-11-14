@@ -57,7 +57,7 @@ def print_cyan = {  str -> ANSI_CYAN + str + ANSI_RESET }
 def print_purple = {  str -> ANSI_PURPLE + str + ANSI_RESET }
 def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
-version = 'v0.1.0'
+version = '0.0.4'
 //Help information
 // Pipeline version
 
@@ -979,7 +979,7 @@ process Secondary_basic_statistic {
 
     shell:
     '''
-       #!/usr/bin/perl -w
+        #!/usr/bin/perl -w
          #since the CPAT arbitrary transformed gene names into upper case 
         #To make the gene names consistently, we apply 'uc' function to unity the gene names 
         use strict;
@@ -1025,7 +1025,6 @@ process Secondary_basic_statistic {
         while(<IN>){
         chomp;
         my @data = split /\\t/,$_;
-        $data[0] = uc($data[0]);
         $lin_class{$data[0]} = $data[1];
         }
         open FH,"lncRNA.final.CPAT.out" or die;
@@ -1042,8 +1041,7 @@ process Secondary_basic_statistic {
             }else{
                 $class = 'NA';
             }
-            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."
-";
+            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."\n";
         }
             
         open FH,"protein_coding.final.CPAT.out" or die;
@@ -1058,10 +1056,9 @@ process Secondary_basic_statistic {
             if (defined($lin_class{$tid})){
                 $class = $lin_class{$tid};
             }else{
-                $class = 'protein_coding';
+                $class = 'NA';
             }
-            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."
-";
+            print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."\n";
          }
 
     '''
@@ -1182,7 +1179,7 @@ if(params.design){
 process Run_LncPipeReporter {
     tag { file_tag }
     publishDir pattern: "*",
-            path: "${params.out_folder}/Result/LncReporter", mode: 'mv'
+            path: "${params.out_folder}/Result/", mode: 'move'
     input:
     //alignmet log
     file design

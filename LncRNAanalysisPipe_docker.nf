@@ -210,9 +210,9 @@ if(params.aligner=='star'){
 
 
 input_folder = file(params.input_folder)
-gencode_annotation_gtf = val(params.gencode_annotation_gtf)
-lncipedia_gtf = val(params.lncipedia_gtf)
-rRNAmaskfile = val(params.rRNAmask)
+gencode_annotation_gtf = file(params.gencode_annotation_gtf)
+lncipedia_gtf = file(params.lncipedia_gtf)
+rRNAmaskfile = file(params.rRNAmask)
 
 //Prepare annotations
 annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
@@ -228,9 +228,8 @@ process combine_public_annotation {
     storeDir { params.out_folder + "/Combined_annotations" }
     input:
     file lncRNA_gtflistfile from LncRNA_gtflist
-    val gencode_annotation_gtf
-    val lncipedia_gtf
-
+    file gencode_annotation_gtf
+    file lncipedia_gtf
     output:
     file "gencode_protein_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
     file "known.lncRNA.gtf" into KnownLncRNAgtf
@@ -334,7 +333,6 @@ if (!params.merged_gtf) {
 
             input:
             file fasta_ref from fasta_ref
-            val gencode_annotation_gtf from gencode_annotation_gtf
 
             output:
             file "genome_ht2.*" into hisat2_index
@@ -591,7 +589,7 @@ if (!params.merged_gtf) {
             input:
             set val(samplename),file(alignment_bam) from hisat_mappedReads
             file fasta_ref
-            val gencode_annotation_gtf
+            file gencode_annotation_gtf
 
             output:
 
@@ -646,7 +644,7 @@ if (!params.merged_gtf) {
             input:
             set val(file_tag), file(alignment_bam) from mappedReads
             file fasta_ref
-            val gencode_annotation_gtf
+            file gencode_annotation_gtf
 
             output:
 
@@ -750,7 +748,7 @@ process Merge_assembled_gtf_with_GENCODE {
     tag { file_tag }
     input:
     file mergeGtfFile from mergeTranscripts_forCompare
-    val gencode_annotation_gtf
+    file gencode_annotation_gtf
 
     output:
     file "merged_lncRNA.merged.gtf.tmap" into comparedGTF_tmap
@@ -856,7 +854,6 @@ process Filter_lncRNA_by_coding_potential_result {
     file novel_longRNA_CPAT_ from novel_longRNA_CPAT_result
     file longRNA_novel_exoncount from novelLncRnaExonCount
     file cuffmergegtf from mergeTranscripts_forCodeingProtential
-    val gencode_annotation_gtf
     file fasta_ref
 
     output:
