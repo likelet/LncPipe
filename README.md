@@ -92,7 +92,11 @@ Of course you can download the lastest binary version of NextFlow by yourself fr
       ```
 * 4. [Bedops](http://bedops.readthedocs.io/en/latest/):[Citation](https://www.ncbi.nlm.nih.gov/pubmed/22576172/)
       ```shell
-      Coming: Waiting ysun's lastest docker file
+      # Install BEDOPS
+      RUN aria2c https://github.com/bedops/bedops/releases/download/v2.4.29/bedops_linux_x86_64-v2.4.29.tar.bz2 -q -o /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 && \
+      	tar xf /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
+      	ln -s /opt/bin/* /usr/local/bin/ && \
+      	rm /opt/bedops_linux_x86_64-v2.4.29.tar.bz2
       ```
 * 5. [PLEK](www.ibiomedical.net): [Citation](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-311)
       ```shell

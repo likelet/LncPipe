@@ -16,39 +16,38 @@ ENTRYPOINT pigz -d /LncPipeDB/*.gz && \
 	/bin/bash
 
 # Update OS
-# Relieve the dependence of readline perl library by prohibiting interactive frontend first
+# DEBIAN_FRONTEND=noninteractive is for relieving the dependence of readline perl library by prohibiting interactive frontend
+# default-jre is for NextFlow (run groovy)
+# gcc and g++ is for compiling CPAT, PLEK as well as some R packages
+# gfortran is for compiling R package hexbin (required by plotly)
+# make is for executing makefiles for several tools
+# Cython provides C header files like Python.h for CPAT compiling
+# DO NOT use pip for installing Cython, which will cause missing .h files
+# zlib1g-dev is for CPAT compiling dependency
+# libncurses5-dev for samtools (may be used later)
+# libssl-dev is for R package openssl
+# libcurl4-openssl-dev is for R package curl
+# perl brings us FindBin module, which is required by FastQC
+# ca-certificates is required by aria2
 RUN export DEBIAN_FRONTEND=noninteractive && \
-	apt-get -qq update &&\
+	apt-get -qq update && \
 	apt-get -qq install -y --no-install-recommends \
-	# For Nextflow (run groovy)
 	default-jre \
-	# For decompress GitHub archieve
 	unzip \
-	# pbzip2 \
+	pbzip2 \
 	pigz \
 	aria2 \
-	# Below two is needed for CPAT and PLEK compiling
 	gcc \
 	g++ \
-	# Needed when compiling R package hexbin (required by plotly)
 	gfortran \
-	# For exec makefile of libsvm-3.0 used by CNCI
 	make \
-	# Provide head file like Python.h for CPAT compiling
 	python-dev \
-	# Must install cython HERE, DO NOT use pip, which will cause missing .h files
 	cython \
-	# For CPAT compiling dependency
 	zlib1g-dev \
-	# For samtools compiling dependency
-	# libncurses5-dev \
-	# Required by R package openssl
 	libssl-dev \
-	# Required by R package curl
 	libcurl4-openssl-dev \
-	# Required by cpanm, or will get "Can't locate PerlIO.pm in @INC" error
-	# FindBin module in
-	perl
+	perl \
+	ca-certificates
 
 # Download databases
 # ADD CANNOT download FTP links and CANNOT resume from break point
@@ -61,11 +60,11 @@ COPY *.gz /LncPipeDB/
 # Set working directory back to /
 WORKDIR /
 
-# Install latest pip WITHOUT setuptools and wheel
+# Install latest pip WITH setuptools (required by setup.py in CPAT) but WITHOUT wheel
 # DO NOT use apt-get python-pip in ubuntu to prevent from complicated related tools and libraries
 # Keep the image size down
 RUN aria2c https://bootstrap.pypa.io/get-pip.py -q -o /opt/get-pip.py && \
-	python /opt/get-pip.py --no-setuptools --no-wheel && \
+	python /opt/get-pip.py --no-wheel && \
 	rm /opt/get-pip.py
 
 # Install required python packages
@@ -89,30 +88,35 @@ RUN aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/
 	rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
 
 # Install CPAT
-RUN aria2c https://jaist.dl.sourceforge.net/project/rna-cpat/v1.2.3/CPAT-1.2.3.tar.gz -q -o /opt/CPAT-1.2.3.tar.gz && \
+# DO NOT use absolute path when setup, and changing directory is necessary. Python interpreter will check current directory for dependencies
+# Remove distribute_setup::use_setuptools() for: https://stackoverflow.com/questions/46967488/getting-error-403-while-installing-package-with-pip/46979531#46979531
+RUN aria2c https://nchc.dl.sourceforge.net/project/rna-cpat/v1.2.3/CPAT-1.2.3.tar.gz -q -o /opt/CPAT-1.2.3.tar.gz && \
 	tar xf /opt/CPAT-1.2.3.tar.gz --use-compress-prog=pigz -C /opt/ && \
-	# DO NOT use absolute path here, changing directory is necessary, python interpreter will check current directory for dependencies
 	cd /opt/CPAT-1.2.3/ && \
 	mv dat/* /LncPipeDB/ && \
-	python setup.py install > /dev/null 2>&1 && \
+	perl -i -lanE'say unless $. == 21' setup.py && \
+	python setup.py install && \
 	rm -rf /opt/CPAT*
 
 # Install PLEK
-RUN aria2c https://nchc.dl.sourceforge.net/project/plek/PLEK.1.2.tar.gz -q -o /opt/PLEK.1.2.tar.gz && \
+# Remove documents, demo files, source files, object files and R scripts
+# dos2unix in perl one-liner: remove BOM head and deal with \r problem
+RUN aria2c https://ncu.dl.sourceforge.net/project/plek/PLEK.1.2.tar.gz -q -o /opt/PLEK.1.2.tar.gz && \
 	tar xf /opt/PLEK.1.2.tar.gz --use-compress-prog=pigz -C /opt/ && \
 	cd /opt/PLEK.1.2/ && \
 	python PLEK_setup.py || : && \
-	# Remove documents, demo files, source files, object files and R scripts
 	rm *.pdf *.txt *.h *.c *.model *.range *.fa *.cpp *.o *.R *.doc PLEK_setup.py && \
 	chmod 755 * && \
-	# dos2unix in perl one-liner: remove BOM head and deal with \r problem
 	perl -CD -pi -e'tr/\x{feff}//d && s/[\r\n]+/\n/' *.py && \
 	ln -s /opt/PLEK.1.2/* /usr/local/bin/ && \
 	rm /opt/PLEK.1.2.tar.gz
 
-# Install CNCI
-# Use bash instead of sh for shopt only works with bash
+# Use bash instead for shopt only works with bash
 SHELL ["/bin/bash", "-c"]
+
+# Install CNCI
+# Enable the extglob shell option
+# Parentheses and the pipe symbol should be escaped
 RUN aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /opt/CNCI-master.zip && \
 	unzip -qq /opt/CNCI-master.zip -d /opt/ && \
 	rm /opt/CNCI-master.zip && \
@@ -120,9 +124,7 @@ RUN aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /op
 	rm /opt/CNCI-master/libsvm-3.0.zip && \
 	cd /opt/CNCI-master/libsvm-3.0 && \
 	make > /dev/null 2>&1 && \
-	# enable the extglob shell option
 	shopt -s extglob && \
-	# Parentheses and the pipe symbol should be escaped
 	rm -rfv !\("svm-predict"\|"svm-scale"\) && \
 	cd .. && \
 	rm draw_class_pie.R LICENSE README.md && \
@@ -130,7 +132,7 @@ RUN aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /op
 	ln -s /opt/CNCI-master/*.py /usr/local/bin/
 
 # Set back to default shell
-# SHELL ["/bin/sh", "-c"]
+SHELL ["/bin/sh", "-c"]
 
 # Install StringTie
 RUN aria2c http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz -q -o /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz && \
@@ -149,18 +151,19 @@ RUN aria2c ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/downloads/hisat2-2.1.0-Linu
 	ln -sf /opt/hisat2-2.1.0/*.py /usr/local/bin/
 
 # Install Kallisto
+# There's some trashy pointers in Kallisto tarball
 RUN aria2c https://github.com/pachterlab/kallisto/releases/download/v0.43.1/kallisto_linux-v0.43.1.tar.gz -q -o  /opt/kallisto_linux-v0.43.1.tar.gz && \
 	tar xf /opt/kallisto_linux-v0.43.1.tar.gz --use-compress-prog=pigz -C /opt/ && \
-	# There's some trashy pointers in Kallisto tarball
 	cd /opt && \
 	rm ._* kallisto_linux-v0.43.1.tar.gz && \
 	cd kallisto_linux-v0.43.1 && \
 	rm -rf ._* 	README.md test && \
 	ln -s /opt/kallisto_linux-v0.43.1/kallisto /usr/local/bin/
 
-# Install Microsoft-R-Open with MKL
-RUN aria2c https://mran.microsoft.com/install/mro/3.4.0/microsoft-r-open-3.4.0.tar.gz -q -o /opt/microsoft-r-open-3.4.0.tar.gz && \
-	tar xf /opt/microsoft-r-open-3.4.0.tar.gz --use-compress-prog=pigz -C /opt/ && \
+# Install Microsoft-R-Open with MKL, you must use MRO v3.4.2 or later
+# For more, see this GitHub issue comment: https://github.com/Microsoft/microsoft-r-open/issues/26#issuecomment-340276347
+RUN aria2c http://mran.microsoft.com/install/mro/3.4.2/microsoft-r-open-3.4.2.tar.gz -q -o /opt/microsoft-r-open-3.4.2.tar.gz && \
+	tar xf /opt/microsoft-r-open-3.4.2.tar.gz --use-compress-prog=pigz -C /opt/ && \
 	cd /opt/microsoft-r-open && \
 	./install.sh -as && \
 	rm -rf /opt/microsoft-r*
@@ -168,26 +171,8 @@ RUN aria2c https://mran.microsoft.com/install/mro/3.4.0/microsoft-r-open-3.4.0.t
 # Cleaning up the apt cache helps keep the image size down (must be placed here, since MRO installation need the cache)
 RUN rm -rf /var/lib/apt/lists/*
 
-# Install R packages (only for LncPipe-Reporter at current stage)
-RUN echo 'install.packages("devtools")' > /opt/packages.R && \
-	echo 'install.packages(c("curl", "httr"))' >> /opt/packages.R && \
-	echo 'install.packages("data.table")' >> /opt/packages.R && \
-	echo 'install.packages("cowplot")' >> /opt/packages.R && \
-	echo 'install.packages("DT")' >> /opt/packages.R && \
-	echo 'devtools::install_github("ramnathv/htmlwidgets")' >> /opt/packages.R && \
-	# Plotly always has too many bugs fixed, so keep using develop branch version :)
-	echo 'devtools::install_github("ropensci/plotly")' >> /opt/packages.R && \
-	echo 'devtools::install_github("vqv/ggbiplot")' >> /opt/packages.R && \
-	echo 'source("https://bioconductor.org/biocLite.R")' >> /opt/packages.R && \
-	echo 'biocLite()' >> /opt/packages.R && \
-	echo 'biocLite("edgeR")' >> /opt/packages.R && \
-	# Heatmaply and plotly may need different version of ggplot2 in dev-branch, keep this statement last to avoid compatibility problems
-	printf 'install.packages("heatmaply")' >> /opt/packages.R && \
-	Rscript /opt/packages.R && \
-	rm /opt/packages.R
-
 # Install cpanminus
-#RUN aria2c https://cpanmin.us/ -q -o /opt/cpanm && \
+# RUN aria2c https://cpanmin.us/ -q -o /opt/cpanm && \
 #	chmod +x /opt/cpanm && \
 #	ln -s /opt/cpanm /usr/local/bin/
 
@@ -204,25 +189,46 @@ RUN aria2c https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.1
 	chmod 755 * && \
 	ln -s /opt/FastQC/fastqc /usr/local/bin/
 
-# Lines below maybe used later
-# Install BWA
-#RUN bash -c 'aria2c https://codeload.github.com/lh3/bwa/zip/master -q -o /opt/bwa-master.zip && \
-#	unzip -qq /opt/bwa-master.zip -d /opt/ && \
-#	rm /opt/bwa-master.zip && \
-#	cd /opt/bwa-master && \
-#	make > /dev/null 2>&1 && \
-#	shopt -s extglob && \
-#	rm -rfv !\("bwa"\|"qualfa2fq.pl"\|"xa2multi.pl"\|"COPYING"\) && \
-#	ln -s /opt/bwa-master/bwa /usr/local/bin/ && \
-#	ln -s /opt/bwa-master/*.pl /usr/local/bin/'
+# Install Pandoc (required by reporter)
+RUN aria2c https://github.com/jgm/pandoc/releases/download/1.19.2.1/pandoc-1.19.2.1-1-amd64.deb -q -o /opt/pandoc-1.19.2.1-1-amd64.deb && \
+	dpkg -i /opt/pandoc-1.19.2.1-1-amd64.deb && \
+	rm /opt/pandoc-1.19.2.1-1-amd64.deb
 
-# Install SAMtools (incomplete)
-#RUN aria2c https://github.com/samtools/samtools/releases/download/1.5/samtools-1.5.tar.bz2 -q -o /opt/samtools-1.5.tar.bz2 && \
-#	tar xf /opt/samtools-1.5.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
-#	cd /opt/samtools-1.5 && \
-#	make && \
-#	make install && \
-#	rm /opt/samtools-1.5.tar.bz2
+# Install PyPy
+RUN aria2c https://bitbucket.org/squeaky/portable-pypy/downloads/pypy-5.9-linux_x86_64-portable.tar.bz2 -q -o /opt/pypy-5.9-linux_x86_64-portable.tar.bz2 && \
+	tar xf /opt/pypy-5.9-linux_x86_64-portable.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
+	rm /opt/pypy-5.9-linux_x86_64-portable/README.rst /opt/pypy-5.9-linux_x86_64-portable.tar.bz2 && \
+	ln -s /opt/pypy-5.9-linux_x86_64-portable/bin/pypy /usr/local/bin/
 
-# Install BCFtools
-# https://github.com/samtools/bcftools/releases/download/1.5/bcftools-1.5.tar.bz2
+# Install BEDOPS
+RUN aria2c https://github.com/bedops/bedops/releases/download/v2.4.29/bedops_linux_x86_64-v2.4.29.tar.bz2 -q -o /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 && \
+	tar xf /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
+	ln -s /opt/bin/* /usr/local/bin/ && \
+	rm /opt/bedops_linux_x86_64-v2.4.29.tar.bz2
+
+# Install AfterQC
+# Use PyPy to run AfterQC as default
+RUN aria2c https://github.com/OpenGene/AfterQC/archive/v0.9.7.tar.gz -q -o /opt/AfterQC-0.9.7.tar.gz && \
+	tar xf /opt/AfterQC-0.9.7.tar.gz --use-compress-prog=pigz -C /opt/ && \
+	cd /opt/AfterQC-0.9.7 && \
+	make && \
+	perl -i -lape's/python/pypy/ if $. == 1' after.py && \
+	rm -rf Dockerfile Makefile README.md testdata report_sample && \
+	rm editdistance/*.cpp editdistance/*.h && \
+	ln -s /opt/AfterQC-0.9.7/*.py /usr/local/bin/ && \
+	rm /opt/AfterQC-0.9.7.tar.gz
+
+# Install R package LncPipeReporter（via GitHub)
+RUN Rscript -e "source('http://bioconductor.org/biocLite.R'); install.packages(c('curl', 'httr')); install.packages('devtools'); devtools::install_github('bioinformatist/LncPipeReporter')"
+
+# Install GffCompare
+RUN aria2c https://github.com/gpertea/gffcompare/archive/master.zip -q -o /opt/gffcompare-master.zip && \
+	aria2c https://github.com/gpertea/gclib/archive/master.zip -q -o /opt/gclib-master.zip && \
+	unzip -qq /opt/gffcompare-master.zip -d /opt/ && \
+	unzip -qq /opt/gclib-master.zip -d /opt/ && \
+	rm /opt/gffcompare-master.zip /opt/gclib-master.zip && \
+	mv /opt/gclib-master /opt/gclib && \
+	cd /opt/gffcompare-master && \
+	make release && \
+	rm Makefile README.md gtf_tracking.h *.o *.cpp *.sh && \
+ln -s /opt/gffcompare-master/gffcompare /usr/local/bin/
