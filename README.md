@@ -1,4 +1,5 @@
 # [LncPipe](https://github.com/likelet/LncPipe) 
+[![GitHub issue state](https://img.shields.io/github/issues/detail/s/badges/shields/979.svg)](https://github.com/likelet/LncPipe/issues)
  [![AUR](https://img.shields.io/aur/license/yaourt.svg)](https://github.com/likelet/LncPipe/blob/master/LICENSE)
  [![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.24.0-brightgreen.svg)](http://nextflow.io)
 ## Overall
