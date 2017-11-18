@@ -1,5 +1,5 @@
 # [LncPipe](https://github.com/likelet/LncPipe) 
-[![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.24.0-brightgreen.svg)](http://nextflow.io)
+ [![License][license-badge]][license-link] [![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.24.0-brightgreen.svg)](http://nextflow.io)
 ## Overall
 Recently, long noncoding RNA molecules (lncRNA) captured widespread attentions for its critical 
 roles in diverse biological process and important implications in variety of human diseases and 
