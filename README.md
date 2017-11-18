@@ -43,7 +43,7 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 ```shell
 $ wget -qO- get.nextflow.io | bash
 ```
-      It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
+> It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
 
 2. Optionally, move the ```nextflow``` file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
 
