@@ -409,17 +409,17 @@ if (!params.merged_gtf) {
 
             output:
             file "QC/*.html" into fastqc_for_waiting
-            file "*.good.fq" into readPairs_for_discovery,readPairs_for_kallisto
+            file "*.good.fq.gz" into readPairs_for_discovery,readPairs_for_kallisto
             shell:
             fastq_tag = samplename
             fastq_threads = idv_cpu - 1
             if (params.singleEnd) {
                 '''
-            after.py -1 !{fastq_file[0]} -g ./
+            after.py -z -1 !{fastq_file[0]} -g ./
             '''
             } else {
                 '''
-            after.py -1 !{fastq_file[0]} -2 !{fastq_file[1]} -g ./
+            after.py -z -1 !{fastq_file[0]} -2 !{fastq_file[1]} -g ./
             '''
             }
         }
