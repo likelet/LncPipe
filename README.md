@@ -1,5 +1,6 @@
 # [LncPipe](https://github.com/likelet/LncPipe) 
-[![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.24.0-brightgreen.svg)](http://nextflow.io)
+[![AUR](https://img.shields.io/aur/license/yaourt.svg)](https://github.com/likelet/LncPipe/blob/master/LICENSE)
+ [![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.24.0-brightgreen.svg)](http://nextflow.io)
 ## Overall
 Recently, long noncoding RNA molecules (lncRNA) captured widespread attentions for its critical 
 roles in diverse biological process and important implications in variety of human diseases and 
@@ -42,7 +43,7 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 ```shell
 $ wget -qO- get.nextflow.io | bash
 ```
-      It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
+> It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
 
 2. Optionally, move the ```nextflow``` file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
 
