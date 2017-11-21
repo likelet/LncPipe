@@ -77,17 +77,18 @@ if (params.help) {
     log.info print_yellow('    The typical command for running the pipeline is as follows:\n') +
             print_purple('       Nextflow lncRNApipe.nf \n') +
 
-            print_yellow('    Mandatory arguments:             Input and output setting\n') +
-            print_cyan('      --input_folder                ') + print_green('Path to input data(optional), current path default\n') +
-            print_cyan('      --fastq_ext                   ') + print_green('Filename pattern for pairing raw reads, e.g: *_{1,2}.fastq.gz for paired reads\n') +
-            print_cyan('      --out_folder                  ') + print_green('The output directory where the results will be saved(optional), current path is default\n') +
-            print_cyan('      --aligner                     ') + print_green('Aligner for reads mapping (optional), STAR is default and supported only at present\n') +
-            print_cyan('      --qctools                     ') + print_green('Tools for assess reads quality, fastqc/afterqc\n') +
+            print_yellow('    General arguments:             Input and output setting\n') +
+            print_cyan('      --input_folder <path>         ') + print_green('Path to input data(optional), current path default\n') +
+            print_cyan('      --fastq_ext <*_fq.gz>         ') + print_green('Filename pattern for pairing raw reads, e.g: *_{1,2}.fastq.gz for paired reads\n') +
+            print_cyan('      --out_folder <path>           ') + print_green('The output directory where the results will be saved(optional), current path is default\n') +
+            print_cyan('      --aligner <hisat>             ') + print_green('Aligner for reads mapping (optional), HISAT is default and supported only at present, "hisat"/"star"/"tophat"\n') +
+            print_cyan('      --qctools <fastqc>            ') + print_green('Tools for assess reads quality, fastqc(default)/afterqc\n') +
             '\n' +
             print_yellow('    Options:                         General options for run this pipeline\n') +
-            print_cyan('      --merged_gtf                  ') + print_green('Start analysis with assemblies already produced and skip fastqc/alignment step, DEFAOUL NULL\n') +
-            print_cyan('      --design                      ') + print_green('A flat file stored the experimental design information ( required when perform differential expression analysis)\n') +
-
+            print_cyan('      --merged_gtf <gtffile>        ') + print_green('Start analysis with assemblies already produced and skip fastqc/alignment step, DEFAOUL NULL\n') +
+            print_cyan('      --design <file>               ') + print_green('A flat file stored the experimental design information ( required when perform differential expression analysis)\n') +
+            print_cyan('      --singleEnd                   ') + print_green('Reads type, True for single ended \n') +
+            print_cyan('      --unstrand                    ') + print_green('RNA library construction strategy, specified for unstranded library \n') +
             '\n' +
             print_yellow('    References:                      If not specified in the configuration file or you wish to overwrite any of the references.\n') +
             print_cyan('      --fasta                       ') + print_green('Path to Fasta reference(required)\n') +
@@ -143,9 +144,9 @@ params.out_folder = './'
 params.merged_gtf = null
 
 
-singleEnd = params.singleEnd ? "true" : "false"
-skip_combine = params.skip_combine ? "true" : "false"
-
+singleEnd = params.singleEnd ? true : false
+skip_combine = params.skip_combine ? true : false
+unstrand = params.unstrand ? true : false
 //Checking parameters
 log.info print_purple("You are running LncPipe with the following parameters:")
 log.info print_purple("Checking parameters ...")
@@ -520,16 +521,20 @@ if (!params.merged_gtf) {
             file_tag_new = file_tag
             tophat_threads = ava_cpu- 1
             index_base = bowtie2_index[0].toString() - ~/.\d.bt2/
+            strand_str="fr-firststrand"
+            if(unstrand){
+                strand_str="fr-unstranded"
+            }
             if (params.singleEnd) {
                 println print_purple("Initial reads mapping of " + samplename + " performed by Tophat in single-end mode")
                 '''
-                         tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout !{index_base} !{pair} 
+                         tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout --library-type !{strand_str} !{index_base} !{pair} 
                          
                 '''
             } else {
                 println print_purple("Initial reads mapping of " + samplename + " performed by Tophat in paired-end mode")
                 '''
-                     tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout !{index_base} !{pair[0]} !{pair[1]} 
+                     tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout --library-type !{strand_str} !{index_base} !{pair[0]} !{pair[1]} 
                 '''
             }
         }
@@ -559,9 +564,11 @@ if (!params.merged_gtf) {
             file_tag_new = file_tag
             hisat2_threads = ava_cpu- 2
             index_base = hisat2_id[0].toString() - ~/.\d.ht2/
-            if (params.singleEnd) {
-                println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in single-end mode")
-                '''
+
+            if(unstrand){
+                if (params.singleEnd) {
+                    println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in single-end mode")
+                    '''
                    hisat2  -p !{hisat2_threads} --dta  -x  !{index_base}  -U !{pair}  -S !{file_tag_new}.sam 2>!{file_tag_new}.hisat2_summary.txt
                   sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam 
                   sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} temp.bam
@@ -569,14 +576,35 @@ if (!params.merged_gtf) {
                   rm temp.bam
                   
                 '''
-            } else {
-                println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in paired-end mode")
-                '''
+                } else {
+                    println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in paired-end mode")
+                    '''
                   hisat2  -p !{hisat2_threads} --dta  -x  !{index_base}  -1 !{pair[0]}  -2 !{pair[1]}  -S !{file_tag_new}.sam 2> !{file_tag_new}.hisat2_summary.txt
                   sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam
                   sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} temp.bam
                   rm !{file_tag_new}.sam
                 '''
+                }
+            }else {
+                if (params.singleEnd) {
+                    println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in single-end mode")
+                    '''
+                   hisat2  -p !{hisat2_threads} --dta --fr -x  !{index_base}  -U !{pair}  -S !{file_tag_new}.sam 2>!{file_tag_new}.hisat2_summary.txt
+                  sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam 
+                  sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} temp.bam
+                  rm !{file_tag_new}.sam
+                  rm temp.bam
+                  
+                '''
+                } else {
+                    println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in paired-end mode")
+                    '''
+                  hisat2  -p !{hisat2_threads} --dta --fr -x  !{index_base}  -1 !{pair[0]}  -2 !{pair[1]}  -S !{file_tag_new}.sam 2> !{file_tag_new}.hisat2_summary.txt
+                  sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam
+                  sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} temp.bam
+                  rm !{file_tag_new}.sam
+                '''
+                }
             }
         }
     }
@@ -603,10 +631,18 @@ if (!params.merged_gtf) {
             file_tag_new = file_tag
             stringtie_threads = ava_cpu- 2
 
+            if(unstrand){
+                '''
+            #run stringtie
+            stringtie -p !{stringtie_threads} -G !{gencode_annotation_gtf} -l stringtie_!{file_tag_new} -o stringtie_!{file_tag_new}_transcripts.gtf !{alignment_bam}
             '''
+            }else{
+                '''
             #run stringtie
             stringtie -p !{stringtie_threads} -G !{gencode_annotation_gtf} --rf -l stringtie_!{file_tag_new} -o stringtie_!{file_tag_new}_transcripts.gtf !{alignment_bam}
             '''
+            }
+
         }
 // Create a file 'gtf_filenames' containing the filenames of each post processes cufflinks gtf
         stringTieoutgtf.collectFile { file -> ['gtf_filenames.txt', file.name + '\n'] }
@@ -656,13 +692,17 @@ if (!params.merged_gtf) {
             shell:
             file_tag_new = file_tag
             cufflinks_threads = ava_cpu- 1
+            strand_str="fr-firststrand"
+            if(unstrand){
+                strand_str="fr-unstranded"
+            }
             if (params.aligner == 'tophat') {
                 '''
             #run cufflinks
             
             cufflinks -g !{gencode_annotation_gtf} \
                       -b !{fasta_ref} \
-                      --library-type fr-firststrand \
+                      --library-type !{strand_str}\
                       --max-multiread-fraction 0.25 \
                       --3-overhang-tolerance 2000 \
                       -o Cufout_!{file_tag_new} \
@@ -677,7 +717,7 @@ if (!params.merged_gtf) {
             
             cufflinks -g !{gencode_annotation_gtf} \
                       -b !{fasta_ref} \
-                      --library-type fr-firststrand \
+                      --library-type !{strand_str} \
                       --max-multiread-fraction 0.25 \
                       --3-overhang-tolerance 2000 \
                       -o Cufout_!{file_tag_new} \

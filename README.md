@@ -227,15 +227,19 @@ params {
            sam_processor="sambamba" // If aligner is hisat, we need process sam file for downstream analysis
     qctools = "afterqc"
            afterqc_path="/data/software/afterQC/AfterQC-master/"
-//other options
-  //sequencing strategy
-   singleEnd = false
-  //skip options
-   skip_combine = false
-
-  //resource information
-   mem=50
-   cpu=40
+     lncRep_Output = 'reporter.html'
+     lncRep_theme = 'npg'
+     lncRep_cdf_percent = 10
+     lncRep_max_lnc_len = 10000
+     lncRep_min_expressed_sample = 50// gene with more than 50% samples expressed were retained
+ 
+     //other options
+     //sequencing strategy
+     singleEnd = false
+     //skip options
+     skip_combine = false
+     cpu=20
+         mem=60 //60G
 ////////////////////////////////
 
 }
@@ -269,6 +273,7 @@ params {
 |--singleEnd  | `FALSE` | specify that the reads are single ended  |
 |--merged_gtf | `FALSE` | Skip mapping and assembly step by directly providing assembled merged gtf files|
 |--design     | `FALSE` | a txt file that stored experimental design information, plz see details from `--design` section below |
+|--unstrand     | `TRUE` | specify that library is unstrand specific  |
 
 * #### LncPipeReporter options
 
