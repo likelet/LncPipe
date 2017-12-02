@@ -53,14 +53,16 @@ Of course you can download the lastest binary version of NextFlow by yourself fr
 #### References, index and annotation files（required）
 
 1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch37_tran.tar.gz ) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
+> Building index of hisat require relative large amount of memory, we sugguested that users  downloaded it directly from hisat website.
 
-2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.). If index not provided.
+2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.). 
 
 3. GENCODE gene annotation file in GTF format:[gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
 
 4. LNCipedia gene annotation file in GTF format:[lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
 
-5. rRNA feature files from UCSC in GTF format.
+5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
+
 
 #### Software and tools (required when docker image is not favored)
 * 1. [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml)
