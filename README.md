@@ -60,7 +60,6 @@ Of course you can download the lastest binary version of NextFlow by yourself fr
 
 4. LNCipedia gene annotation file in GTF format:[lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
 
-5. rRNA feature files from UCSC in GTF format.
 
 #### Software and tools (required when docker image is not favored)
 * 1. [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml)
@@ -181,6 +180,13 @@ For detailed usage of LncPipeReporter in case you are going to run it separately
     	rm -rf ._* 	README.md test && \
     	ln -s /opt/kallisto_linux-v0.43.1/kallisto /usr/local/bin/
     ```
+* 11. [sambamba](http://lomereiter.github.io/sambamba/)
+    ```shell
+    # Install sambamba RUN aria2c https://github.com/biod/sambamba/releases/download/v0.6.7/sambamba_v0.6.7_linux.tar.bz2 -q -o /opt/sambamba_v0.6.7_linux.tar.bz2 && \
+	tar xf /opt/sambamba_v0.6.7_linux.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
+	ln -s /opt/sambamba /usr/local/bin/ && \
+	rm /opt/sambamba_v0.6.7_linux.tar.bz2
+    ```
 **Alternatively, when you are going to using STAR-Cufflinks in your system, the corresponding installation command should be as follows:**
 * 1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
       ```shell
@@ -207,57 +213,51 @@ We strongly recommended that users using config file rather than command input t
 For example, plz go to `params` line, and set the following information of your operation system and environment
 ```groovy
 params {
-////////////////////////////////////
-//USER MODIFICATIONS //
-   fasta_ref = 'your/genome/reference/path/genome.fa'
-   //star index
-   star_idex = 'your/STAR/reference/index/path'
-   //bowtie index
-      //bowtie2_index=''
+/*
+    User setting options (mandatory)
+     */
+// input file and genome reference()
+    fastq_ext = '*_{1,2}.clean.fq.gz'
+    fasta_ref = '/data/database/hg38/genome.fa'
+    design = 'design.file'
+    hisat2_index = '/data/database/hg38/hisatIndex/grch38_snp_tran/genome_snp_tran'
+    gencode_annotation_gtf = "/data/database/hg38/Annotation/gencode.v24.annotation.gtf"
+    lncipedia_gtf = "/data/database/hg38/Annotation/lncipedia_4_0_hg38.gtf"
+    cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2/'
 
-   gencode_annotation_gtf = "Path/to/gencode/annotation/gencode.v24.annotation.gtf"
-   lncipedia_gtf = "Path/to/lncipedia/annotation/lncipedia_4_0_hg38.gtf"
-   rRNAmask = "Path/to/rRNA/annotation/hg38_rRNA.gtf";
-
-// software path
-   plekpath = 'Path/to/PLEK/PLEK.1.2/'
-   cncipath = 'Path/to/CNCI-master'
-   cpatpath = 'Path/to/CPAT-1.2.2/'
-// set aligner
-    aligner = "star"
-           sam_processor="sambamba" // If aligner is hisat, we need process sam file for downstream analysis
-    qctools = "afterqc"
-           afterqc_path="/data/software/afterQC/AfterQC-master/"
-     lncRep_Output = 'reporter.html'
-     lncRep_theme = 'npg'
-     lncRep_cdf_percent = 10
-     lncRep_max_lnc_len = 10000
-     lncRep_min_expressed_sample = 50// gene with more than 50% samples expressed were retained
- 
-     //other options
-     //sequencing strategy
-     singleEnd = false
-     //skip options
-     skip_combine = false
-     cpu=20
-         mem=60 //60G
-////////////////////////////////
-
+/*
+    User setting options (optional)
+     */
+    star_idex = ''//set if star used
+    bowtie2_index = ''//set if tophat used
+    aligner = "hisat" // or "star","tophat"
+    sam_processor="sambamba"//or "samtools"
+    qctools = "fastqc" // or "afterqc"
+    singleEnd = false
+    strand = false
+    skip_combine = false
+    lncRep_Output = 'reporter.html'
+    lncRep_theme = 'npg'
+    lncRep_cdf_percent = 10
+    lncRep_max_lnc_len = 10000
+    lncRep_min_expressed_sample = 50
+    mem=60//Gb
+    cpu=30
 }
 
 ```
 
 ## Parameters
 > Those parameters would cover the setting from `nextflow.config` file
-* #### Mandatory
+* #### Mandatory(plz configure those in *nextflow.config* file)
 | Name | Example/Default value | Description |
 |-----------|--------------:|-------------|
 |--input_folder | `.` | input folder |
 |--fastq_ext | `*_{1,2}.fastq.gz` | input raw paired reads |
 |--out_folder |  `.` | output folder |
-|--aligner |  `star` | Aligner for reads mapping (optional), STAR is default and supported only at present,*star*/*tophat*/*hisat2*|
-|--qctools |  `afterqc` | Tools for assess raw reads quality or filtered by AfterQC, *fastqc* or *afterqc*|
-* #### References(can be configured in *nextflow.config* file)
+|--design     | `FALSE` | a txt file that stored experimental design information, plz see details from `--design` section below |
+
+* #### References
 
 | Name | Required | Description |
 |-----------|--------------|-------------|
@@ -265,7 +265,11 @@ params {
 |--fasta  | `-` | Path to Fasta reference(required if not set in config file)|
 |--gencode_annotation_gtf  | `-` | An annotation file from GENCODE database for annotating lncRNAs(required if not set in config file). e.g. [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz) |
 |--lncipedia_gtf  | `-` | An annotation file from LNCipedia database for annotating lncRNAs(required if not set in config file) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
-|--rRNAmask  | `-` |rRNA GTF for filtering rRNA transcript from gtf files(required if not set in config file) e.g. |
+* ### software path (should not setting when using docker )
+| Name | Required | Description |
+|-----------|--------------|-------------|
+|--cpatpath  | `-` | Home folder of cpat installed location |
+> since cpat may call model data from its home path, users should specified where the model file is located in. Especially users install cpat by themselves without our install code.  
 
 * #### Optional
 
@@ -273,8 +277,9 @@ params {
 |-----------|--------------|-------------|
 |--singleEnd  | `FALSE` | specify that the reads are single ended  |
 |--merged_gtf | `FALSE` | Skip mapping and assembly step by directly providing assembled merged gtf files|
-|--design     | `FALSE` | a txt file that stored experimental design information, plz see details from `--design` section below |
 |--unstrand     | `TRUE` | specify that library is unstrand specific  |
+|--aligner |  `star` | Aligner for reads mapping (optional), STAR is default and supported only at present,*star*/*tophat*/*hisat2*|
+|--qctools |  `afterqc` | Tools for assess raw reads quality or filtered by AfterQC, *fastqc* or *afterqc*|
 
 * #### LncPipeReporter options
 
@@ -361,9 +366,9 @@ Result/
 * `QC` stored the Quality control output generated by FastQC or AfterQC software.<br>
 * `Identified_lncRNA` contains all assembled lncRNA and their sequences. *all_lncRNA_for_classifier.gtf* includes both novel and known lncRNA features in [GTF format](http://www.ensembl.org/info/website/upload/gff.html);
 *lncRNA.fa* is all lncRNA sequences in fasta format. *protein_coding.final.gtf* and *protein_coding.fa* are protein coding information extracted from gencode annotation. *final_all.gtf* and *final_all.fa* are combined files for further analysis.<br>
-* `Star_alignment` are STAR aligner standard output<br>
-* `Quantification` are estimated abundance using kallisto. *kallisto.count.txt* are reads count matrix and *kallisto.tpm.txt* are tpm(Transcripts Per Kilobase Million) matrix.
-* `LncReporter` stored the interactive report file and differential expression matrix generated by EdgeR.
+* `Alignment` are hisat/tophat/STAR aligner standard output<br>
+* `Quantification` are estimated abundance using kallisto. *kallisto.count.txt* stored reads count matrix and *kallisto.tpm.txt* are tpm(Transcripts Per Kilobase Million) matrix.
+* `LncReporter` stored the interactive report file and differential expression matrix generated by LncPipeReporter which wrapped EdgeR.
 ## Tips to improve analysis experience :punch:	
 * :blush:Plz keep the consistency of your genome sequence, index library and annotation files: genome version, chromosome format, gtf coordinated e.g. The third-party software may stop for any of the above reasons. 
 * :confused:Setting your analysis parameters always in config file, differ project should  corresponding to differ configurations for reproductive analysis. To rerun a project, you can just specify -c `your.config` in your command, which can also help you to record analysis parameters.

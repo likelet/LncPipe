@@ -128,8 +128,6 @@ params.out_folder = './'
 //params.rRNAmask = "/data/database/human/hg38/annotation/hg38_rRNA.gtf";
 //// software path
 //params.plekpath = '/home/zhaoqi/software/PLEK.1.2/'
-////params.cncipath = '/data/software/CNCI-master'
-//params.cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2/'
 //params.fasta_ref = null
 //params.star_idex = null
 //params.bowtie2_index = null
@@ -161,8 +159,7 @@ log.info print_yellow("Star index path:                ") + print_green(params.s
 log.info print_yellow("hisat index path:                ") + print_green(params.hisat2_index)
 log.info print_yellow("bowtie/tophat index path:                ") + print_green(params.bowtie2_index)
 log.info print_yellow("GENCODE annotation location:    ") + print_green(params.gencode_annotation_gtf)
-log.info print_yellow("lncipedia ann0tation location:  ") + print_green(params.lncipedia_gtf)
-log.info print_yellow("rRNA annotation location:       ") + print_green(params.rRNAmask)
+log.info print_yellow("lncipedia annotation location:  ") + print_green(params.lncipedia_gtf)
 log.info print_yellow("=====================================")
 log.info "\n"
 
@@ -344,7 +341,7 @@ if (!params.merged_gtf) {
             shell:
             hisat2_index_threads = ava_cpu- 1
             """
-                #for human genome it will take more than 160GB memory and take really  long time (6 more hours), thus we recommand to down preduild genome from hisat website
+                #for human genome it will take more than 160GB memory and take really  long time (6 more hours), thus we recommand to down pre-build genome from hisat website
                 extract_splice_sites.py gencode_annotation_gtf >genome_ht2.ss
                 extract_exons.py gencode_annotation_gtf > genome_ht2.exon 
                 hisat2-build -p !{hisat2_index_threads} --ss genome_ht2.ss --exo genome_ht2.exon !{fasta_ref} genome_ht2 
@@ -854,7 +851,7 @@ process Predict_coding_abbilities_by_PLEK {
     shell:
     plek_threads = ava_cpu- 1
     '''
-        python !{params.plekpath}/PLEK.py -fasta !{novel_lncRNA_fasta} \
+        PLEK.py -fasta !{novel_lncRNA_fasta} \
                                    -out novel.longRNA.PLEK.out \
                                    -thread !{plek_threads}
 	    exit 0
@@ -868,7 +865,7 @@ process Predict_coding_abbilities_by_CPAT {
     file "novel.longRNA.CPAT.out" into novel_longRNA_CPAT_result
     shell:
     '''
-        python !{params.cpatpath}/bin/cpat.py -g !{novel_lncRNA_fasta} \
+        cpat.py -g !{novel_lncRNA_fasta} \
                                        -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
                                        -d !{params.cpatpath}/dat/Human_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
@@ -984,7 +981,7 @@ process Rerun_CPAT_to_evaluate_lncRNA {
     file "lncRNA.final.CPAT.out" into final_lncRNA_CPAT_result
     shell:
     '''
-        python !{params.cpatpath}/bin/cpat.py -g !{lncRNA_final_cpat_fasta} \
+        cpat.py -g !{lncRNA_final_cpat_fasta} \
                                        -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
                                        -d !{params.cpatpath}/dat/Human_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
@@ -999,7 +996,7 @@ process Rerun_CPAT_to_evaluate_coding {
     file "protein_coding.final.CPAT.out" into final_coding_gene_CPAT_result
     shell:
     '''
-        python !{params.cpatpath}/bin/cpat.py -g !{final_coding_gene_for_CPAT} \
+        cpat.py -g !{final_coding_gene_for_CPAT} \
                                        -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
                                        -d !{params.cpatpath}/dat/Human_logitModel.RData \
                                        -o protein_coding.final.CPAT.out
@@ -1143,35 +1140,20 @@ process Run_kallisto_for_quantification {
     kallisto_threads = ava_cpu- 1
     if (params.singleEnd) {
         println print_purple("Quantification by kallisto in single end mode")
-        if(params.qctools=="fastqc"){
             '''
         #quantification by kallisto in single end mode
         kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  <(zcat !{pair} ) 
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
         '''
-        }else {
-            '''
-        #quantification by kallisto in single end mode
-        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  !{pair} 
-        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
-        '''
-        }
+
 
     } else {
         println print_purple("quantification by kallisto in paired end mode")
-        if(params.qctools=="fastqc") {
             '''
         #quantification by kallisto 
         kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 <(zcat !{pair[0]} ) <(zcat !{pair[1]})
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
         '''
-        }else{
-            '''
-        #quantification by kallisto 
-        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} !{pair[1]}
-        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
-        '''
-        }
     }
 }
 
