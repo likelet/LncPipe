@@ -18,30 +18,31 @@ directly and resume analysis from continues checkpoint.
 ## Schematic diagram
  ![LncRNApipe](./image/LncRNApipe.png)
 
-## Run LncPipe
-Run the workflow
-```shell
-$ nextflow <your nf file> -c nextflow.config -with-trace
-```
+### Install [Nextflow](https://github.com/nextflow-io/nextflow)
+LncPipe is implemented with Nextflow pipeline manage system. To run our pipelines. [Nextflow](https://github.com/nextflow-io/nextflow) should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.
+Here, we show the step by step installation of [Nextflow](https://github.com/nextflow-io/nextflow) in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
 
-If the pipeline fails at any point and you fix the issue, you can revoke the processes with job avoidance using this command:
-```shell
-$ nextflow <your nf file> -c nextflow.config -with-trace -resume [--design design.matrix]
-```
+1. Download the executable package by copying and pasting the following command in your terminal window:
+    ```shell
+    wget -qO- get.nextflow.io | bash
+    ```
+> It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
 
+2. Optionally, move the ```nextflow``` file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
+Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
 All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
+
+3. A type command for run nextflow 
+       ```shell
+                nextflow LncRNAanalysisPipe.nf
+       ```
 ## Prepare input files 
 #### References, index and annotation files（required）
-
 1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch37_tran.tar.gz ) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
 > Building index of hisat require relative large amount of memory, we sugguested that users  downloaded it directly from the hisat website.
-
 2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.). 
-
 3. GENCODE gene annotation file in GTF format:[gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
-
 4. LNCipedia gene annotation file in GTF format:[lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
-
 5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 
 ## Run [LncPipe](https://github.com/likelet/LncPipe) from Docker 
@@ -49,29 +50,16 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 2. Modify the `docker.config` that mandatory section.
 3. Install docker
 4. Just type the command 
-```shell
-nextflow -c docker.config LncRNAanalysisPipe.nf
-```
+        ```shell
+        nextflow -c docker.config LncRNAanalysisPipe.nf
+        ```
 > nextflow can automatically pull image from docker.io. dockerfile was also provide for record that what we have done in the image.
 
 ## Installation of dependencies (Run [LncPipe](https://github.com/likelet/LncPipe)  at host environment ).
-### Install [Nextflow](https://github.com/nextflow-io/nextflow)
-LncPipe is implemented with Nextflow pipeline manage system. To run our pipelines. [Nextflow](https://github.com/nextflow-io/nextflow) should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.
-Here, we show the step by step installation of [Nextflow](https://github.com/nextflow-io/nextflow) in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
 
-1. Download the executable package by copying and pasting the following command in your terminal window:
-```shell
-$ wget -qO- get.nextflow.io | bash
-```
-> It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
+### Install third-party software and databases required by LncPipe
 
-2. Optionally, move the ```nextflow``` file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
-
-Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
-
-### Install third-party software and databases required by each pipe
-
-#### Software and tools (required when docker image is not favored)
+#### Prerequisites install command (required when docker image is not favored).e.g ubuntu.
 * 1. [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml)
       ```shell
       aria2c ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/downloads/hisat2-2.1.0-Linux_x86_64.zip -q -o /opt/hisat2-2.1.0-Linux_x86_64.zip && \
@@ -174,7 +162,6 @@ Of course you can download the lastest binary version of NextFlow by yourself fr
 When using afterQC, we recommended that users install `pypy` in your operation system, which can accelerated about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by author of AfterQC.
 
 * 9. Install [LncPipeReporter](https://github.com/bioinformatist/LncPipe-Reporter)
-
       Install [pandoc](https://pandoc.org/installing.html) first. Then run commands:
       ```shell
       Rscript -e "install.packages('devtools'); devtools::install_github('bioinformatist/LncPipeReporter')"
