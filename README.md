@@ -30,9 +30,29 @@ $ nextflow <your nf file> -c nextflow.config -with-trace -resume [--design desig
 ```
 
 All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
+## Prepare input files 
+#### References, index and annotation files（required）
 
+1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch37_tran.tar.gz ) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
+> Building index of hisat require relative large amount of memory, we sugguested that users  downloaded it directly from the hisat website.
 
-## Run [LncPipe](https://github.com/likelet/LncPipe) from Docker image
+2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.). 
+
+3. GENCODE gene annotation file in GTF format:[gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
+
+4. LNCipedia gene annotation file in GTF format:[lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
+
+5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
+
+## Run [LncPipe](https://github.com/likelet/LncPipe) from Docker 
+1. Prepare input files by following the first section of Installation 
+2. Modify the `docker.config` that mandatory section.
+3. Install docker
+4. Just type the command 
+```shell
+nextflow -c docker.config LncRNAanalysisPipe.nf
+```
+> nextflow can automatically pull image from docker.io. dockerfile was also provide for record that what we have done in the image.
 
 ## Installation of dependencies (Run [LncPipe](https://github.com/likelet/LncPipe)  at host environment ).
 ### Install [Nextflow](https://github.com/nextflow-io/nextflow)
@@ -50,19 +70,6 @@ $ wget -qO- get.nextflow.io | bash
 Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
 
 ### Install third-party software and databases required by each pipe
-#### References, index and annotation files（required）
-
-1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch37_tran.tar.gz ) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
-> Building index of hisat require relative large amount of memory, we sugguested that users  downloaded it directly from hisat website.
-
-2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.). 
-
-3. GENCODE gene annotation file in GTF format:[gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
-
-4. LNCipedia gene annotation file in GTF format:[lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
-
-5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
-
 
 #### Software and tools (required when docker image is not favored)
 * 1. [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml)
