@@ -633,7 +633,7 @@ if (!params.merged_gtf) {
         process StringTie_merge_assembled_gtf {
 
             tag { file_tag }
-            publishDir pattern: "StringTie/merged.gtf",
+            publishDir pattern: "merged.gtf",
                     path: { params.out_folder + "/Result/Merged_assemblies" }, mode: 'copy', overwrite: true
 
             input:
@@ -1076,7 +1076,7 @@ process Secondary_basic_statistic {
             if (defined($lin_class{$tid})){
                 $class = $lin_class{$tid};
             }else{
-                $class = 'NA';
+                $class = 'protein_coding';
             }
             print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."\n";
          }
