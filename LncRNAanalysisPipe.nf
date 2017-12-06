@@ -57,7 +57,8 @@ def print_cyan = {  str -> ANSI_CYAN + str + ANSI_RESET }
 def print_purple = {  str -> ANSI_PURPLE + str + ANSI_RESET }
 def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
-version = '0.0.4'
+version = '0.0.5'
+dev_date = '2017-12-6 12:43'
 //Help information
 // Pipeline version
 
@@ -93,8 +94,7 @@ if (params.help) {
             print_yellow('    References:                      If not specified in the configuration file or you wish to overwrite any of the references.\n') +
             print_cyan('      --fasta                       ') + print_green('Path to Fasta reference(required)\n') +
             print_cyan('      --gencode_annotation_gtf      ') + print_green('An annotation file from GENCODE database for annotating lncRNAs(required)\n') +
-            print_cyan('      --lncipedia_gtf               ') + print_green('An annotation file from LNCipedia database for annotating lncRNAs(required)\n') +
-            print_cyan('      --rRNAmask                    ') + print_green('rRNA GTF for removing rRNA transcript from gtf files(required)\n') +
+            print_cyan('      --lncipedia_gtf               ') + print_green('An annotation file from LNCipedia database for annotating lncRNAs(required)\n') + print_cyan('      --rRNAmask                    ') + print_green('rRNA GTF for removing rRNA transcript from gtf files(required)\n') +
             '\n' +
             print_yellow('    LncPipeReporter Options:         LncPipeReporter setting  \n') +
             print_cyan('      --lncRep_Output                ') + print_green('Specify report file name, \"report.html\" default.\n') +
@@ -118,26 +118,7 @@ params.input_folder = './'
 params.out_folder = './'
 
 // Reference
-// already defined in nextflow.config file
-// Set reference information here if you don't want to pass them from parameter any longer, we recommand users using the latest reference and the annotation file with the sample genome version.
-//params.fasta_ref = '/data/database/human/hg38/genome.fa'
-//params.star_idex = '/data/database/human/hg38/RSEM_STAR_Index'
-//params.bowtie2_index=false
-//params.gencode_annotation_gtf = "/data/database/human/hg38/annotation/gencode.v24.annotation.gtf"
-//params.lncipedia_gtf = "/data/database/human/hg38/annotation/lncipedia_4_0_hg38.gtf"
-//params.rRNAmask = "/data/database/human/hg38/annotation/hg38_rRNA.gtf";
-//// software path
-//params.plekpath = '/home/zhaoqi/software/PLEK.1.2/'
-//params.fasta_ref = null
-//params.star_idex = null
-//params.bowtie2_index = null
-//params.gencode_annotation_gtf = null
-//params.lncipedia_gtf = null
-//params.rRNAmask = null
-//params.fastq_ext = null
-//params.cpatpath = null
-//params.plekpath = null
-//aligner
+
 
 params.merged_gtf = null
 
@@ -209,9 +190,10 @@ if(params.aligner=='star'){
 
 input_folder = file(params.input_folder)
 gencode_annotation_gtf = file(params.gencode_annotation_gtf)
+if (!gencode_annotation_gtf.exists()) exit 1, "GENCODE annotation file not found: ${params.gencode_annotation_gtf}"
 lncipedia_gtf = file(params.lncipedia_gtf)
-//cncipath = file(params.cncipath)
-rRNAmaskfile = file(params.rRNAmask)
+if (!lncipedia_gtf.exists()) exit 1, "lncipedia annotation file not found: ${params.lncipedia_gtf}"
+
 
 //Prepare annotations
 annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
@@ -1183,7 +1165,7 @@ process Get_kallisto_matrix {
 
 
 /*
-Step 13: perform Differential Expression analysis and generated reported
+Step 13: perform Differential Expression analysis and generate report
  */
 
 // Initialize parameter for lncPipeReporter
@@ -1195,7 +1177,7 @@ lncRep_min_expressed_sample = params.lncRep_min_expressed_sample
 design=null
 if(params.design){
     design = file(params.design)
-    if (!design.exists()) exit 1, "Design file not found, plz check your design path: ${params.design}"
+    if (!design.exists()) exit 1, "Design file not found, plz check your design path: !{params.design}"
 }
 
 process Run_LncPipeReporter {
@@ -1214,12 +1196,17 @@ process Run_LncPipeReporter {
     output:
     file "*" into final_output
     shell:
-
+    file_tag="Generating report ..."
     '''
-    Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',theme = 'npg',cdf.percent = 10,max.lncrna.len = 10000,min.expressed.sample = 50, ask = FALSE)"
+    Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',theme = 'npg',cdf.percent = !{lncRep_cdf_percent},max.lncrna.len = !{lncRep_max_lnc_len},min.expressed.sample = !{lncRep_min_expressed_sample}, ask = FALSE)"
   '''
 }
 
+//pipeline log
+workflow.onComplete {
 
+    log.info "LncPipe Pipeline Complete"
+
+}
 
 

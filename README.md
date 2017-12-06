@@ -51,7 +51,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 3. Install docker
 4. Just type the command 
         ```shell
-        nextflow -c docker.config LncRNAanalysisPipe.nf
+        nextflow -c docker.config run LncRNAanalysisPipe.nf
         ```
 > nextflow can automatically pull image from docker.io. dockerfile was also provide for record that what we have done in the image.
 
