@@ -1218,6 +1218,7 @@ workflow.onComplete {
 
     LncPipe execution summary
     ---------------------------
+    Your command line: ${workflow.commandLine}
     Completed at: ${workflow.complete}
     Duration    : ${workflow.duration}
     Success     : ${workflow.success}
