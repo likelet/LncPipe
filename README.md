@@ -50,9 +50,9 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 2. Modify the `docker.config` that mandatory section.
 3. Install docker
 4. Just type the command <br>
-        ```
-        nextflow -c docker.config run LncRNAanalysisPipe.nf
-        ```
+	```shell
+	nextflow -c docker.config run LncRNAanalysisPipe.nf
+	```
    docker image can be downloaded from https://hub.docker.com/r/bioinformatist/lncpipe/tags/ with lasted tag information 
 > nextflow can automatically pull image from docker.io. dockerfile was also provide for record that what we have done in the image.
 
@@ -62,115 +62,115 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 
 #### Prerequisites install command (required when docker image is not favored, you should execute them via root)
 * 1. [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml)
-      ```shell
-      aria2c ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/downloads/hisat2-2.1.0-Linux_x86_64.zip -q -o /opt/hisat2-2.1.0-Linux_x86_64.zip && \
-			unzip -qq /opt/hisat2-2.1.0-Linux_x86_64.zip -d /opt/ && \
-			rm /opt/hisat2-2.1.0-Linux_x86_64.zip && \
-			cd /opt/hisat2-2.1.0 && \
-			rm -rf doc example *debug MANUAL* NEWS TUTORIAL && \
-			ln -s /opt/hisat2-2.1.0/hisat2* /usr/local/bin/ && \
-			ln -sf /opt/hisat2-2.1.0/*.py /usr/local/bin/
-      ```
+		```shell
+		aria2c ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/downloads/hisat2-2.1.0-Linux_x86_64.zip -q -o /opt/hisat2-2.1.0-Linux_x86_64.zip && \
+		unzip -qq /opt/hisat2-2.1.0-Linux_x86_64.zip -d /opt/ && \
+		rm /opt/hisat2-2.1.0-Linux_x86_64.zip && \
+		cd /opt/hisat2-2.1.0 && \
+		rm -rf doc example *debug MANUAL* NEWS TUTORIAL && \
+		ln -s /opt/hisat2-2.1.0/hisat2* /usr/local/bin/ && \
+		ln -sf /opt/hisat2-2.1.0/*.py /usr/local/bin/
+		```
 * 2. [StringTie](http://www.ccb.jhu.edu/software/stringtie/)
-      ```shell
-      aria2c http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz -q -o /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz && \
-			tar xf /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
-			rm /opt/stringtie-1.3.3b.Linux_x86_64/README && \
-			ln -s /opt/stringtie-1.3.3b.Linux_x86_64/stringtie /usr/local/bin/stringtie && \
-			rm /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz
-      ```
+		```shell
+		aria2c http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz -q -o /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz && \
+		tar xf /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
+		rm /opt/stringtie-1.3.3b.Linux_x86_64/README && \
+		ln -s /opt/stringtie-1.3.3b.Linux_x86_64/stringtie /usr/local/bin/stringtie && \
+		rm /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz
+		```
 * 3. [gffcompare](http://www.ccb.jhu.edu/software/stringtie/gff.shtml#gffcompare)
-      ```shell
-      aria2c https://github.com/gpertea/gffcompare/archive/master.zip -q -o /opt/gffcompare-master.zip && \
-			aria2c https://github.com/gpertea/gclib/archive/master.zip -q -o /opt/gclib-master.zip && \
-			unzip -qq /opt/gffcompare-master.zip -d /opt/ && \
-			unzip -qq /opt/gclib-master.zip -d /opt/ && \
-			rm /opt/gffcompare-master.zip /opt/gclib-master.zip && \
-			cd /opt/gffcompare-master && \
-			make release
-      ```
+		```shell
+		aria2c https://github.com/gpertea/gffcompare/archive/master.zip -q -o /opt/gffcompare-master.zip && \
+		aria2c https://github.com/gpertea/gclib/archive/master.zip -q -o /opt/gclib-master.zip && \
+		unzip -qq /opt/gffcompare-master.zip -d /opt/ && \
+		unzip -qq /opt/gclib-master.zip -d /opt/ && \
+		rm /opt/gffcompare-master.zip /opt/gclib-master.zip && \
+		cd /opt/gffcompare-master && \
+		make release
+		```
 * 4. [Bedops](http://bedops.readthedocs.io/en/latest/):[Citation](https://www.ncbi.nlm.nih.gov/pubmed/22576172/)
-      ```shell
-      aria2c https://github.com/bedops/bedops/releases/download/v2.4.29/bedops_linux_x86_64-v2.4.29.tar.bz2 -q -o /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 && \
-			tar xf /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
-			ln -s /opt/bin/* /usr/local/bin/ && \
-			rm /opt/bedops_linux_x86_64-v2.4.29.tar.bz2
-      ```
+		```shell
+		aria2c https://github.com/bedops/bedops/releases/download/v2.4.29/bedops_linux_x86_64-v2.4.29.tar.bz2 -q -o /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 && \
+		tar xf /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
+		ln -s /opt/bin/* /usr/local/bin/ && \
+		rm /opt/bedops_linux_x86_64-v2.4.29.tar.bz2
+		```
 * 5. [PLEK](www.ibiomedical.net): [Citation](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-311)
-      ```shell
-      aria2c https://nchc.dl.sourceforge.net/project/plek/PLEK.1.2.tar.gz -q -o /opt/PLEK.1.2.tar.gz && \
-      tar xf /opt/PLEK.1.2.tar.gz --use-compress-prog=pigz -C /opt/ && \
-      cd /opt/PLEK.1.2/ && \
-      python PLEK_setup.py || : && \
-      # Remove documents, demo files, source files, object files and R scripts
-      rm *.pdf *.txt *.h *.c *.model *.range *.fa *.cpp *.o *.R *.doc PLEK_setup.py && \
-      chmod 755 * && \
-      # dos2unix in perl one-liner: remove BOM head and deal with \r problem
-      perl -CD -pi -e'tr/\x{feff}//d && s/[\r\n]+/\n/' *.py && \
-      ln -s /opt/PLEK.1.2/* /usr/local/bin/ && \
-      rm /opt/PLEK.1.2.tar.gz
-      ```
+		```shell
+		aria2c https://nchc.dl.sourceforge.net/project/plek/PLEK.1.2.tar.gz -q -o /opt/PLEK.1.2.tar.gz && \
+		tar xf /opt/PLEK.1.2.tar.gz --use-compress-prog=pigz -C /opt/ && \
+		cd /opt/PLEK.1.2/ && \
+		python PLEK_setup.py || : && \
+		# Remove documents, demo files, source files, object files and R scripts
+		rm *.pdf *.txt *.h *.c *.model *.range *.fa *.cpp *.o *.R *.doc PLEK_setup.py && \
+		chmod 755 * && \
+		# dos2unix in perl one-liner: remove BOM head and deal with \r problem
+		perl -CD -pi -e'tr/\x{feff}//d && s/[\r\n]+/\n/' *.py && \
+		ln -s /opt/PLEK.1.2/* /usr/local/bin/ && \
+		rm /opt/PLEK.1.2.tar.gz
+		```
 * 6. [CNCI](https://github.com/www-bioinfo-org/CNCI): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783192/)
-      ```shell
-      aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /opt/CNCI-master.zip && \
-      unzip -qq /opt/CNCI-master.zip -d /opt/ && \
-      rm /opt/CNCI-master.zip && \
-      unzip -qq /opt/CNCI-master/libsvm-3.0.zip -d /opt/CNCI-master/ && \
-      rm /opt/CNCI-master/libsvm-3.0.zip && \
-      cd /opt/CNCI-master/libsvm-3.0 && \
-      make > /dev/null 2>&1 && \
-      # enable the extglob shell option
-      shopt -s extglob && \
-      # Parentheses and the pipe symbol should be escaped
-      rm -rfv !\("svm-predict"\|"svm-scale"\) && \
-      cd .. && \
-      rm draw_class_pie.R LICENSE README.md && \
-      chmod -R 755 * && \
-      ln -s /opt/CNCI-master/*.py /usr/local/bin/
-      ```
+		```shell
+		aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /opt/CNCI-master.zip && \
+		unzip -qq /opt/CNCI-master.zip -d /opt/ && \
+		rm /opt/CNCI-master.zip && \
+		unzip -qq /opt/CNCI-master/libsvm-3.0.zip -d /opt/CNCI-master/ && \
+		rm /opt/CNCI-master/libsvm-3.0.zip && \
+		cd /opt/CNCI-master/libsvm-3.0 && \
+		make > /dev/null 2>&1 && \
+		# enable the extglob shell option
+		shopt -s extglob && \
+		# Parentheses and the pipe symbol should be escaped
+		rm -rfv !\("svm-predict"\|"svm-scale"\) && \
+		cd .. && \
+		rm draw_class_pie.R LICENSE README.md && \
+		chmod -R 755 * && \
+		ln -s /opt/CNCI-master/*.py /usr/local/bin/
+		```
 * 7. [CPAT](http://rna-cpat.sourceforge.net):[Citation](https://academic.oup.com/nar/article/41/6/e74/2902455/CPAT-Coding-Potential-Assessment-Tool-using-an)
-      ```shell
-      aria2c https://jaist.dl.sourceforge.net/project/rna-cpat/v1.2.3/CPAT-1.2.3.tar.gz -q -o /opt/CPAT-1.2.3.tar.gz && \
-      tar xf /opt/CPAT-1.2.3.tar.gz --use-compress-prog=pigz -C /opt/ && \
-      # DO NOT use absolute path here, changing directory is necessary, python interpreter will check current directory for dependencies
-      cd /opt/CPAT-1.2.3/ && \
-      mv dat/* /LncPipeDB/ && \
-      python setup.py install > /dev/null 2>&1 && \
-      rm -rf /opt/CPAT*
-      ```
+		```shell
+		aria2c https://jaist.dl.sourceforge.net/project/rna-cpat/v1.2.3/CPAT-1.2.3.tar.gz -q -o /opt/CPAT-1.2.3.tar.gz && \
+		tar xf /opt/CPAT-1.2.3.tar.gz --use-compress-prog=pigz -C /opt/ && \
+		# DO NOT use absolute path here, changing directory is necessary, python interpreter will check current directory for dependencies
+		cd /opt/CPAT-1.2.3/ && \
+		mv dat/* /LncPipeDB/ && \
+		python setup.py install > /dev/null 2>&1 && \
+		rm -rf /opt/CPAT*
+		```
 * 8. [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc)
-      ```shell
-      aria2c https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip -q -o /opt/fastqc_v0.11.5.zip && \
-			unzip -qq /opt/fastqc_v0.11.5.zip -d /opt/ && \
-			rm /opt/fastqc_v0.11.5.zip && \
-			cd /opt/FastQC && \
-			shopt -s extglob && \
-			rm -rfv !\("fastqc"\|*.jar\) && \
-			chmod 755 * && \
-			ln -s /opt/FastQC/fastqc /usr/local/bin/
-      ```
+		```shell
+		aria2c https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip -q -o /opt/fastqc_v0.11.5.zip && \
+		unzip -qq /opt/fastqc_v0.11.5.zip -d /opt/ && \
+		rm /opt/fastqc_v0.11.5.zip && \
+		cd /opt/FastQC && \
+		shopt -s extglob && \
+		rm -rfv !\("fastqc"\|*.jar\) && \
+		chmod 755 * && \
+		ln -s /opt/FastQC/fastqc /usr/local/bin/
+		```
 			
-      or [AfterQC](https://github.com/OpenGene/AfterQC)
+		or [AfterQC](https://github.com/OpenGene/AfterQC)
 			
-      ```shell
-      aria2c https://github.com/OpenGene/AfterQC/archive/v0.9.7.tar.gz -q -o /opt/AfterQC-0.9.7.tar.gz && \
-			tar xf /opt/AfterQC-0.9.7.tar.gz --use-compress-prog=pigz -C /opt/ && \
-			cd /opt/AfterQC-0.9.7 && \
-			make && \
-			perl -i -lape's/python/pypy/ if $. == 1' after.py && \
-			rm -rf Dockerfile Makefile README.md testdata report_sample && \
-			rm editdistance/*.cpp editdistance/*.h && \
-			ln -s /opt/AfterQC-0.9.7/*.py /usr/local/bin/ && \
-			rm /opt/AfterQC-0.9.7.tar.gz
-      ```
+		```shell
+		aria2c https://github.com/OpenGene/AfterQC/archive/v0.9.7.tar.gz -q -o /opt/AfterQC-0.9.7.tar.gz && \
+		tar xf /opt/AfterQC-0.9.7.tar.gz --use-compress-prog=pigz -C /opt/ && \
+		cd /opt/AfterQC-0.9.7 && \
+		make && \
+		perl -i -lape's/python/pypy/ if $. == 1' after.py && \
+		rm -rf Dockerfile Makefile README.md testdata report_sample && \
+		rm editdistance/*.cpp editdistance/*.h && \
+		ln -s /opt/AfterQC-0.9.7/*.py /usr/local/bin/ && \
+		rm /opt/AfterQC-0.9.7.tar.gz
+		```
 When using afterQC, we recommended that users install `pypy` in your operation system, which can accelerated about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by author of AfterQC.
 
 * 9. Install [LncPipeReporter](https://github.com/bioinformatist/LncPipe-Reporter)
-      Install [pandoc](https://pandoc.org/installing.html) first. Then run commands:
-      ```shell
-      Rscript -e "install.packages('devtools'); devtools::install_github('bioinformatist/LncPipeReporter')"
-      ```
-For detailed usage of LncPipeReporter in case you are going to run it separately, plz refers to [README](https://github.com/bioinformatist/LncPipeReporter#lncpipereporter) of LncPipeReporter.
+		Install [pandoc](https://pandoc.org/installing.html) first. Then run commands:
+		```shell
+		Rscript -e "install.packages('devtools'); devtools::install_github('bioinformatist/LncPipeReporter')"
+		```
+		For detailed usage of LncPipeReporter in case you are going to run it separately, plz refers to [README](https://github.com/bioinformatist/LncPipeReporter#lncpipereporter) of LncPipeReporter.
 * 10. [kallisto](https://github.com/pachterlab/kallisto)
     ```shell
     aria2c https://github.com/pachterlab/kallisto/releases/download/v0.43.1/kallisto_linux-v0.43.1.tar.gz -q -o  /opt/kallisto_linux-v0.43.1.tar.gz && \
@@ -190,19 +190,19 @@ For detailed usage of LncPipeReporter in case you are going to run it separately
     ```
 **Alternatively, when you are going to using STAR-Cufflinks in your system, the corresponding installation command should be as follows:**
 * 1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
-      ```shell
-      aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR && \
-      chmod 755 /opt/STAR && \
-      ln -s /opt/STAR /usr/local/bin
-      ```
+		```shell
+		aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR && \
+		chmod 755 /opt/STAR && \
+		ln -s /opt/STAR /usr/local/bin
+		```
 * 2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/)
-      ```shell
-      aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz && \
-      tar xf /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
-      rm /opt/cufflinks-2.2.1.Linux_x86_64/README && \
-      ln -s /opt/cufflinks-2.2.1.Linux_x86_64/* /usr/local/bin/ && \
-      rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
-      ```
+		```shell
+		aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz && \
+		tar xf /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
+		rm /opt/cufflinks-2.2.1.Linux_x86_64/README && \
+		ln -s /opt/cufflinks-2.2.1.Linux_x86_64/* /usr/local/bin/ && \
+		rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
+		```
 > The `gffcompare` utility share the same function as `cuffcompare`, therefore, in STAR-cufflinks analysis pipe `gffcompare` is not required.
 ## Interactive reports
 LncPipe output was well-summarized in an interactive manner, which was carried out by a novel-developing R package
