@@ -16,7 +16,7 @@ calculating efficiency, diversified classification and interactive analysis repo
 directly and resume analysis from continues checkpoint. 
 
 ## Schematic diagram
- ![LncRNApipe](./image/LncRNApipe.png)
+
 
 ### Install [Nextflow](https://github.com/nextflow-io/nextflow)
 LncPipe is implemented with Nextflow pipeline manage system. To run our pipelines. [Nextflow](https://github.com/nextflow-io/nextflow) should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.

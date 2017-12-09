@@ -57,7 +57,7 @@ def print_cyan = {  str -> ANSI_CYAN + str + ANSI_RESET }
 def print_purple = {  str -> ANSI_PURPLE + str + ANSI_RESET }
 def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
-version = '0.0.5'
+version = '0.1.0'
 dev_date = '2017-12-6 12:43'
 //Help information
 // Pipeline version
