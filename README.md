@@ -62,6 +62,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 
 #### Prerequisites install command (required when docker image is not favored, you should execute them via root)
 * 1. [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml)
+
 		```shell
 		aria2c ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/downloads/hisat2-2.1.0-Linux_x86_64.zip -q -o /opt/hisat2-2.1.0-Linux_x86_64.zip && \
 		unzip -qq /opt/hisat2-2.1.0-Linux_x86_64.zip -d /opt/ && \
@@ -72,6 +73,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 		ln -sf /opt/hisat2-2.1.0/*.py /usr/local/bin/
 		```
 * 2. [StringTie](http://www.ccb.jhu.edu/software/stringtie/)
+
 		```shell
 		aria2c http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz -q -o /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz && \
 		tar xf /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
@@ -80,6 +82,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 		rm /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz
 		```
 * 3. [gffcompare](http://www.ccb.jhu.edu/software/stringtie/gff.shtml#gffcompare)
+
 		```shell
 		aria2c https://github.com/gpertea/gffcompare/archive/master.zip -q -o /opt/gffcompare-master.zip && \
 		aria2c https://github.com/gpertea/gclib/archive/master.zip -q -o /opt/gclib-master.zip && \
@@ -90,6 +93,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 		make release
 		```
 * 4. [Bedops](http://bedops.readthedocs.io/en/latest/):[Citation](https://www.ncbi.nlm.nih.gov/pubmed/22576172/)
+
 		```shell
 		aria2c https://github.com/bedops/bedops/releases/download/v2.4.29/bedops_linux_x86_64-v2.4.29.tar.bz2 -q -o /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 && \
 		tar xf /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
@@ -97,6 +101,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 		rm /opt/bedops_linux_x86_64-v2.4.29.tar.bz2
 		```
 * 5. [PLEK](www.ibiomedical.net): [Citation](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-15-311)
+
 		```shell
 		aria2c https://nchc.dl.sourceforge.net/project/plek/PLEK.1.2.tar.gz -q -o /opt/PLEK.1.2.tar.gz && \
 		tar xf /opt/PLEK.1.2.tar.gz --use-compress-prog=pigz -C /opt/ && \
@@ -111,6 +116,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 		rm /opt/PLEK.1.2.tar.gz
 		```
 * 6. [CNCI](https://github.com/www-bioinfo-org/CNCI): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783192/)
+
 		```shell
 		aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /opt/CNCI-master.zip && \
 		unzip -qq /opt/CNCI-master.zip -d /opt/ && \
@@ -129,6 +135,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 		ln -s /opt/CNCI-master/*.py /usr/local/bin/
 		```
 * 7. [CPAT](http://rna-cpat.sourceforge.net):[Citation](https://academic.oup.com/nar/article/41/6/e74/2902455/CPAT-Coding-Potential-Assessment-Tool-using-an)
+
 		```shell
 		aria2c https://jaist.dl.sourceforge.net/project/rna-cpat/v1.2.3/CPAT-1.2.3.tar.gz -q -o /opt/CPAT-1.2.3.tar.gz && \
 		tar xf /opt/CPAT-1.2.3.tar.gz --use-compress-prog=pigz -C /opt/ && \
@@ -139,6 +146,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 		rm -rf /opt/CPAT*
 		```
 * 8. [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc)
+
 		```shell
 		aria2c https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip -q -o /opt/fastqc_v0.11.5.zip && \
 		unzip -qq /opt/fastqc_v0.11.5.zip -d /opt/ && \
@@ -163,14 +171,17 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 		ln -s /opt/AfterQC-0.9.7/*.py /usr/local/bin/ && \
 		rm /opt/AfterQC-0.9.7.tar.gz
 		```
-When using afterQC, we recommended that users install `pypy` in your operation system, which can accelerated about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by author of AfterQC.
+		
+		When using afterQC, we recommended that users install `pypy` in your operation system, which can accelerated about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by author of AfterQC.
 
 * 9. Install [LncPipeReporter](https://github.com/bioinformatist/LncPipe-Reporter)
+
 		Install [pandoc](https://pandoc.org/installing.html) first. Then run commands:
 		```shell
 		Rscript -e "install.packages('devtools'); devtools::install_github('bioinformatist/LncPipeReporter')"
 		```
 		For detailed usage of LncPipeReporter in case you are going to run it separately, plz refers to [README](https://github.com/bioinformatist/LncPipeReporter#lncpipereporter) of LncPipeReporter.
+		
 * 10. [kallisto](https://github.com/pachterlab/kallisto)
 
 		```shell
@@ -183,20 +194,25 @@ When using afterQC, we recommended that users install `pypy` in your operation s
 		ln -s /opt/kallisto_linux-v0.43.1/kallisto /usr/local/bin/
 		```
 * 11. [sambamba](http://lomereiter.github.io/sambamba/)
+
     ```shell
 		aria2c https://github.com/biod/sambamba/releases/download/v0.6.7/sambamba_v0.6.7_linux.tar.bz2 -q -o /opt/sambamba_v0.6.7_linux.tar.bz2 && \
 		tar xf /opt/sambamba_v0.6.7_linux.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
 		ln -s /opt/sambamba /usr/local/bin/ && \
 		rm /opt/sambamba_v0.6.7_linux.tar.bz2
     ```
+		
 **Alternatively, when you are going to using STAR-Cufflinks in your system, the corresponding installation command should be as follows:**
 * 1. [STAR](https://github.com/alexdobin/STAR): [Citation](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
+
 		```shell
 		aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR && \
 		chmod 755 /opt/STAR && \
 		ln -s /opt/STAR /usr/local/bin
 		```
+		
 * 2. [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks): [Citation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3146043/)
+
 		```shell
 		aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz && \
 		tar xf /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
@@ -204,7 +220,9 @@ When using afterQC, we recommended that users install `pypy` in your operation s
 		ln -s /opt/cufflinks-2.2.1.Linux_x86_64/* /usr/local/bin/ && \
 		rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
 		```
+		
 > The `gffcompare` utility share the same function as `cuffcompare`, therefore, in STAR-cufflinks analysis pipe `gffcompare` is not required.
+
 ## Interactive reports
 LncPipe output was well-summarized in an interactive manner, which was carried out by a novel-developing R package
 [LncPipeReporter](https://github.com/bioinformatist/LncPipeReporter).
