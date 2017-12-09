@@ -172,15 +172,16 @@ When using afterQC, we recommended that users install `pypy` in your operation s
 		```
 		For detailed usage of LncPipeReporter in case you are going to run it separately, plz refers to [README](https://github.com/bioinformatist/LncPipeReporter#lncpipereporter) of LncPipeReporter.
 * 10. [kallisto](https://github.com/pachterlab/kallisto)
-    ```shell
-    aria2c https://github.com/pachterlab/kallisto/releases/download/v0.43.1/kallisto_linux-v0.43.1.tar.gz -q -o  /opt/kallisto_linux-v0.43.1.tar.gz && \
+
+		```shell
+		aria2c https://github.com/pachterlab/kallisto/releases/download/v0.43.1/kallisto_linux-v0.43.1.tar.gz -q -o  /opt/kallisto_linux-v0.43.1.tar.gz && \
 		tar xf /opt/kallisto_linux-v0.43.1.tar.gz --use-compress-prog=pigz -C /opt/ && \
 		cd /opt && \
 		rm ._* kallisto_linux-v0.43.1.tar.gz && \
 		cd kallisto_linux-v0.43.1 && \
 		rm -rf ._* 	README.md test && \
 		ln -s /opt/kallisto_linux-v0.43.1/kallisto /usr/local/bin/
-    ```
+		```
 * 11. [sambamba](http://lomereiter.github.io/sambamba/)
     ```shell
 		aria2c https://github.com/biod/sambamba/releases/download/v0.6.7/sambamba_v0.6.7_linux.tar.bz2 -q -o /opt/sambamba_v0.6.7_linux.tar.bz2 && \
