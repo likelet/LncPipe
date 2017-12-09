@@ -49,10 +49,11 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 1. Prepare input files by following the first section of Installation 
 2. Modify the `docker.config` that mandatory section.
 3. Install docker
-4. Just type the command 
-        ```shell
+4. Just type the command <br>
+        ```
         nextflow -c docker.config run LncRNAanalysisPipe.nf
         ```
+   docker image can be downloaded from https://hub.docker.com/r/bioinformatist/lncpipe/tags/ with lasted tag information 
 > nextflow can automatically pull image from docker.io. dockerfile was also provide for record that what we have done in the image.
 
 ## Installation of dependencies (Run [LncPipe](https://github.com/likelet/LncPipe)  at host environment ).
