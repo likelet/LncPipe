@@ -46,10 +46,11 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 
 ## Run [LncPipe](https://github.com/likelet/LncPipe) from Docker 
-1. Prepare input files by following the first section of Installation 
-2. Modify the `docker.config` that mandatory section.
+1. Prepare input files.
+2. Modify the `docker.config` in `mandatory` section.
 3. Install docker
-4. Just type the command <br>
+4. Command
+
 	```shell
 	nextflow -c docker.config run LncRNAanalysisPipe.nf
 	```
@@ -267,7 +268,7 @@ params {
 
 ```
 
-## Parameters
+## Parameters 
 > Those parameters would cover the setting from `nextflow.config` file
 * #### Mandatory(plz configure those in *nextflow.config* file)
 | Name | Example/Default value | Description |
