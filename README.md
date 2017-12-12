@@ -55,7 +55,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 	nextflow -c docker.config run LncRNAanalysisPipe.nf
 	```
    docker image can be downloaded from https://hub.docker.com/r/bioinformatist/lncpipe/tags/ with lasted tag information 
-> nextflow can automatically pull image from docker.io. dockerfile was also provide for record that what we have done in the image.
+> nextflow can automatically pull image from docker.io. Dockerfile tells that what we have done with the image.
 
 ## Installation of dependencies (Run [LncPipe](https://github.com/likelet/LncPipe)  at host environment ).
 
