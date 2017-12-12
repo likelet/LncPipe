@@ -32,10 +32,8 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
 All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
 
-3. A type command for run nextflow 
-       ```shell  
-                nextflow LncRNAanalysisPipe.nf
-       ```
+3. A type command for run nextflow  
+```nextflow run LncRNAanalysisPipe.nf <parameters>```
 ## Prepare input files 
 #### References, index and annotation files（required）
 1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch37_tran.tar.gz ) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
