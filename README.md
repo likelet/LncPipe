@@ -33,7 +33,7 @@ Of course you can download the lastest binary version of NextFlow by yourself fr
 All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
 
 3. A type command for run nextflow 
-       ```shell
+       ```shell  
                 nextflow LncRNAanalysisPipe.nf
        ```
 ## Prepare input files 
@@ -54,8 +54,8 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 	```shell
 	nextflow -c docker.config run LncRNAanalysisPipe.nf
 	```
-   docker image can be downloaded from https://hub.docker.com/r/bioinformatist/lncpipe/tags/ with lasted tag information 
-> nextflow can automatically pull image from docker.io. Dockerfile tells that what we have done with the image.
+   docker image can be downloaded from https://hub.docker.com/r/bioinformatist/lncpipe/tags/ with the latest tag. 
+> alternatively, nextflow can automatically pull image from docker.io. `Dockerfile` recorded  that what we have done with the image.
 
 ## Installation of dependencies (Run [LncPipe](https://github.com/likelet/LncPipe)  at host environment ).
 
