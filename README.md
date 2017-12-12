@@ -57,8 +57,6 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 
 ## Installation of dependencies (Run [LncPipe](https://github.com/likelet/LncPipe)  at host environment ).
 
-### Install third-party software and databases required by LncPipe
-
 #### Prerequisites install command (required when docker image is not favored, you should execute them via root)
 * 1. [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml)
 
