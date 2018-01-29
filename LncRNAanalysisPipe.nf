@@ -762,6 +762,7 @@ else {
     }
 
     // add fastq when do kallisto
+    reads = params.input_folder + params.fastq_ext
     if (params.qctools == 'fastqc') {
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
