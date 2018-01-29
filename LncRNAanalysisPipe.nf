@@ -1267,26 +1267,49 @@ if(params.design){
     if (!design.exists()) exit 1, "Design file not found, plz check your design path: !{params.design}"
 }
 
-process Run_LncPipeReporter {
-    tag { file_tag }
-    publishDir pattern: "*",
-            path: "${params.out_folder}/Result/", mode: 'move'
-    input:
-    //alignmet log
-    file design
-    file alignmetlogs from alignment_logs.collect()
-    //gtf statistics
-    file basic_charac from statistic_result
-    //Expression matrix
-    file kallisto_count_matrix from expression_matrixfile_count
+if(!params.merged_gtf) {
+    process Run_LncPipeReporter {
+        tag { file_tag }
+        publishDir pattern: "*",
+                path: "${params.out_folder}/Result/", mode: 'move'
+        input:
+        //alignmet log
+        file design
+        file alignmetlogs from alignment_logs.collect()
+        //gtf statistics
+        file basic_charac from statistic_result
+        //Expression matrix
+        file kallisto_count_matrix from expression_matrixfile_count
 
-    output:
-    file "*" into final_output
-    shell:
-    file_tag="Generating report ..."
-    '''
-    Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',theme = 'npg',cdf.percent = !{lncRep_cdf_percent},max.lncrna.len = !{lncRep_max_lnc_len},min.expressed.sample = !{lncRep_min_expressed_sample}, ask = FALSE)"
-  '''
+        output:
+        file "*" into final_output
+        shell:
+        file_tag = "Generating report ..."
+        '''
+        Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',theme = 'npg',cdf.percent = !{lncRep_cdf_percent},max.lncrna.len = !{lncRep_max_lnc_len},min.expressed.sample = !{lncRep_min_expressed_sample}, ask = FALSE)"
+      '''
+    }
+}else{
+    process Run_LncPipeReporter {
+        tag { file_tag }
+        publishDir pattern: "*",
+                path: "${params.out_folder}/Result/", mode: 'move'
+        input:
+        //alignmet log
+        file design
+        //gtf statistics
+        file basic_charac from statistic_result
+        //Expression matrix
+        file kallisto_count_matrix from expression_matrixfile_count
+
+        output:
+        file "*" into final_output
+        shell:
+        file_tag = "Generating report ..."
+        '''
+        Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',theme = 'npg',cdf.percent = !{lncRep_cdf_percent},max.lncrna.len = !{lncRep_max_lnc_len},min.expressed.sample = !{lncRep_min_expressed_sample}, ask = FALSE)"
+      '''
+    }
 }
 
 //pipeline log
