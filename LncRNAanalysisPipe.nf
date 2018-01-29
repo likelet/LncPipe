@@ -550,7 +550,7 @@ if (!params.merged_gtf) {
                     '''
                    hisat2  -p !{hisat2_threads} --dta  -x  !{index_base}  -U !{pair}  -S !{file_tag_new}.sam 2>!{file_tag_new}.hisat2_summary.txt
                   sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam 
-                  sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} temp.bam
+                  sambamba sort -o !{file_tag_new}.sort.bam --tmpdir ./tmp -t !{hisat2_threads} temp.bam
                   rm !{file_tag_new}.sam
                   rm temp.bam
                   
@@ -560,7 +560,7 @@ if (!params.merged_gtf) {
                     '''
                   hisat2  -p !{hisat2_threads} --dta  -x  !{index_base}  -1 !{pair[0]}  -2 !{pair[1]}  -S !{file_tag_new}.sam 2> !{file_tag_new}.hisat2_summary.txt
                   sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam
-                  sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} temp.bam
+                  sambamba sort -o !{file_tag_new}.sort.bam --tmpdir ./tmp -t !{hisat2_threads} temp.bam
                   rm !{file_tag_new}.sam
                 '''
                 }
@@ -570,7 +570,7 @@ if (!params.merged_gtf) {
                     '''
                    hisat2  -p !{hisat2_threads} --dta --fr -x  !{index_base}  -U !{pair}  -S !{file_tag_new}.sam 2>!{file_tag_new}.hisat2_summary.txt
                   sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam 
-                  sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} temp.bam
+                  sambamba sort -o !{file_tag_new}.sort.bam --tmpdir ./tmp -t !{hisat2_threads} temp.bam
                   rm !{file_tag_new}.sam
                   rm temp.bam
                   
@@ -749,7 +749,8 @@ if (!params.merged_gtf) {
     }
 
 
-} else {
+}
+else {
     println print_yellow("FastaQC step was skipped due to provided ") + print_green("--merged_gtf") + print_yellow(" option\n")
     println print_yellow("Reads mapping step was skipped due to provided ") + print_green("--merged_gtf") + print_yellow(" option\n")
 
@@ -759,6 +760,66 @@ if (!params.merged_gtf) {
             .into {
         mergeTranscripts_forCompare; mergeTranscripts_forExtract; mergeTranscripts_forCodeingProtential
     }
+
+    // add fastq when do kallisto
+    if (params.qctools == 'fastqc') {
+        Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
+                .ifEmpty {
+            exit 1, print_red("Cannot find any reads matching: !{reads}\nNB: Path needs to be enclosed in quotes!\n")
+        }
+        .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
+        process Run_fastQC {
+            tag { fastq_tag }
+            publishDir pattern: "*.html",
+                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
+
+            input:
+            set val(samplename), file(fastq_file) from reads_for_fastqc
+
+            output:
+            file "*.html" into fastqc_for_waiting
+            shell:
+            fastq_tag = samplename
+            fastq_threads = idv_cpu - 1
+            '''
+            fastqc -t !{fastq_threads} !{fastq_file[0]} !{fastq_file[1]}
+        '''
+        }
+    }
+    else {
+        Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
+                .ifEmpty {
+            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+        }
+        .set { reads_for_fastqc}
+        process Run_afterQC {
+
+            tag { fastq_tag }
+
+            publishDir pattern: "QC/*.html",
+                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
+
+            input:
+            set val(samplename), file(fastq_file) from reads_for_fastqc
+
+            output:
+            file "QC/*.html" into fastqc_for_waiting
+            file "*.good.fq.gz" into readPairs_for_discovery,readPairs_for_kallisto
+            shell:
+            fastq_tag = samplename
+            fastq_threads = idv_cpu - 1
+            if (params.singleEnd) {
+                '''
+            after.py -z -1 !{fastq_file[0]} -g ./
+            '''
+            } else {
+                '''
+            after.py -z -1 !{fastq_file[0]} -2 !{fastq_file[1]} -g ./
+            '''
+            }
+        }
+    }
+    fastqc_for_waiting2 = fastqc_for_waiting.first()
 
 }
 
@@ -853,19 +914,7 @@ process Predict_coding_abbilities_by_CPAT {
                                        -o novel.longRNA.CPAT.out
         '''
 }
-//    process run_CNCI{
-//
-//        input:
-//        file novel_lncRNA_fasta from novelLncRnaFasta_for_CNCI
-//        file cncipath
-//        output:
-//        file lncRNA/CNCI* into novel_longRNA_CNCI_result
-//        shell:
-//        cnci_threads  = ava_cpu- 1
-//        '''
-//        python !{cncipath}/CNCI.py -f !{novel_lncRNA_fasta} -p !{cnci_threads} -o lncRNA/CNCI -m ve
-//        '''
-//    }
+
 
 /*
 *Step 9: Merged and filtered lncRNA with coding potential output
@@ -1103,25 +1152,25 @@ process Build_kallisto_index_of_GTF_for_quantification {
 
 //Keep the chanel as constant variable to be used several times in quantification analysis
 constant_kallisto_index = final_kallisto_index.first()
+if(!params.merged_gtf){
+    process Run_kallisto_for_quantification {
 
-process Run_kallisto_for_quantification {
 
+        tag { file_tag }
 
-    tag { file_tag }
+        input:
+        file kallistoIndex from constant_kallisto_index
+        set val(samplename), file(pair) from readPairs_for_kallisto
 
-    input:
-    file kallistoIndex from constant_kallisto_index
-    set val(samplename), file(pair) from readPairs_for_kallisto
+        output:
+        file "${file_tag_new}_abundance.tsv" into kallisto_tcv_collection
 
-    output:
-    file "${file_tag_new}_abundance.tsv" into kallisto_tcv_collection
-
-    shell:
-    file_tag = samplename
-    file_tag_new = file_tag
-    kallisto_threads = ava_cpu- 1
-    if (params.singleEnd) {
-        println print_purple("Quantification by kallisto in single end mode")
+        shell:
+        file_tag = samplename
+        file_tag_new = file_tag
+        kallisto_threads = ava_cpu- 1
+        if (params.singleEnd) {
+            println print_purple("Quantification by kallisto in single end mode")
             '''
         #quantification by kallisto in single end mode
         kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  <(zcat !{pair} ) 
@@ -1129,15 +1178,52 @@ process Run_kallisto_for_quantification {
         '''
 
 
-    } else {
-        println print_purple("quantification by kallisto in paired end mode")
+        } else {
+            println print_purple("quantification by kallisto in paired end mode")
             '''
         #quantification by kallisto 
         kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 <(zcat !{pair[0]} ) <(zcat !{pair[1]})
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
         '''
+        }
+    }
+}else{
+    process Run_kallisto_for_quantification {
+
+
+        tag { file_tag }
+
+        input:
+        file kallistoIndex from constant_kallisto_index
+        set val(samplename), file(pair) from readPairs_for_kallisto
+        file tempfiles from fastqc_for_waiting2
+        output:
+        file "${file_tag_new}_abundance.tsv" into kallisto_tcv_collection
+
+        shell:
+        file_tag = samplename
+        file_tag_new = file_tag
+        kallisto_threads = ava_cpu- 1
+        if (params.singleEnd) {
+            println print_purple("Quantification by kallisto in single end mode")
+            '''
+        #quantification by kallisto in single end mode
+        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  <(zcat !{pair} ) 
+        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
+        '''
+
+
+        } else {
+            println print_purple("quantification by kallisto in paired end mode")
+            '''
+        #quantification by kallisto 
+        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 <(zcat !{pair[0]} ) <(zcat !{pair[1]})
+        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
+        '''
+        }
     }
 }
+
 
 /*
 *Step 12: Combine matrix for statistic  and differential expression analysis
@@ -1205,7 +1291,7 @@ process Run_LncPipeReporter {
 //pipeline log
 workflow.onComplete {
 
-    log.info "LncPipe Pipeline Complete"
+    log.info print_green("LncPipe Pipeline Complete!")
 
     //email information
     if(params.mail){
