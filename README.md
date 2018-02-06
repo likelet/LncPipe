@@ -105,7 +105,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 		cd /opt/PLEK.1.2/ && \
 		python PLEK_setup.py || : && \
 		# Remove documents, demo files, source files, object files and R scripts
-		rm *.pdf *.txt *.h *.c *.model *.range *.fa *.cpp *.o *.R *.doc PLEK_setup.py && \
+		rm *.pdf *.txt *.h *.c *.fa *.cpp *.o *.R *.doc PLEK_setup.py && \
 		chmod 755 * && \
 		# dos2unix in perl one-liner: remove BOM head and deal with \r problem
 		perl -CD -pi -e'tr/\x{feff}//d && s/[\r\n]+/\n/' *.py && \
