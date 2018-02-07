@@ -251,7 +251,7 @@ params {
     sam_processor="sambamba"//or "samtools"
     qctools = "fastqc" // or "afterqc"
     singleEnd = false
-    strand = false
+    unstrand = false
     skip_combine = false
     lncRep_Output = 'reporter.html'
     lncRep_theme = 'npg'
@@ -294,7 +294,7 @@ params {
 |-----------|--------------|-------------|
 |--singleEnd  | `FALSE` | specify that the reads are single ended  |
 |--merged_gtf | `FALSE` | Skip mapping and assembly step by directly providing assembled merged gtf files|
-|--unstrand     | `TRUE` | specify that library is unstrand specific  |
+|--unstrand     | `FALSE` | specify that library is unstrand specific  |
 |--aligner |  `star` | Aligner for reads mapping (optional), STAR is default and supported only at present,*star*/*tophat*/*hisat2*|
 |--qctools |  `afterqc` | Tools for assess raw reads quality or filtered by AfterQC, *fastqc* or *afterqc*|
 
