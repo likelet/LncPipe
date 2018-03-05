@@ -394,9 +394,15 @@ Result/
 
 ## Acknowledgement
  Thanks to the author of [AfterQC](https://github.com/OpenGene/AfterQC), Shifu Chen, for his help on providing a gzip output support to meet the require of LncPipe.  Thanks to the internal test by Hongwan Zhang and Yan Wang from SYSUCC Cancer bioinformatics platform.
-## About
-This pipe were written by [Qi Zhao](https://github.com/likelet) and [Yu Sun](http://icannotendure.space) from Sun Yat-sen University and Nan kai University.
-For details and help, plz contact any one of us by zhaoqi@sysucc.org.cn and sun_yu@mail.nankai.edu.cn.
+## Contact
+##### For implementation:
+* [Qi Zhao](https://github.com/likelet) zhaoqi@sysucc.org.cn, Sun Yat-sen University Cancer Center;
+* [Yu Sun](http://icannotendure.space)  sun_yu@mail.nankai.edu.cn, Nan kai University;
+##### For project design and new feature request:
+* [Qi Zhao](https://github.com/likelet) zhaoqi@sysucc.org.cn, Sun Yat-sen University Cancer Center;
+* [Zhixiang Zuo]() zuozhx@sysucc.org.cn, Sun Yat-sen University Cancer Center;
+
+> We strongly recommend users open new issues if they have questions or find bugs.
 
 
 ## License
