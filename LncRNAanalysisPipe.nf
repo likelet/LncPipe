@@ -62,6 +62,11 @@ dev_date = '2017-12-6 12:43'
 // Pipeline version
 
 //=======================================================================================
+// Version check
+if( !nextflow.version.matches('0.26+') ) {
+    println print_yellow("This workflow requires Nextflow version 0.26 or greater -- You are running version ")+ print_red(nextflow.version)
+    exit 1
+}
 //help information
 params.help = null
 if (params.help) {
@@ -370,7 +375,7 @@ if (!params.merged_gtf) {
         '''
         }
     }
-    else {
+    else if (params.qctools == 'afterqc'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
             exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
@@ -388,7 +393,7 @@ if (!params.merged_gtf) {
 
             output:
             file "QC/*.html" into fastqc_for_waiting
-            file "*.good.fq.gz" into readPairs_for_discovery,readPairs_for_kallisto
+            set val(fastq_tag), file('*.good.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
             shell:
             fastq_tag = samplename
             fastq_threads = idv_cpu - 1
@@ -399,6 +404,40 @@ if (!params.merged_gtf) {
             } else {
                 '''
             after.py -z -1 !{fastq_file[0]} -2 !{fastq_file[1]} -g ./
+            '''
+            }
+        }
+    }
+    else if (params.qctools == 'fastp'){
+        Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
+                .ifEmpty {
+            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+        }
+        .set { reads_for_fastqc}
+        process Run_FastP {
+
+            tag { fastq_tag }
+
+            publishDir pattern: "*.html",
+                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
+
+            input:
+            set val(samplename), file(fastq_file) from reads_for_fastqc
+
+            output:
+            file "*.html" into fastqc_for_waiting
+            set val(fastq_tag), file('*qc.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
+            shell:
+            fastq_tag = samplename
+            fastq_threads = idv_cpu - 1
+            if (params.singleEnd) {
+                '''
+            fastp -i !{fastq_file[0]} -o !{samplename}.qc.gz -h !{samplename}_fastp.html
+           
+            '''
+            } else {
+                '''
+            fastp -i !{fastq_file[0]}  -I !{fastq_file[1]} -o !{samplename}_1.qc.fq.gz  -O !{samplename}_2.qc.fq.gz -h !{samplename}_fastp.html
             '''
             }
         }
@@ -1313,17 +1352,18 @@ if(!params.merged_gtf) {
 }
 
 //pipeline log
-workflow.onComplete {
+if(workflow.success) {
+    workflow.onComplete {
 
-    log.info print_green("LncPipe Pipeline Complete!")
+        log.info print_green("LncPipe Pipeline Complete!")
 
-    //email information
-    if(params.mail){
-        recipient=params.mail
-        def subject = 'My LncPipe execution'
+        //email information
+        if (params.mail) {
+            recipient = params.mail
+            def subject = 'My LncPipe execution'
 
-        ['mail', '-s', subject, recipient].execute() <<
-                """
+            ['mail', '-s', subject, recipient].execute() <<
+                    """
 
     LncPipe execution summary
     ---------------------------
@@ -1336,9 +1376,12 @@ workflow.onComplete {
     Error report: ${workflow.errorReport ?: '-'}
 
     """
+        }
+
+
     }
-
-
 }
-
+workflow.onError {
+    println print_yellow("Oops... Pipeline execution stopped with the following message: ")+print_red(workflow.errorMessage)
+}
 

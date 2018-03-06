@@ -249,7 +249,7 @@ params {
     bowtie2_index = ''//set if tophat used
     aligner = "hisat" // or "star","tophat"
     sam_processor="sambamba"//or "samtools"
-    qctools = "fastqc" // or "afterqc"
+    qctools = "fastqc" // or "afterqc","fastp"
     singleEnd = false
     unstrand = false
     skip_combine = false
