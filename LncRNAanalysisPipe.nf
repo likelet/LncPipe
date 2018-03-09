@@ -56,7 +56,6 @@ def print_cyan = {  str -> ANSI_CYAN + str + ANSI_RESET }
 def print_purple = {  str -> ANSI_PURPLE + str + ANSI_RESET }
 def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
-version = '0.1.02'
 dev_date = '2017-12-6 12:43'
 //Help information
 // Pipeline version
@@ -74,8 +73,11 @@ if (params.help) {
     log.info print_purple('------------------------------------------------------------------------')
     log.info "LncPipe: a Nextflow-based Long non-coding RNA analysis PIPELINE v$version"
     log.info "LncPipe integrates several NGS processing tools to identify novel long non-coding RNAs from"
-    log.info "unprocessed RNA sequencing data. Before run this pipeline, users need to install several tools"
-    log.info "unprocessed RNA sequencing data. Before run this pipeline, users need to install several tools"
+    log.info "unprocessed RNA sequencing data. Before run this pipeline, users need to install several softwares"
+    log.info "or have docker installed in their system. When docker installed, our preduild image can supported all"
+    log.info "running method. The detail usages information can be found at https://github.com/likelet/LncPipe ."
+    log.info "Bugs or feature requests should be reported by opening issues in our git project, unless you have already  "
+    log.info "tried to fixed it yourself "
     log.info print_purple('------------------------------------------------------------------------')
     log.info ''
     log.info print_yellow('Usage: ')
@@ -790,7 +792,7 @@ if (!params.merged_gtf) {
 
 }
 else {
-    println print_yellow("FastaQC step was skipped due to provided ") + print_green("--merged_gtf") + print_yellow(" option\n")
+    println print_yellow("Raw reads quality check step was skipped due to provided ") + print_green("--merged_gtf") + print_yellow(" option\n")
     println print_yellow("Reads mapping step was skipped due to provided ") + print_green("--merged_gtf") + print_yellow(" option\n")
 
     merged_gtf = file(params.merged_gtf)
@@ -826,7 +828,7 @@ else {
         '''
         }
     }
-    else {
+    else if (params.qctools == 'afterqc'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
             exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
@@ -844,7 +846,7 @@ else {
 
             output:
             file "QC/*.html" into fastqc_for_waiting
-            file "*.good.fq.gz" into readPairs_for_discovery,readPairs_for_kallisto
+            set val(fastq_tag), file('*.good.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
             shell:
             fastq_tag = samplename
             fastq_threads = idv_cpu - 1
@@ -855,6 +857,40 @@ else {
             } else {
                 '''
             after.py -z -1 !{fastq_file[0]} -2 !{fastq_file[1]} -g ./
+            '''
+            }
+        }
+    }
+    else if (params.qctools == 'fastp'){
+        Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
+                .ifEmpty {
+            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+        }
+        .set { reads_for_fastqc}
+        process Run_FastP {
+
+            tag { fastq_tag }
+
+            publishDir pattern: "*.html",
+                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
+
+            input:
+            set val(samplename), file(fastq_file) from reads_for_fastqc
+
+            output:
+            file "*.html" into fastqc_for_waiting
+            set val(fastq_tag), file('*qc.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
+            shell:
+            fastq_tag = samplename
+            fastq_threads = idv_cpu - 1
+            if (params.singleEnd) {
+                '''
+            fastp -i !{fastq_file[0]} -o !{samplename}.qc.gz -h !{samplename}_fastp.html
+           
+            '''
+            } else {
+                '''
+            fastp -i !{fastq_file[0]}  -I !{fastq_file[1]} -o !{samplename}_1.qc.fq.gz  -O !{samplename}_2.qc.fq.gz -h !{samplename}_fastp.html
             '''
             }
         }
@@ -1044,7 +1080,7 @@ process Summary_renaming_and_classification {
 /*
 *Step 11: Rerun CPAT to evaluate the results
 */
-//lncRNA
+//evaluate lncRNA
 process Rerun_CPAT_to_evaluate_lncRNA {
     input:
     file lncRNA_final_cpat_fasta from final_lncRNA_for_CPAT_fa
@@ -1059,7 +1095,7 @@ process Rerun_CPAT_to_evaluate_lncRNA {
         '''
 
 }
-//coding
+//evaluate coding
 process Rerun_CPAT_to_evaluate_coding {
     input:
     file final_coding_gene_for_CPAT from final_coding_gene_for_CPAT_fa
@@ -1192,6 +1228,7 @@ process Build_kallisto_index_of_GTF_for_quantification {
 
 //Keep the chanel as constant variable to be used several times in quantification analysis
 constant_kallisto_index = final_kallisto_index.first()
+//The following code is designed for an alternative case that one the merged_gtf have already been generated under other condition.
 if(!params.merged_gtf){
     process Run_kallisto_for_quantification {
 
@@ -1222,7 +1259,7 @@ if(!params.merged_gtf){
             println print_purple("quantification by kallisto in paired end mode")
             '''
         #quantification by kallisto 
-        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} {pair[1]}
+        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} !{pair[1]}
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
         '''
         }
@@ -1254,7 +1291,7 @@ if(!params.merged_gtf){
 
 
         } else {
-            println print_purple("quantification by kallisto in paired end mode")
+            println print_purple("Quantification by kallisto in paired end mode")
             '''
         #quantification by kallisto 
         kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} !{pair[1]}
