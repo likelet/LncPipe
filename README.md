@@ -36,12 +36,26 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 ```nextflow run LncRNAanalysisPipe.nf <parameters>```
 ## Prepare input files 
 #### References, index and annotation files（required）
-1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch37_tran.tar.gz ) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
+
+1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
 > Building index of hisat relatively require large amount of memory, thus we sugguested that users downloaded it directly from the hisat website.
 2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.). 
-3. GENCODE gene annotation file in GTF format:[gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)
-4. LNCipedia gene annotation file in GTF format:[lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf)
+3. GENCODE gene annotation file in GTF format
+4. LNCipedia gene annotation file in GTF format.(set null if not available for your species)
 5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
+> Support species list
+	##### human 
+	1. hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz
+	2. Genome reference: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/GRCh38.p10.genome.fa.gz
+	3. GENCODE gene annotation: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/gencode.v27.annotation.gtf.gz
+	4. LNCipedia gene annotation: https://lncipedia.org/downloads/lncipedia_5_0_hc_hg38.gtf
+	5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
+	##### mouse 
+	1. hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grcm38_tran.tar.gz
+	2. Genome reference: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/GRCm38.p5.genome.fa.gz
+	3. GENCODE gene annotation: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/gencode.vM16.annotation.gtf.gz
+	4. LNCipedia gene annotation: null
+	5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 
 ## Run [LncPipe](https://github.com/likelet/LncPipe) from Docker 
 1. Prepare input files.
