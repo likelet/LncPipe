@@ -43,19 +43,19 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 3. GENCODE gene annotation file in GTF format
 4. LNCipedia gene annotation file in GTF format.(set null if not available for your species)
 5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
-> Support species list
-	##### human 
-	1. hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz
-	2. Genome reference: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/GRCh38.p10.genome.fa.gz
-	3. GENCODE gene annotation: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/gencode.v27.annotation.gtf.gz
-	4. LNCipedia gene annotation: https://lncipedia.org/downloads/lncipedia_5_0_hc_hg38.gtf
-	5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
-	##### mouse 
-	1. hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grcm38_tran.tar.gz
-	2. Genome reference: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/GRCm38.p5.genome.fa.gz
-	3. GENCODE gene annotation: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/gencode.vM16.annotation.gtf.gz
-	4. LNCipedia gene annotation: null
-	5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
+#### Supported species
+##### human 
+1. hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz
+2. Genome reference: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/GRCh38.p10.genome.fa.gz
+3. GENCODE gene annotation: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/gencode.v27.annotation.gtf.gz
+4. LNCipedia gene annotation: https://lncipedia.org/downloads/lncipedia_5_0_hc_hg38.gtf
+5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
+##### mouse 
+1. hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grcm38_tran.tar.gz
+2. Genome reference: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/GRCm38.p5.genome.fa.gz
+3. GENCODE gene annotation: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/gencode.vM16.annotation.gtf.gz
+4. LNCipedia gene annotation: null
+5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 
 ## Run [LncPipe](https://github.com/likelet/LncPipe) from Docker 
 1. Prepare input files.
