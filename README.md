@@ -44,6 +44,8 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 4. LNCipedia gene annotation file in GTF format.(set null if not available for your species)
 5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 #### Supported species
+>Currently, LncPipe was designed for human only, but it also support other species which required users providing "known_protein_coding.gtf" and  "known_lncRNA.gtf "
+the detail usage for non-human species could be found here.
 ##### human 
 1. hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz
 2. Genome reference: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/GRCh38.p10.genome.fa.gz
@@ -284,6 +286,7 @@ params {
 | Name | Example/Default value | Description |
 |-----------|--------------:|-------------|
 |--input_folder | `.` | input folder |
+|--species | `human` | Your species, mouse, fly and zebra fish are also supported |
 |--fastq_ext | `*_{1,2}.fastq.gz` | input raw paired reads |
 |--out_folder |  `.` | output folder |
 |--design     | `FALSE` | a txt file that stored experimental design information, plz see details from `--design` section below |
@@ -408,6 +411,20 @@ Result/
 
 ## Acknowledgement
  Thanks to the author of [AfterQC](https://github.com/OpenGene/AfterQC), Shifu Chen, for his help on providing a gzip output support to meet the require of LncPipe.  Thanks to the internal test by Hongwan Zhang and Yan Wang from SYSUCC Cancer bioinformatics platform.
+## FAQ 
+1. PLEK throws an error "/data/software/PLEK.1.2/PLEK.py:line12: $'\r': can not find command", how to fix?
+
+```shell
+#A: using the follow command as suggested in the installation section.
+# dos2unix in perl one-liner: remove BOM head and deal with \r problem
+    perl -CD -pi -e'tr/\x{feff}//d && s/[\r\n]+/\n/' *.py 
+```
+2. IOError: [Errno 2] No such file or directory: '/opt/CPAT-1.2.3/dat/Human_Hexamer.tsv'?
+```shell
+#A: The cpat command required  the `Human_Hexamer.tsv` to predict lncRNA coding potential, plz check your `cpatpath` parameters. 
+```
+
+
 ## Contact
 ##### For implementation:
 * [Qi Zhao](https://github.com/likelet) zhaoqi@sysucc.org.cn, Sun Yat-sen University Cancer Center;

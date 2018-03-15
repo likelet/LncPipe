@@ -56,12 +56,11 @@ def print_cyan = {  str -> ANSI_CYAN + str + ANSI_RESET }
 def print_purple = {  str -> ANSI_PURPLE + str + ANSI_RESET }
 def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
-dev_date = '2017-12-6 12:43'
 //Help information
-// Pipeline version
-
+// Nextflow  version
+version="v0.1.2"
 //=======================================================================================
-// Version check
+// Nextflow Version check
 if( !nextflow.version.matches('0.26+') ) {
     println print_yellow("This workflow requires Nextflow version 0.26 or greater -- You are running version ")+ print_red(nextflow.version)
     exit 1
@@ -71,7 +70,7 @@ params.help = null
 if (params.help) {
     log.info ''
     log.info print_purple('------------------------------------------------------------------------')
-    log.info "LncPipe: a Nextflow-based Long non-coding RNA analysis PIPELINE v$version"
+    log.info "LncPipe: a Nextflow-based Long non-coding RNA analysis Pipeline v$version"
     log.info "LncPipe integrates several NGS processing tools to identify novel long non-coding RNAs from"
     log.info "unprocessed RNA sequencing data. Before run this pipeline, users need to install several softwares"
     log.info "or have docker installed in their system. When docker installed, our preduild image can supported all"
@@ -81,8 +80,8 @@ if (params.help) {
     log.info print_purple('------------------------------------------------------------------------')
     log.info ''
     log.info print_yellow('Usage: ')
-    log.info print_yellow('    The typical command for running the pipeline is as follows:\n') +
-            print_purple('       Nextflow lncRNApipe.nf \n') +
+    log.info print_yellow('    The typical command for running the pipeline is as follows (we do not recommend users passing parameter with command, plz modify config file instead  ):\n') +
+            print_purple('       Nextflow run LncRNAanalysisPipe.nf \n') +
 
             print_yellow('    General arguments:             Input and output setting\n') +
             print_cyan('      --input_folder <path>         ') + print_green('Path to input data(optional), current path default\n') +
@@ -90,6 +89,8 @@ if (params.help) {
             print_cyan('      --out_folder <path>           ') + print_green('The output directory where the results will be saved(optional), current path is default\n') +
             print_cyan('      --aligner <hisat>             ') + print_green('Aligner for reads mapping (optional), HISAT is default and supported only at present, "hisat"/"star"/"tophat"\n') +
             print_cyan('      --qctools <fastqc>            ') + print_green('Tools for assess reads quality, fastqc(default)/afterqc\n') +
+            print_cyan('      --detools <edger>            ') + print_green('Tools for differential analysis, edger(default)/deseq/noiseq\n') +
+            print_cyan('      --quant <kallisto>            ') + print_green('Tools for estimating abundance of transcript, kallisto(default)/htseq\n') +
             '\n' +
             print_yellow('    Options:                         General options for run this pipeline\n') +
             print_cyan('      --merged_gtf <gtffile>        ') + print_green('Start analysis with assemblies already produced and skip fastqc/alignment step, DEFAOUL NULL\n') +
@@ -137,7 +138,8 @@ unstrand = params.unstrand ? true : false
 log.info print_purple("You are running LncPipe with the following parameters:")
 log.info print_purple("Checking parameters ...")
 log.info print_yellow("=====================================")
-log.info print_yellow("Fastq file extention:           ") + print_green(params.fastq_ext)
+log.info print_yellow("Species mode:           ") + print_green(params.species)
+log.info print_yellow("Fastq file extension:           ") + print_green(params.fastq_ext)
 log.info print_yellow("Single end :                    ") + print_green(params.singleEnd)
 log.info print_yellow("skip annotation process:        ") + print_green(params.skip_combine)
 log.info print_yellow("Input folder:                   ") + print_green(params.input_folder)
@@ -158,12 +160,12 @@ ava_cpu = Runtime.getRuntime().availableProcessors()
 if (params.cpu != null && ava_cpu > params.cpu) {
     ava_cpu = params.cpu
 } else if (params.cpu != null && ava_cpu < params.cpu) {
-    print print_red("Cpu number set in command is not used for exceeding the max available processors, \n use default parameter to run pipe. ")
+    print print_yellow("Exceeding the max available processors, \n use default parameter to run pipe. ")
 }
 if (params.mem != null && ava_mem > params.mem) {
     ava_mem = params.mem
 } else if (params.mem != null && ava_mem < params.mem) {
-    print print_red("Memory set in command is not used for exceeding the max available processors, \n use default parameter to run pipe. ")
+    print print_yellow("Exceeding the max available memory, \n use default parameter to run pipe. ")
 }
 // set individual cpu for fork run
 idv_cpu = 40
@@ -175,7 +177,6 @@ if (fork_number < 1) {
 // read file
 fasta_ref = file(params.fasta_ref)
 if (!fasta_ref.exists()) exit 1, "Reference genome not found: ${params.fasta_ref}"
-
 if(params.aligner=='star'){
     star_idex = file(params.star_idex)
     if (!star_idex.exists()) exit 1, "Reference genome star index not found: ${params.star_idex}"
@@ -187,47 +188,38 @@ if(params.aligner=='star'){
             .ifEmpty { exit 1, "bowtie2 index for tophat not found: ${params.bowtie2_index}" }
 }
 
-
-
-
-
-
-
-
-
 input_folder = file(params.input_folder)
-gencode_annotation_gtf = file(params.gencode_annotation_gtf)
-if (!gencode_annotation_gtf.exists()) exit 1, "GENCODE annotation file not found: ${params.gencode_annotation_gtf}"
-lncipedia_gtf = file(params.lncipedia_gtf)
-if (!lncipedia_gtf.exists()) exit 1, "lncipedia annotation file not found: ${params.lncipedia_gtf}"
 
-
-//Prepare annotations
-annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
-annotation_channel.collectFile { file -> ['lncRNA.gtflist', file.name + '\n'] }
-        .set { LncRNA_gtflist }
 
 /*
 *Step 1: Preparing annotations
  */
-
 println print_purple("Combination of known annotations from GTFs")
-process combine_public_annotation {
-    storeDir { params.out_folder + "/Combined_annotations" }
-    input:
-    file lncRNA_gtflistfile from LncRNA_gtflist
-    file gencode_annotation_gtf
-    file lncipedia_gtf
+if (params.species=="human") {
+    gencode_annotation_gtf = file(params.gencode_annotation_gtf)
+    if (!gencode_annotation_gtf.exists()) exit 1, "GENCODE annotation file not found: ${params.gencode_annotation_gtf}"
+    lncipedia_gtf = file(params.lncipedia_gtf)
+    if (!lncipedia_gtf.exists()) exit 1, "lncipedia annotation file not found: ${params.lncipedia_gtf}"
+//Prepare annotations
+    annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
+    annotation_channel.collectFile { file -> ['lncRNA.gtflist', file.name + '\n'] }
+            .set { LncRNA_gtflist }
+    process combine_public_annotation {
+        storeDir { params.out_folder + "/Combined_annotations" }
+        input:
+        file lncRNA_gtflistfile from LncRNA_gtflist
+        file gencode_annotation_gtf
+        file lncipedia_gtf
+        output:
+        file "gencode_protein_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
+        file "known.lncRNA.gtf" into KnownLncRNAgtf
 
-    output:
-    file "gencode_protein_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
-    file "known.lncRNA.gtf" into KnownLncRNAgtf
+        shell:
+        cufflinks_threads = ava_cpu- 1
 
-    shell:
-    cufflinks_threads = ava_cpu- 1
 
-    if(params.aligner=='hisat'){
-        '''
+        if(params.aligner=='hisat'){//fix the gtf format required by hisat
+            '''
         set -o pipefail
         touch filenames.txt
         for file in *.gtf 
@@ -244,9 +236,9 @@ process combine_public_annotation {
         mv  merged.filter.gtf known.lncRNA.gtf
         
         '''
-    }else {
+        }else {
 
-        '''
+            '''
         set -o pipefail
         cuffmerge -o merged_lncRNA  !{lncRNA_gtflistfile}
         cat !{gencode_annotation_gtf} |grep "protein_coding" > gencode_protein_coding.gtf
@@ -255,14 +247,40 @@ process combine_public_annotation {
         mv  merged.filter.gtf known.lncRNA.gtf
         
         '''
+        }
     }
-
-
 }
+else {// for mouse or other species, user should provide known_protein_coding and known_lncRNA GTF file for analysis
+
+    KnownLncRNAgtf=file(params.known_lncRNA_gtf)
+    if (!KnownLncRNAgtf.exists()) exit 1, print_red("In non-human mode, known lncRNA GTF annotation file not found: ${params.known_lncRNA_gtf}")
+    known_coding_gtf=file(params.known_coding_gtf)
+    if (!KnownLncRNAgtf.exists()) exit 1, print_red("In non-human mode, known protein coding GTF annotation file not found: ${params.known_coding_gtf}")
+    gencode_annotation_gtf = file(params.gencode_annotation_gtf)
+    if (!gencode_annotation_gtf.exists()) exit 1, "GENCODE annotation file not found: ${params.gencode_annotation_gtf}"
+    known_coding_gtf.into{proteinCodingGTF; proteinCodingGTF_forClass}
+    KnownLncRNAgtf.gtf.set{KnownLncRNAgtf}
+//    process rename_GTF_for_non_human_species {
+//        storeDir { params.out_folder + "/Combined_annotations" }
+//        input:
+//        file KnownLncRNAgtf
+//        file known_coding_gtf
+//        output:
+//        file "known_coding_gtf.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
+//        file "KnownLncRNAgtf.gtf" into KnownLncRNAgtf
+//
+//        shell:
+//        '''
+//        set -o pipefail
+//        mv !{KnownLncRNAgtf} KnownLncRNAgtf.gtf
+//        mv !{known_coding_gtf} known_coding_gtf.gtf
+//        '''
+//    }
+}
+
 
 // whether the merged gtf have already produced.
 if (!params.merged_gtf) {
-
     /*
      * Step 2: Build STAR/tophat/hisat2 index if not provided
      */
@@ -275,7 +293,7 @@ if (!params.merged_gtf) {
 
             input:
             file fasta_ref from fasta_ref
-            file gtf from gencode_annotation_gtf
+            file gencode_annotation_gtf
 
             output:
             file "star_index" into star_idex
@@ -287,7 +305,7 @@ if (!params.merged_gtf) {
                 STAR \
                     --runMode genomeGenerate \
                     --runThreadN ${star_threads} \
-                    --sjdbGTFfile $gtf \
+                    --sjdbGTFfile $gencode_annotation_gtf \
                     --sjdbOverhang 149 \
                     --genomeDir star_index/ \
                     --genomeFastaFiles $fasta_ref
@@ -322,7 +340,7 @@ if (!params.merged_gtf) {
 
             input:
             file fasta_ref from fasta_ref
-            file gencode_annotation_gtf from gencode_annotation_gtf
+            file gencode_annotation_gtf
 
             output:
             file "genome_ht2.*" into hisat2_index
@@ -331,18 +349,14 @@ if (!params.merged_gtf) {
             hisat2_index_threads = ava_cpu- 1
             """
                 #for human genome it will take more than 160GB memory and take really  long time (6 more hours), thus we recommand to down pre-build genome from hisat website
-                extract_splice_sites.py gencode_annotation_gtf >genome_ht2.ss
-                extract_exons.py gencode_annotation_gtf > genome_ht2.exon 
+                extract_splice_sites.py !{gencode_annotation_gtf} >genome_ht2.ss
+                extract_exons.py !{gencode_annotation_gtf} > genome_ht2.exon 
                 hisat2-build -p !{hisat2_index_threads} --ss genome_ht2.ss --exo genome_ht2.exon !{fasta_ref} genome_ht2 
                 """
         }
     } else if (params.aligner == 'tophat' && params.hisat_index == false && !fasta_ref) {
         println print_red("No reference sequence loaded! plz specify ") + print_red("--fasta_ref") + print_red(" with reference.")
     }
-
-
-
-
 
     println print_purple("Analysis from fastq file")
 //Match the pairs on two channels
@@ -445,7 +459,6 @@ if (!params.merged_gtf) {
         }
     }
     fastqc_for_waiting = fastqc_for_waiting.first()
-
 
     /*
     * Step 4: Initialized reads alignment by STAR
@@ -572,7 +585,6 @@ if (!params.merged_gtf) {
             file tempfiles from fastqc_for_waiting // just for waiting
             file fasta_ref
             file hisat2_id from hisat2_index.collect()
-            file gtf from gencode_annotation_gtf
 
             output:
             set val(file_tag_new),file("${file_tag_new}.sort.bam") into hisat_mappedReads
@@ -802,7 +814,7 @@ else {
         mergeTranscripts_forCompare; mergeTranscripts_forExtract; mergeTranscripts_forCodeingProtential
     }
 
-    // add fastq when do kallisto
+    // add fastq when do quantification
     reads = params.input_folder + params.fastq_ext
     if (params.qctools == 'fastqc') {
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
@@ -983,12 +995,37 @@ process Predict_coding_abbilities_by_CPAT {
     output:
     file "novel.longRNA.CPAT.out" into novel_longRNA_CPAT_result
     shell:
-    '''
+    if(params.species=="human"){
+        '''
         cpat.py -g !{novel_lncRNA_fasta} \
                                        -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
                                        -d !{params.cpatpath}/dat/Human_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
+    }else if (params.species=="mouse"){
+        '''
+        cpat.py -g !{novel_lncRNA_fasta} \
+                                       -x !{params.cpatpath}/dat/Mouse_Hexamer.tsv \
+                                       -d !{params.cpatpath}/dat/Mouse_logitModel.RData \
+                                       -o novel.longRNA.CPAT.out
+        '''
+
+    }else if (params.species=="zebrafish"){
+        '''
+        cpat.py -g !{novel_lncRNA_fasta} \
+                                       -x !{params.cpatpath}/dat/zebrafish_Hexamer.tsv \
+                                       -d !{params.cpatpath}/dat/zebrafish_logitModel.RData \
+                                       -o novel.longRNA.CPAT.out
+        '''
+    }else {
+        '''
+        cpat.py -g !{novel_lncRNA_fasta} \
+                                       -x !{params.cpatpath}/dat/fly_Hexamer.tsv \
+                                       -d !{params.cpatpath}/dat/fly_logitModel.RData \
+                                       -o novel.longRNA.CPAT.out
+        '''
+    }
+
 }
 
 
@@ -1208,28 +1245,30 @@ process Secondary_basic_statistic {
     '''
 }
 
-/*
+
+
+//Keep the chanel as constant variable to be used several times in quantification analysis
+
+//The following code is designed for an alternative case that one the merged_gtf have already been generated under other condition.
+if(!params.merged_gtf){
+    /*
 *Step 11: Build kallisto index and perform quantification by kallisto
 */
-process Build_kallisto_index_of_GTF_for_quantification {
-    input:
-    file transript_fasta from finalFasta_for_quantification_gtf
+    process Build_kallisto_index_of_GTF_for_quantification {
+        input:
+        file transript_fasta from finalFasta_for_quantification_gtf
 
-    output:
-    file "transcripts.idx" into final_kallisto_index
+        output:
+        file "transcripts.idx" into final_kallisto_index
 
-    shell:
-    '''
+        shell:
+        '''
     #index kallisto reference 
     kallisto index -i transcripts.idx !{transript_fasta}
     
     '''
-}
-
-//Keep the chanel as constant variable to be used several times in quantification analysis
-constant_kallisto_index = final_kallisto_index.first()
-//The following code is designed for an alternative case that one the merged_gtf have already been generated under other condition.
-if(!params.merged_gtf){
+    }
+    constant_kallisto_index = final_kallisto_index.first()
     process Run_kallisto_for_quantification {
 
 
@@ -1265,6 +1304,24 @@ if(!params.merged_gtf){
         }
     }
 }else{
+    /*
+*Step 11: Build kallisto index and perform quantification by kallisto
+*/
+    process Build_kallisto_index_of_GTF_for_quantification {
+        input:
+        file transript_fasta from finalFasta_for_quantification_gtf
+
+        output:
+        file "transcripts.idx" into final_kallisto_index
+
+        shell:
+        '''
+    #index kallisto reference 
+    kallisto index -i transcripts.idx !{transript_fasta}
+    
+    '''
+    }
+    constant_kallisto_index = final_kallisto_index.first()
     process Run_kallisto_for_quantification {
 
 
@@ -1337,6 +1394,7 @@ lncRep_theme = params.lncRep_theme
 lncRep_cdf_percent = params.lncRep_cdf_percent
 lncRep_max_lnc_len = params.lncRep_max_lnc_len
 lncRep_min_expressed_sample = params.lncRep_min_expressed_sample
+detools = params.detools
 design=null
 if(params.design){
     design = file(params.design)
@@ -1383,7 +1441,7 @@ if(!params.merged_gtf) {
         shell:
         file_tag = "Generating report ..."
         '''
-        Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',theme = 'npg',cdf.percent = !{lncRep_cdf_percent},max.lncrna.len = !{lncRep_max_lnc_len},min.expressed.sample = !{lncRep_min_expressed_sample}, ask = FALSE)"
+        Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=!{detools},theme = 'npg',cdf.percent = !{lncRep_cdf_percent},max.lncrna.len = !{lncRep_max_lnc_len},min.expressed.sample = !{lncRep_min_expressed_sample}, ask = FALSE)"
       '''
     }
 }
