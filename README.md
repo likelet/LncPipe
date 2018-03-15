@@ -412,19 +412,19 @@ Result/
 ## Acknowledgement
  Thanks to the author of [AfterQC](https://github.com/OpenGene/AfterQC), Shifu Chen, for his help on providing a gzip output support to meet the require of LncPipe.  Thanks to the internal test by Hongwan Zhang and Yan Wang from SYSUCC Cancer bioinformatics platform.
 ## FAQ 
-1. PLEK throws an error "/data/software/PLEK.1.2/PLEK.py:line12: $'\r': can not find command", how to fix?
-
+* *1. PLEK throws an error "/data/software/PLEK.1.2/PLEK.py:line12: $'\r': can not find command", how to fix?*
+>A: using the follow command as suggested in the installation section. 
 ```shell
-#A: using the follow command as suggested in the installation section.
-# dos2unix in perl one-liner: remove BOM head and deal with \r problem
+#dos2unix in perl one-liner: remove BOM head and deal with \r problem
     perl -CD -pi -e'tr/\x{feff}//d && s/[\r\n]+/\n/' *.py 
 ```
-2. IOError: [Errno 2] No such file or directory: '/opt/CPAT-1.2.3/dat/Human_Hexamer.tsv'?
-```shell
-#A: The cpat command required  the `Human_Hexamer.tsv` to predict lncRNA coding potential, plz check your `cpatpath` parameters. 
-```
+* *2. IOError: [Errno 2] No such file or directory: '/opt/CPAT-1.2.3/dat/Human_Hexamer.tsv'?*
+>A: The cpat command required  the `Human_Hexamer.tsv` to predict lncRNA coding potential, plz check your `cpatpath` parameters. 
+* *3. When using htseq to quantify transicript, it throws "Error occured when reading beginning of SAM/BAM file. 'csamtools.AlignedRead' object has no attribute 'reference_start' "*
+>A: It's a version conflict caused by htseq and hisat generated bamfile, a possible solution for this is to install the old version of htseq
 
 
+    
 ## Contact
 ##### For implementation:
 * [Qi Zhao](https://github.com/likelet) zhaoqi@sysucc.org.cn, Sun Yat-sen University Cancer Center;

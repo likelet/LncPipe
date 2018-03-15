@@ -359,7 +359,7 @@ if (!params.merged_gtf) {
     }
 
     println print_purple("Analysis from fastq file")
-//Match the pairs on two channels
+    //Match the pairs on two channels
 
     reads = params.input_folder + params.fastq_ext
 
@@ -461,7 +461,7 @@ if (!params.merged_gtf) {
     fastqc_for_waiting = fastqc_for_waiting.first()
 
     /*
-    * Step 4: Initialized reads alignment by STAR
+    * Step 4: Initialized reads alignment by aligner
     */
     if (params.aligner == 'star') {
         process fastq_star_alignment_For_discovery {
@@ -478,7 +478,7 @@ if (!params.merged_gtf) {
             file star_idex
 
             output:
-            set val(file_tag_new), file("${file_tag_new}Aligned.sortedByCoord.out.bam") into mappedReads
+            set val(file_tag_new), file("${file_tag_new}Aligned.sortedByCoord.out.bam") into mappedReads,forHtseqMappedReads
             file "${file_tag_new}Log.final.out" into alignment_logs
             shell:
             println print_purple("Start mapping with STAR aligner " + samplename)
@@ -545,7 +545,7 @@ if (!params.merged_gtf) {
             file gtf from gencode_annotation_gtf
 
             output:
-             file "${file_tag_new}_thout/accepted.bam" into mappedReads
+             set val(samplename),file("${file_tag_new}_thout/accepted.bam") into mappedReads,forHtseqMappedReads
             file "${file_tag_new}_thout/Alignment_summary.txt" into alignment_logs
             //align_summary.txt as log file
             shell:
@@ -587,7 +587,7 @@ if (!params.merged_gtf) {
             file hisat2_id from hisat2_index.collect()
 
             output:
-            set val(file_tag_new),file("${file_tag_new}.sort.bam") into hisat_mappedReads
+            set val(file_tag_new),file("${file_tag_new}.sort.bam") into hisat_mappedReads,forHtseqMappedReads
             file "${file_tag_new}.hisat2_summary.txt" into alignment_logs
             //align_summary.txt as log file
             shell:
@@ -1252,108 +1252,143 @@ process Secondary_basic_statistic {
 //The following code is designed for an alternative case that one the merged_gtf have already been generated under other condition.
 if(!params.merged_gtf){
     /*
-*Step 11: Build kallisto index and perform quantification by kallisto
+*Step 11: Quantification step
 */
-    process Build_kallisto_index_of_GTF_for_quantification {
-        input:
-        file transript_fasta from finalFasta_for_quantification_gtf
+    if(params.quant=="htseq"){
 
-        output:
-        file "transcripts.idx" into final_kallisto_index
+        process Run_htseq_for_quantification{
+            tag { file_tag }
+            input:
+            set val(samplename),file(bamfile) from forHtseqMappedReads
+            file final_gtf from finalGTF_for_quantification_gtf
 
-        shell:
-        '''
-    #index kallisto reference 
-    kallisto index -i transcripts.idx !{transript_fasta}
-    
-    '''
-    }
-    constant_kallisto_index = final_kallisto_index.first()
-    process Run_kallisto_for_quantification {
+            output:
+            file "${file_tag_new}.htseq.count " into htseq_tcv_collection
+
+            shell:
+
+            file_tag = samplename
+            file_tag_new = file_tag
+            if(params.unstrand){
+                '''
+                htseq-count -t exon -i transcript_id -s no -r pos -f bam !{bamfile} !{final_gtf} > !{samplename}.htseq.count 
+                '''
+            }else {
+                '''
+                htseq-count -t exon -i transcript_id -f bam -r pos !{bamfile} !{final_gtf} > !{samplename}.htseq.count 
+                '''
+            }
 
 
-        tag { file_tag }
 
-        input:
-        file kallistoIndex from constant_kallisto_index
-        set val(samplename), file(pair) from readPairs_for_kallisto
+        }
+    }else{
+        process Build_kallisto_index_of_GTF_for_quantification {
+            input:
+            file transript_fasta from finalFasta_for_quantification_gtf
 
-        output:
-        file "${file_tag_new}_abundance.tsv" into kallisto_tcv_collection
+            output:
+            file "transcripts.idx" into final_kallisto_index
 
-        shell:
-        file_tag = samplename
-        file_tag_new = file_tag
-        kallisto_threads = ava_cpu- 1
-        if (params.singleEnd) {
-            println print_purple("Quantification by kallisto in single end mode")
+            shell:
             '''
-        #quantification by kallisto in single end mode
-        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  !{pair} 
-        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
-        '''
-
-
-        } else {
-            println print_purple("quantification by kallisto in paired end mode")
+            #index kallisto reference 
+            kallisto index -i transcripts.idx !{transript_fasta}
+            
             '''
-        #quantification by kallisto 
-        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} !{pair[1]}
-        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
-        '''
+        }
+        constant_kallisto_index = final_kallisto_index.first()
+        process Run_kallisto_for_quantification {
+
+
+            tag { file_tag }
+
+            input:
+            file kallistoIndex from constant_kallisto_index
+            set val(samplename), file(pair) from readPairs_for_kallisto
+
+            output:
+            file "${file_tag_new}_abundance.tsv" into kallisto_tcv_collection
+
+            shell:
+            file_tag = samplename
+            file_tag_new = file_tag
+            kallisto_threads = ava_cpu- 1
+            if (params.singleEnd) {
+                println print_purple("Quantification by kallisto in single end mode")
+                '''
+                #quantification by kallisto in single end mode
+                kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  !{pair} 
+                mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
+                '''
+
+
+            } else {
+                println print_purple("quantification by kallisto in paired end mode")
+                '''
+                #quantification by kallisto 
+                kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} !{pair[1]}
+                mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
+                '''
+            }
         }
     }
+
 }else{
     /*
-*Step 11: Build kallisto index and perform quantification by kallisto
+*Step 11: Quantification step
 */
-    process Build_kallisto_index_of_GTF_for_quantification {
-        input:
-        file transript_fasta from finalFasta_for_quantification_gtf
+    if(params.quant=="htseq"){
+        exit 0, print_red("htseq can not be applicable without mapping step, plz set quant tool using `kallisto`")
+    }else {
+        process Build_kallisto_index_of_GTF_for_quantification {
+            input:
+            file transript_fasta from finalFasta_for_quantification_gtf
 
-        output:
-        file "transcripts.idx" into final_kallisto_index
+            output:
+            file "transcripts.idx" into final_kallisto_index
 
-        shell:
-        '''
+            shell:
+            '''
     #index kallisto reference 
     kallisto index -i transcripts.idx !{transript_fasta}
     
     '''
-    }
-    constant_kallisto_index = final_kallisto_index.first()
-    process Run_kallisto_for_quantification {
+        }
+        constant_kallisto_index = final_kallisto_index.first()
+        process Run_kallisto_for_quantification {
 
 
-        tag { file_tag }
+            tag { file_tag }
 
-        input:
-        file kallistoIndex from constant_kallisto_index
-        set val(samplename), file(pair) from readPairs_for_kallisto
-        file tempfiles from fastqc_for_waiting2
-        output:
-        file "${file_tag_new}_abundance.tsv" into kallisto_tcv_collection
+            input:
+            file kallistoIndex from constant_kallisto_index
+            set val(samplename), file(pair) from readPairs_for_kallisto
+            file tempfiles from fastqc_for_waiting2
+            output:
+            file "${file_tag_new}_abundance.tsv" into kallisto_tcv_collection
 
-        shell:
-        file_tag = samplename
-        file_tag_new = file_tag
-        kallisto_threads = ava_cpu- 1
-        if (params.singleEnd) {
-            println print_purple("Quantification by kallisto in single end mode")
-            '''
+            shell:
+            file_tag = samplename
+            file_tag_new = file_tag
+            kallisto_threads = ava_cpu - 1
+            if (params.singleEnd) {
+                println print_purple("Quantification by kallisto in single end mode")
+                '''
         #quantification by kallisto in single end mode
         kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20 !{pair} 
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
         '''
 
 
-        } else {
-            println print_purple("Quantification by kallisto in paired end mode")
-            '''
+            } else {
+                println print_purple("Quantification by kallisto in paired end mode")
+                '''
         #quantification by kallisto 
         kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} !{pair[1]}
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
         '''
+            }
         }
     }
 }
@@ -1363,24 +1398,45 @@ if(!params.merged_gtf){
 *Step 12: Combine matrix for statistic  and differential expression analysis
 */
 
-process Get_kallisto_matrix {
-    tag { file_tag }
-    publishDir pattern: "kallisto*.txt",
-            path: "${params.out_folder}/Result/Quantification/", mode: 'copy'
-    input:
-    file abundance_tsv_matrix from kallisto_tcv_collection.collect()
-    file annotated_gtf from finalGTF_for_annotate_gtf
-    output:
-    file "kallisto.count.txt" into expression_matrixfile_count
-    file "kallisto.tpm.txt" into expression_matrixfile_tpm
+if(params.quant=="htseq"){
+    process Get_HTseq_matrix {
+        tag { file_tag }
+        publishDir pattern: "htseq*.txt",
+                path: "${params.out_folder}/Result/Quantification/", mode: 'copy'
+        input:
+        file abundance_tsv_matrix from kallisto_tcv_collection.collect()
+        file annotated_gtf from finalGTF_for_annotate_gtf
+        output:
+        file "htseq.count.txt" into expression_matrixfile_count
 
-    shell:
-    file_tag = "Kallisto"
-    '''
-    grep -v "protein_coding"  final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$2}' | sort | uniq | cat - <(grep "protein_coding" final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$14}' | sort | uniq)> map.file
-    R CMD BATCH !{baseDir}/bin/get_kallisto_matrix.R
-    '''
+        shell:
+        file_tag = "htseq"
+        '''
+        grep -v "protein_coding"  final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$2}' | sort | uniq | cat - <(grep "protein_coding" final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$14}' | sort | uniq)> map.file
+        R CMD BATCH !{baseDir}/bin/get_htseq_matrix.R
+        '''
+    }
+}else{
+    process Get_kallisto_matrix {
+        tag { file_tag }
+        publishDir pattern: "kallisto*.txt",
+                path: "${params.out_folder}/Result/Quantification/", mode: 'copy'
+        input:
+        file abundance_tsv_matrix from kallisto_tcv_collection.collect()
+        file annotated_gtf from finalGTF_for_annotate_gtf
+        output:
+        file "kallisto.count.txt" into expression_matrixfile_count
+        file "kallisto.tpm.txt" into expression_matrixfile_tpm
+
+        shell:
+        file_tag = "Kallisto"
+        '''
+        grep -v "protein_coding"  final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$2}' | sort | uniq | cat - <(grep "protein_coding" final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$14}' | sort | uniq)> map.file
+        R CMD BATCH !{baseDir}/bin/get_kallisto_matrix.R
+        '''
+    }
 }
+
 
 
 
