@@ -1255,7 +1255,6 @@ if(!params.merged_gtf){
 *Step 11: Quantification step
 */
     if(params.quant=="htseq"){
-
         process Run_htseq_for_quantification{
             tag { file_tag }
             input:
@@ -1271,11 +1270,15 @@ if(!params.merged_gtf){
             file_tag_new = file_tag
             if(params.unstrand){
                 '''
-                htseq-count -t exon -i transcript_id -s no -r pos -f bam !{bamfile} !{final_gtf} > !{samplename}.htseq.count 
+                sambamba view !{bamfile} > !{samplename}.sam # resolved error caused by bam and htseq version conflicts 
+                htseq-count -t exon -i transcript_id -s no -r pos -f sam !{samplename}.sam !{final_gtf} > !{samplename}.htseq.count 
+                rm !{samplename}.sam
                 '''
             }else {
                 '''
-                htseq-count -t exon -i transcript_id -f bam -r pos !{bamfile} !{final_gtf} > !{samplename}.htseq.count 
+                sambamba view !{bamfile} > !{samplename}.sam # resolved error caused by bam and htseq version conflicts 
+                htseq-count -t exon -i transcript_id -r pos -f sam !{samplename}.sam !{final_gtf} > !{samplename}.htseq.count 
+                rm !{samplename}.sam
                 '''
             }
 
