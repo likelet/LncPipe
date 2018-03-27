@@ -231,7 +231,7 @@ if (params.species=="human") {
         
         stringtie --merge -o merged_lncRNA.gtf  filenames.txt
         cat !{gencode_annotation_gtf}_mod.gtf  |grep "protein_coding" > gencode_protein_coding.gtf
-        gffcompare -r !{gencode_annotation_gtf} -p !{cufflinks_threads} merged_lncRNA.gtf
+        gffcompare -r gencode_protein_coding.gtf -p !{cufflinks_threads} merged_lncRNA.gtf
         awk '$3 =="u"||$3=="x"{print $5}' gffcmp.merged_lncRNA.gtf.tmap |sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl merged_lncRNA.gtf - > merged.filter.gtf
         mv  merged.filter.gtf known.lncRNA.gtf
         
@@ -242,7 +242,7 @@ if (params.species=="human") {
         set -o pipefail
         cuffmerge -o merged_lncRNA  !{lncRNA_gtflistfile}
         cat !{gencode_annotation_gtf} |grep "protein_coding" > gencode_protein_coding.gtf
-        cuffcompare -o merged_lncRNA -r !{gencode_annotation_gtf} -p !{cufflinks_threads} merged_lncRNA/merged.gtf
+        cuffcompare -o merged_lncRNA -r gencode_protein_coding.gtf -p !{cufflinks_threads} merged_lncRNA/merged.gtf
         awk '$3 =="u"||$3=="x"{print $5}' merged_lncRNA/merged_lncRNA.merged.gtf.tmap  |sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl merged_lncRNA/merged.gtf - > merged.filter.gtf
         mv  merged.filter.gtf known.lncRNA.gtf
         
@@ -260,22 +260,7 @@ else {// for mouse or other species, user should provide known_protein_coding an
     if (!gencode_annotation_gtf.exists()) exit 1, "GENCODE annotation file not found: ${params.gencode_annotation_gtf}"
     known_coding_gtf.into{proteinCodingGTF; proteinCodingGTF_forClass}
     KnownLncRNAgtf.gtf.set{KnownLncRNAgtf}
-//    process rename_GTF_for_non_human_species {
-//        storeDir { params.out_folder + "/Combined_annotations" }
-//        input:
-//        file KnownLncRNAgtf
-//        file known_coding_gtf
-//        output:
-//        file "known_coding_gtf.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
-//        file "KnownLncRNAgtf.gtf" into KnownLncRNAgtf
-//
-//        shell:
-//        '''
-//        set -o pipefail
-//        mv !{KnownLncRNAgtf} KnownLncRNAgtf.gtf
-//        mv !{known_coding_gtf} known_coding_gtf.gtf
-//        '''
-//    }
+
 }
 
 
