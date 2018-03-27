@@ -1,7 +1,8 @@
 library(data.table)
 htseq.files <- list.files("./",pattern="*.htseq.count")
 map.file <- read.table("./map.file",header=F,sep="\t")
-names(map.file) <- c("ID","Type")
+names(map.file) <- c("ID","ID2","Type")
+map.file<-map.file[,-2]
 
 trans.htseq.count <- c()
 

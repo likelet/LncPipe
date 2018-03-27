@@ -58,7 +58,7 @@ def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
 //Help information
 // Nextflow  version
-version="v0.1.2"
+version="v0.2.0"
 //=======================================================================================
 // Nextflow Version check
 if( !nextflow.version.matches('0.26+') ) {
@@ -1256,13 +1256,13 @@ if(!params.merged_gtf){
             if(params.unstrand){
                 '''
                 sambamba view !{bamfile} > !{samplename}.sam # resolved error caused by bam and htseq version conflicts 
-                htseq-count -t exon -i transcript_id -s no -r pos -f sam !{samplename}.sam !{final_gtf} > !{samplename}.htseq.count 
+                htseq-count -t exon -i gene_id -s no -r pos -f sam !{samplename}.sam !{final_gtf} > !{samplename}.htseq.count 
                 rm !{samplename}.sam
                 '''
             }else {
                 '''
                 sambamba view !{bamfile} > !{samplename}.sam # resolved error caused by bam and htseq version conflicts 
-                htseq-count -t exon -i transcript_id -r pos -f sam !{samplename}.sam !{final_gtf} > !{samplename}.htseq.count 
+                htseq-count -t exon -i gene_id -r pos -f sam !{samplename}.sam !{final_gtf} > !{samplename}.htseq.count 
                 rm !{samplename}.sam
                 '''
             }
@@ -1366,6 +1366,7 @@ if(!params.merged_gtf){
         #quantification by kallisto in single end mode
         kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20 !{pair} 
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
+        
         '''
 
 
@@ -1400,7 +1401,7 @@ if(params.quant=="htseq"){
         shell:
         file_tag = "htseq"
         '''
-        grep -v "protein_coding"  final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$2}' | sort | uniq | cat - <(grep "protein_coding" final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$14}' | sort | uniq)> map.file
+        perl !{baseDir}/bin/get_map_table.pl  final_all.gtf  > map.file
         R CMD BATCH !{baseDir}/bin/get_htseq_matrix.R
         '''
     }
@@ -1419,7 +1420,7 @@ if(params.quant=="htseq"){
         shell:
         file_tag = "Kallisto"
         '''
-        grep -v "protein_coding"  final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$2}' | sort | uniq | cat - <(grep "protein_coding" final_all.gtf | awk -F '[\\t"]' '{print $12"\\t"$14}' | sort | uniq)> map.file
+        perl !{baseDir}/bin/get_map_table.pl  --gtf_file=final_all.gtf  > map.file
         R CMD BATCH !{baseDir}/bin/get_kallisto_matrix.R
         '''
     }
