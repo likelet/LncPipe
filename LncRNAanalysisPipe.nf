@@ -561,7 +561,7 @@ if (!params.merged_gtf) {
         process fastq_hisat2_alignment_For_discovery {
 
             tag { file_tag }
-            maxForks 1
+            maxForks 6
             publishDir pattern: "",
                     path: { params.out_folder + "/Result/hisat_alignment" }, mode: 'copy', overwrite: true
 
@@ -670,6 +670,7 @@ if (!params.merged_gtf) {
         process StringTie_merge_assembled_gtf {
 
             tag { file_tag }
+            maxForks 6
             publishDir pattern: "merged.gtf",
                     path: { params.out_folder + "/Result/Merged_assemblies" }, mode: 'copy', overwrite: true
 
@@ -759,6 +760,7 @@ if (!params.merged_gtf) {
         process cuffmerge_assembled_gtf {
 
             tag { file_tag }
+            maxForks 6
             publishDir pattern: "CUFFMERGE/merged.gtf",
                     path: { params.out_folder + "/Result/All_assemblies" }, mode: 'copy', overwrite: true
 
@@ -1290,6 +1292,7 @@ if(!params.merged_gtf){
 
 
             tag { file_tag }
+            maxForks 6
 
             input:
             file kallistoIndex from constant_kallisto_index
@@ -1348,7 +1351,7 @@ if(!params.merged_gtf){
 
 
             tag { file_tag }
-
+            maxForks 6
             input:
             file kallistoIndex from constant_kallisto_index
             set val(samplename), file(pair) from readPairs_for_kallisto
