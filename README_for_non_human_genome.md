@@ -1,5 +1,5 @@
-
 #Example usage for non-human species 
+
 ##Introduction 
 LncPipe accepts raw reads, annotations and genome reference as input to conduct the whole analysis, 
 and is also applicable for selected referenced species. In the first version, we mainly focus on human 
@@ -71,8 +71,10 @@ Leave the other line unchanged, modified the following sentences like below (Acc
 ```
 ###Step 3. Start your analysis trip with command below 
 ```shell
-    nextflow run LncRNAanalysisPipe.nf
+    nextflow run -with-trace -with-report report.html -with-timeline timeline.html LncRNAanalysisPipe.nf 
     #or running in a docker image  
     nextflow -c docker.config  LncRNAanalysisPipe.nf 
 ```
-> The default running tools in each step are fastp, hisat, gffcompare, stringtie, cpat, plek, sambamba, kallisto ,edgeR and LncPipeReporter
+> The default running tools in each step are fastp, hisat, gffcompare, stringtie, cpat, plek, sambamba, kallisto ,edgeR and LncPipeReporter, if you want to change the tool in each step, plz modify `config` file instead.
+
+* Any question, plz open an issue in the issue page, we will reply ASAP :)
