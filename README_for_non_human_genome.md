@@ -1,6 +1,6 @@
-#Example usage for non-human species 
+# Example usage for non-human species 
 
-##Introduction 
+## Introduction 
 LncPipe accepts raw reads, annotations and genome reference as input to conduct the whole analysis, 
 and is also applicable for selected referenced species. In the first version, we mainly focus on human 
 because of well-organized lncRNA annotation files (with .gtf suffixed) from GENCODE and LNCipedia. 
@@ -8,7 +8,7 @@ For non-human species, user was required to provide both protein coding annotati
 which could be download from GENCODE(human or mouse only) or Ensemble databases. However, not all non-human species are supported 
 at present, since one essential tool CPAT included in LncPipe only available for 4 species (human, mouse, fly and zebrafish). 
 
-##Example usage for mouse 
+## Example usage for mouse 
 ### Step 1. Prepare input files. The following files required by LncPipe
 * hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grcm38_tran.tar.gz
 ```shell
@@ -41,6 +41,7 @@ at present, since one essential tool CPAT included in LncPipe only available for
 ```
 * Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 > For example there are 4 samples with eight .gz suffixed fastq files, like
+```shell
 sample1_rep1_1.fq.gz,
 sample1_rep1_2.fq.gz,
 sample1_rep2_1.fq.gz,
@@ -49,6 +50,7 @@ sample2_rep1_1.fq.gz,
 sample2_rep1_2.fq.gz,
 sample2_rep2_1.fq.gz,
 sample2_rep2_2.fq.gz
+```
 
 * `Design.file` are required if you are going to perform differential expression analysis between groups. 
 
