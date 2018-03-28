@@ -945,7 +945,8 @@ process Identify_novel_lncRNA_with_criterions {
         awk '$11 >200{print}' novel.gtf.tmap > novel.longRNA.gtf.tmap
         #   extract gtf
         awk '{print $5}' novel.longRNA.gtf.tmap |perl !{baseDir}/bin/extract_gtf_by_name.pl !{mergedGTF} - >novel.longRNA.gtf
-        perl !{baseDir}/bin/get_exoncount.pl novel.longRNA.gtf > novel.longRNA.exoncount.txt
+        awk '{if($3=="exon"){print $0}}' novel.longRNA.gtf > novel.longRNA.format.gtf 
+        perl !{baseDir}/bin/get_exoncount.pl novel.longRNA.format.gtf  > novel.longRNA.exoncount.txt
         # gtf2gff3
         #check whether required
         # get fasta from gtf
