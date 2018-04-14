@@ -4,7 +4,7 @@
 LncPipe accepts raw reads, annotations and genome reference as input to conduct the whole analysis, 
 and is also applicable for selected referenced species. In the first version, we mainly focus on human 
 because of well-organized lncRNA annotation files (with .gtf suffixed) from GENCODE and LNCipedia. 
-For non-human species, user are required to provide both protein coding annotation file and lncRNA annotate file separately, 
+For non-human species, user are required to provide both protein coding annotation file and lncRNA annotation file separately, 
 which could be download from GENCODE(human or mouse only) or Ensemble databases. However, not all non-human species are supported 
 at present, since one essential tool CPAT included in LncPipe only available for 4 species (human, mouse, fly and zebrafish). 
 
