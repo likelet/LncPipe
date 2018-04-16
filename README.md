@@ -69,7 +69,7 @@ the detail usage for non-human species could be found here.
 	nextflow -c docker.config run LncRNAanalysisPipe.nf
 	```
    docker image can be downloaded from https://hub.docker.com/r/bioinformatist/lncpipe/tags/ with the latest tag. 
-> alternatively, nextflow can automatically pull image from docker.io. `Dockerfile` recorded  that what we have done with the image.
+> Alternatively, nextflow can automatically pull image from docker.io. `Dockerfile` recorded  that what we have done with the image. For docker pull image from local china, [we suggest users using mirror site instead](https://github.com/likelet/Blogs_tips/blob/master/README.md#setting-docker-download-mirror-site).
 
 ## Installation of dependencies (Run [LncPipe](https://github.com/likelet/LncPipe)  at host environment ).
 
