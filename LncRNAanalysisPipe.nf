@@ -586,6 +586,7 @@ if (!params.merged_gtf) {
                 if (params.singleEnd) {
                     println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in single-end mode")
                     '''
+                   mkdir tmp
                    hisat2  -p !{hisat2_threads} --dta  -x  !{index_base}  -U !{pair}  -S !{file_tag_new}.sam 2>!{file_tag_new}.hisat2_summary.txt
                   sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam 
                   sambamba sort -o !{file_tag_new}.sort.bam --tmpdir ./tmp -t !{hisat2_threads} temp.bam
@@ -596,6 +597,7 @@ if (!params.merged_gtf) {
                 } else {
                     println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in paired-end mode")
                     '''
+                    mkdir tmp
                   hisat2  -p !{hisat2_threads} --dta  -x  !{index_base}  -1 !{pair[0]}  -2 !{pair[1]}  -S !{file_tag_new}.sam 2> !{file_tag_new}.hisat2_summary.txt
                   sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam
                   sambamba sort -o !{file_tag_new}.sort.bam --tmpdir ./tmp -t !{hisat2_threads} temp.bam
@@ -606,6 +608,7 @@ if (!params.merged_gtf) {
                 if (params.singleEnd) {
                     println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in single-end mode")
                     '''
+                   mkdir tmp
                    hisat2  -p !{hisat2_threads} --dta --fr -x  !{index_base}  -U !{pair}  -S !{file_tag_new}.sam 2>!{file_tag_new}.hisat2_summary.txt
                   sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam 
                   sambamba sort -o !{file_tag_new}.sort.bam --tmpdir ./tmp -t !{hisat2_threads} temp.bam
@@ -616,9 +619,10 @@ if (!params.merged_gtf) {
                 } else {
                     println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in paired-end mode")
                     '''
+                 mkdir tmp
                   hisat2  -p !{hisat2_threads} --dta --fr -x  !{index_base}  -1 !{pair[0]}  -2 !{pair[1]}  -S !{file_tag_new}.sam 2> !{file_tag_new}.hisat2_summary.txt
                   sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam
-                  sambamba sort -o !{file_tag_new}.sort.bam -t !{hisat2_threads} temp.bam
+                  sambamba sort -o !{file_tag_new}.sort.bam --tmpdir ./tmp -t !{hisat2_threads} temp.bam
                   rm !{file_tag_new}.sam
                 '''
                 }
