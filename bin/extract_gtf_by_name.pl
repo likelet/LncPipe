@@ -8,6 +8,9 @@ open FH,$gtf or die;
 my %map;
 while(<FH>){
 	chomp;
+	if (/^#/){
+	next;
+}
 	my @field=split "\t";
 	#print $field[8]."\n";
 	$field[8]=~/transcript_id \"(.+?)\"/;
