@@ -256,7 +256,7 @@ params {
     hisat2_index = '/data/database/hg38/hisatIndex/grch38_snp_tran/genome_snp_tran'
     gencode_annotation_gtf = "/data/database/hg38/Annotation/gencode.v24.annotation.gtf"
     lncipedia_gtf = "/data/database/hg38/Annotation/lncipedia_4_0_hg38.gtf"
-    cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2/'
+    cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2'
 
 /*
     User setting options (optional)
