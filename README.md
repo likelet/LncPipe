@@ -39,18 +39,20 @@ LncPipe is implemented with Nextflow pipeline manage system. To run our pipeline
 Here, we show the step by step installation of [Nextflow](https://github.com/nextflow-io/nextflow) in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
 
 1. Download the executable package by copying and pasting the following command in your terminal window:
-    ```shell
-    wget -qO- get.nextflow.io | bash
-    ```
+
+
+        wget -qO- get.nextflow.io | bash  
+        
+    
 > It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
 
-2. Optionally, move the ```nextflow``` file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
+2. Optionally, move the nextflow file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
 Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
 All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
 
 3. A type command for run nextflow  
 
-```nextflow run LncRNAanalysisPipe.nf <parameters>```
+nextflow run LncRNAanalysisPipe.nf <parameters>
 ### Prepare input files 
 #### References, index and annotation files（required）
 
@@ -89,9 +91,9 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 3. Install docker
 4. Command
 
-```shell
-nextflow -c docker.config run LncRNAanalysisPipe.nf
-```
+
+        nextflow -c docker.config run LncRNAanalysisPipe.nf
+
    docker image can be downloaded from https://hub.docker.com/r/bioinformatist/lncpipe/tags/ with the latest tag. 
 > Alternatively, nextflow can automatically pull image from docker.io. `Dockerfile` recorded  that what we have done with the image. For docker pull image from local china, [we suggest users using mirror site instead](https://github.com/likelet/Blogs_tips/blob/master/README.md#setting-docker-download-mirror-site).
 
@@ -101,7 +103,7 @@ Prerequisites install command (required when docker image is not favored, you sh
 
 * [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml)
 
-		```shell
+		
 		aria2c ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/downloads/hisat2-2.1.0-Linux_x86_64.zip -q -o /opt/hisat2-2.1.0-Linux_x86_64.zip && \
 		unzip -qq /opt/hisat2-2.1.0-Linux_x86_64.zip -d /opt/ && \
 		rm /opt/hisat2-2.1.0-Linux_x86_64.zip && \
@@ -109,21 +111,21 @@ Prerequisites install command (required when docker image is not favored, you sh
 		rm -rf doc example *debug MANUAL* NEWS TUTORIAL && \
 		ln -s /opt/hisat2-2.1.0/hisat2* /usr/local/bin/ && \
 		ln -sf /opt/hisat2-2.1.0/*.py /usr/local/bin/
-		```  
+		  
 		
 * [StringTie](http://www.ccb.jhu.edu/software/stringtie/)  
 
-		```shell
+		
 		aria2c http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz -q -o /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz && \
 		tar xf /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
 		rm /opt/stringtie-1.3.3b.Linux_x86_64/README && \
 		ln -s /opt/stringtie-1.3.3b.Linux_x86_64/stringtie /usr/local/bin/stringtie && \
 		rm /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz
-		```  
+		  
 		
 * [gffcompare](http://www.ccb.jhu.edu/software/stringtie/gff.shtml#gffcompare)  
 
-		```shell
+		
 		aria2c https://github.com/gpertea/gffcompare/archive/master.zip -q -o /opt/gffcompare-master.zip && \  
 		aria2c https://github.com/gpertea/gclib/archive/master.zip -q -o /opt/gclib-master.zip && \  
 		unzip -qq /opt/gffcompare-master.zip -d /opt/ && \  
@@ -131,20 +133,20 @@ Prerequisites install command (required when docker image is not favored, you sh
 		rm /opt/gffcompare-master.zip /opt/gclib-master.zip && \  
 		cd /opt/gffcompare-master && \  
 		make release
-		```  
+		  
 		
 * [Bedops](http://bedops.readthedocs.io/en/latest/):
 
-		```shell
+		
 		aria2c https://github.com/bedops/bedops/releases/download/v2.4.29/bedops_linux_x86_64-v2.4.29.tar.bz2 -q -o /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 && \
 		tar xf /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
 		ln -s /opt/bin/* /usr/local/bin/ && \
 		rm /opt/bedops_linux_x86_64-v2.4.29.tar.bz2
-		```  
+		  
 		
 * [PLEK](www.ibiomedical.net):
 
-		```shell
+		
 		aria2c https://nchc.dl.sourceforge.net/project/plek/PLEK.1.2.tar.gz -q -o /opt/PLEK.1.2.tar.gz && \
 		tar xf /opt/PLEK.1.2.tar.gz --use-compress-prog=pigz -C /opt/ && \
 		cd /opt/PLEK.1.2/ && \
@@ -154,11 +156,11 @@ Prerequisites install command (required when docker image is not favored, you sh
 		perl -CD -pi -e'tr/\x{feff}//d && s/[\r\n]+/\n/' *.py && \
 		ln -s /opt/PLEK.1.2/* /usr/local/bin/ && \
 		rm /opt/PLEK.1.2.tar.gz
-		```  
+		  
 		
 * [CNCI](https://github.com/www-bioinfo-org/CNCI):  
 
-		```shell
+		
 		aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /opt/CNCI-master.zip && \
 		unzip -qq /opt/CNCI-master.zip -d /opt/ && \
 		rm /opt/CNCI-master.zip && \
@@ -172,22 +174,22 @@ Prerequisites install command (required when docker image is not favored, you sh
 		rm draw_class_pie.R LICENSE README.md && \
 		chmod -R 755 * && \
 		ln -s /opt/CNCI-master/*.py /usr/local/bin/
-		```  
+		  
 		
 * [CPAT](http://rna-cpat.sourceforge.net):[Citation](https://academic.oup.com/nar/article/41/6/e74/2902455/CPAT-Coding-Potential-Assessment-Tool-using-an)
 
-		```shell
+		
 		aria2c https://jaist.dl.sourceforge.net/project/rna-cpat/v1.2.3/CPAT-1.2.3.tar.gz -q -o /opt/CPAT-1.2.3.tar.gz && \
 		tar xf /opt/CPAT-1.2.3.tar.gz --use-compress-prog=pigz -C /opt/ && \
 		cd /opt/CPAT-1.2.3/ && \
 		mv dat/* /LncPipeDB/ && \
 		python setup.py install > /dev/null 2>&1 && \
 		rm -rf /opt/CPAT*
-		```  
+		  
 		
 * [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc)
 
-		```shell
+		
 		aria2c https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip -q -o /opt/fastqc_v0.11.5.zip && \
 		unzip -qq /opt/fastqc_v0.11.5.zip -d /opt/ && \
 		rm /opt/fastqc_v0.11.5.zip && \
@@ -196,11 +198,11 @@ Prerequisites install command (required when docker image is not favored, you sh
 		rm -rfv !\("fastqc"\|*.jar\) && \
 		chmod 755 * && \
 		ln -s /opt/FastQC/fastqc /usr/local/bin/
-		```  
+		  
 			
-		or [AfterQC](https://github.com/OpenGene/AfterQC)
+or [AfterQC](https://github.com/OpenGene/AfterQC)
 			
-		```shell
+		
 		aria2c https://github.com/OpenGene/AfterQC/archive/v0.9.7.tar.gz -q -o /opt/AfterQC-0.9.7.tar.gz && \
 		tar xf /opt/AfterQC-0.9.7.tar.gz --use-compress-prog=pigz -C /opt/ && \
 		cd /opt/AfterQC-0.9.7 && \
@@ -210,21 +212,21 @@ Prerequisites install command (required when docker image is not favored, you sh
 		rm editdistance/*.cpp editdistance/*.h && \
 		ln -s /opt/AfterQC-0.9.7/*.py /usr/local/bin/ && \
 		rm /opt/AfterQC-0.9.7.tar.gz
-		```  
+		  
 		
-		When using afterQC, we recommended that users install `pypy` in your operation system, which can accelerated about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by author of AfterQC.
+When using afterQC, we recommended that users install `pypy` in your operation system, which can accelerated about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by author of AfterQC.
 
 * [LncPipeReporter](https://github.com/bioinformatist/LncPipe-Reporter)
 
 		Install [pandoc](https://pandoc.org/installing.html) first. Then run commands:
-		```shell
+		
 		Rscript -e "install.packages('devtools'); devtools::install_github('bioinformatist/LncPipeReporter')"
-		```
+		
 		For detailed usage of LncPipeReporter in case you are going to run it separately, plz refers to [README](https://github.com/bioinformatist/LncPipeReporter#lncpipereporter) of LncPipeReporter.
 		
 * [kallisto](https://github.com/pachterlab/kallisto)
 
-		```shell
+		
 		aria2c https://github.com/pachterlab/kallisto/releases/download/v0.43.1/kallisto_linux-v0.43.1.tar.gz -q -o  /opt/kallisto_linux-v0.43.1.tar.gz && \
 		tar xf /opt/kallisto_linux-v0.43.1.tar.gz --use-compress-prog=pigz -C /opt/ && \
 		cd /opt && \
@@ -232,36 +234,36 @@ Prerequisites install command (required when docker image is not favored, you sh
 		cd kallisto_linux-v0.43.1 && \
 		rm -rf ._* 	README.md test && \
 		ln -s /opt/kallisto_linux-v0.43.1/kallisto /usr/local/bin/
-		```  
+		  
 		
 * [sambamba](http://lomereiter.github.io/sambamba/)
 
-        ```shell
+        
             aria2c https://github.com/biod/sambamba/releases/download/v0.6.7/sambamba_v0.6.7_linux.tar.bz2 -q -o /opt/sambamba_v0.6.7_linux.tar.bz2 && \
             tar xf /opt/sambamba_v0.6.7_linux.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
             ln -s /opt/sambamba /usr/local/bin/ && \
             rm /opt/sambamba_v0.6.7_linux.tar.bz2
-        ```  
+          
 		
 **Alternatively, when you are going to using STAR-Cufflinks in your system, the corresponding installation command should be as follows:**  
 
 * [STAR](https://github.com/alexdobin/STAR)
 
-		```shell
+		
 		aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR && \
 		chmod 755 /opt/STAR && \
 		ln -s /opt/STAR /usr/local/bin
-		```  
+		  
 		
 * [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks)
 
-		```shell
+		
 		aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz && \
 		tar xf /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
 		rm /opt/cufflinks-2.2.1.Linux_x86_64/README && \
 		ln -s /opt/cufflinks-2.2.1.Linux_x86_64/* /usr/local/bin/ && \
 		rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
-		```
+		
 		
 > The `gffcompare` utility share the same function as `cuffcompare`, therefore, in STAR-cufflinks analysis pipe `gffcompare` is not required.
 
@@ -273,41 +275,42 @@ LncPipe output was well-summarized in an interactive manner, which was carried o
 As a nextflow-based analysis pipeline, LncPipe allow users edit configure file `nextflow.config` to set the index files and default file path parameters instead of typing in command.
 We strongly recommended that users using config file rather than command input to adjust their parameters.
 For example, plz go to `params` line, and set the following information of your operation system and environment
-```groovy
-params {
-/*
-    User setting options (mandatory)
-     */
-// input file and genome reference()
-    fastq_ext = '*_{1,2}.clean.fq.gz'
-    fasta_ref = '/data/database/hg38/genome.fa'
-    design = 'design.file'
-    hisat2_index = '/data/database/hg38/hisatIndex/grch38_snp_tran/genome_snp_tran'
-    gencode_annotation_gtf = "/data/database/hg38/Annotation/gencode.v24.annotation.gtf"
-    lncipedia_gtf = "/data/database/hg38/Annotation/lncipedia_4_0_hg38.gtf"
-    cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2'
+groovy
 
-/*
-    User setting options (optional)
-     */
-    star_idex = ''//set if star used
-    bowtie2_index = ''//set if tophat used
-    aligner = "hisat" // or "star","tophat"
-    sam_processor="sambamba"//or "samtools"
-    qctools = "fastqc" // or "afterqc","fastp"
-    singleEnd = false
-    unstrand = false
-    skip_combine = false
-    lncRep_Output = 'reporter.html'
-    lncRep_theme = 'npg'
-    lncRep_cdf_percent = 10
-    lncRep_max_lnc_len = 10000
-    lncRep_min_expressed_sample = 50
-    mem=60//Gb
-    cpu=30
-}
+        params {
+        /*
+            User setting options (mandatory)
+             */
+        // input file and genome reference()
+            fastq_ext = '*_{1,2}.clean.fq.gz'
+            fasta_ref = '/data/database/hg38/genome.fa'
+            design = 'design.file'
+            hisat2_index = '/data/database/hg38/hisatIndex/grch38_snp_tran/genome_snp_tran'
+            gencode_annotation_gtf = "/data/database/hg38/Annotation/gencode.v24.annotation.gtf"
+            lncipedia_gtf = "/data/database/hg38/Annotation/lncipedia_4_0_hg38.gtf"
+            cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2'
+        
+        /*
+            User setting options (optional)
+             */
+            star_idex = ''//set if star used
+            bowtie2_index = ''//set if tophat used
+            aligner = "hisat" // or "star","tophat"
+            sam_processor="sambamba"//or "samtools"
+            qctools = "fastqc" // or "afterqc","fastp"
+            singleEnd = false
+            unstrand = false
+            skip_combine = false
+            lncRep_Output = 'reporter.html'
+            lncRep_theme = 'npg'
+            lncRep_cdf_percent = 10
+            lncRep_max_lnc_len = 10000
+            lncRep_min_expressed_sample = 50
+            mem=60//Gb
+            cpu=30
+        }
 
-```
+
 
 ## Parameters 
 > Those parameters would cover the setting from `nextflow.config` file
@@ -361,12 +364,12 @@ params {
 > Raw fastq files were required for denovo analysis.This parameters should be set according to your paired or singled reads file names.
 Suppose your paired end sequence files are compressed with `.gz` suffixed.
 For example:
-```
-Sample1_1.fq.gz
-Sample1_2.fq.gz
-Sample2_1.fq.gz
-Sample2_2.fq.gz
-```
+
+        Sample1_1.fq.gz
+        Sample1_2.fq.gz
+        Sample2_1.fq.gz
+        Sample2_2.fq.gz
+
 Then you can input pattern `*_{1,2}.fq.gz` to make the all paired end file recognized by [LncPipe](https://github.com/likelet/LncPipe) .
 
 For singled reads file, file pattern should be feed with `--singleEnd` specified.
@@ -381,10 +384,10 @@ If you don't know what it is，You can use `--fasta` to specify the reference se
 `--design`
 > Experimental design file matrix for differential expression analysis. Default: `null`
 Format:
-```
-WT:Sample1,Sample2,Sample3
-KO:Sample1,Sample2,Sample3
-```
+
+    WT:Sample1,Sample2,Sample3
+    KO:Sample1,Sample2,Sample3
+
 While `KO/WT` represents the two experimental condition, and sample1, sample2, sample3 are replicates which should be comma-delimited in the same line .
 
 For sample names, it should be the sample as the prefix of fastq files which was trimmed by `--fastq_ext`.
@@ -396,40 +399,40 @@ should be Sample1.
 
 ## Output
 While the whole pipeline is finished properly, there is `Result` folder under current path(default) or output_folder set by user. The basic structure of Result is follows:
-```
-Result/
-├── QC
-│   ├── N1141_1.clean_fastqc.html
-│   ├── N1141_2.clean_fastqc.html
-│   ├── N1177_1.clean_fastqc.html
-│   └── N1177_2.clean_fastqc.html
-├── Identified_lncRNA
-│   ├── all_lncRNA_for_classifier.gtf
-│   ├── final_all.fa
-│   ├── final_all.gtf
-│   ├── lncRNA.fa
-│   ├── protein_coding.fa
-│   └── protein_coding.final.gtf
-├── LncReporter
-│   ├── Differential_Expression_analysis.csv
-│   └── Report.html
-├── Quantification
-│   ├── kallisto.count.txt
-│   └── kallisto.tpm.txt
-└── Star_alignment
-    ├── STAR_N1141
-    │   ├── N1141Aligned.sortedByCoord.out.bam
-    │   ├── N1141Log.final.out
-    │   ├── N1141Log.out
-    │   ├── N1141Log.progress.out
-    │   └── N1141SJ.out.tab
-    └── STAR_N1177
-        ├── N1177Aligned.sortedByCoord.out.bam
-        ├── N1177Log.final.out
-        ├── N1177Log.out
-        ├── N1177Log.progress.out
-        └── N1177SJ.out.tab
-```
+
+        Result/
+        ├── QC
+        │   ├── N1141_1.clean_fastqc.html
+        │   ├── N1141_2.clean_fastqc.html
+        │   ├── N1177_1.clean_fastqc.html
+        │   └── N1177_2.clean_fastqc.html
+        ├── Identified_lncRNA
+        │   ├── all_lncRNA_for_classifier.gtf
+        │   ├── final_all.fa
+        │   ├── final_all.gtf
+        │   ├── lncRNA.fa
+        │   ├── protein_coding.fa
+        │   └── protein_coding.final.gtf
+        ├── LncReporter
+        │   ├── Differential_Expression_analysis.csv
+        │   └── Report.html
+        ├── Quantification
+        │   ├── kallisto.count.txt
+        │   └── kallisto.tpm.txt
+        └── Star_alignment
+            ├── STAR_N1141
+            │   ├── N1141Aligned.sortedByCoord.out.bam
+            │   ├── N1141Log.final.out
+            │   ├── N1141Log.out
+            │   ├── N1141Log.progress.out
+            │   └── N1141SJ.out.tab
+            └── STAR_N1177
+                ├── N1177Aligned.sortedByCoord.out.bam
+                ├── N1177Log.final.out
+                ├── N1177Log.out
+                ├── N1177Log.progress.out
+                └── N1177SJ.out.tab
+
 
 * `QC` stored the Quality control output generated by FastQC or AfterQC software.<br>
 * `Identified_lncRNA` contains all assembled lncRNA and their sequences. *all_lncRNA_for_classifier.gtf* includes both novel and known lncRNA features in [GTF format](http://www.ensembl.org/info/website/upload/gff.html);
@@ -453,9 +456,9 @@ Result/
 
 * *1. PLEK throws an error "/data/software/PLEK.1.2/PLEK.py:line12: $'\r': can not find command", how to fix?*
 >A: using the follow command as suggested in the installation section. 
-    ```shell
+    
         perl -CD -pi -e'tr/\x{feff}//d && s/[\r\n]+/\n/' *.py 
-    ```
+    
 * *2. IOError: [Errno 2] No such file or directory: '/opt/CPAT-1.2.3/dat/Human_Hexamer.tsv'?*
 >A: The cpat command required  the `Human_Hexamer.tsv` to predict lncRNA coding potential, plz check your `cpatpath` parameters. 
 * *3. When using htseq to quantify transicript, it throws "Error occured when reading beginning of SAM/BAM file. 'csamtools.AlignedRead' object has no attribute 'reference_start' "*

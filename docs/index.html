@@ -136,16 +136,16 @@ directly and resume analysis from continues checkpoint. </p>
 LncPipe is implemented with Nextflow pipeline manage system. To run our pipelines. <a href="https://github.com/nextflow-io/nextflow">Nextflow</a> should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.
 Here, we show the step by step installation of <a href="https://github.com/nextflow-io/nextflow">Nextflow</a> in linux system as an example, which adapted from <a href="https://www.nextflow.io/docs/latest/getstarted.html">NextFlow</a>.</p>
 <ol>
-<li>
-<p>Download the executable package by copying and pasting the following command in your terminal window:
-    <code>shell
-    wget -qO- get.nextflow.io | bash</code></p>
+<li>Download the executable package by copying and pasting the following command in your terminal window:<pre><code>wget -qO- get.nextflow.io | bash
+</code></pre>
+</li>
+</ol>
 <blockquote>
 <p>It will create the <a href="https://github.com/nextflow-io/nextflow">Nextflow</a> main executable file in the current directory.</p>
 </blockquote>
-</li>
+<ol>
 <li>
-<p>Optionally, move the <code>nextflow</code> file in a directory accessible by your <code>$PATH</code> variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
+<p>Optionally, move the nextflow file in a directory accessible by your <code>$PATH</code> variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
 Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
 All those pipelines were written in <a href="https://github.com/nextflow-io/nextflow">Nextflow</a> commands. For more details, please see <a href="https://www.nextflow.io">here</a>.</p>
 </li>
@@ -153,7 +153,7 @@ All those pipelines were written in <a href="https://github.com/nextflow-io/next
 <p>A type command for run nextflow  </p>
 </li>
 </ol>
-<p><code>nextflow run LncRNAanalysisPipe.nf &lt;parameters&gt;</code></p>
+<p>nextflow run LncRNAanalysisPipe.nf <parameters></p>
 <h3 id="prepare-input-files">Prepare input files</h3>
 <h4 id="references-index-and-annotation-filesrequired">References, index and annotation files（required）</h4>
 <ol>
@@ -197,11 +197,10 @@ the detail usage for non-human species could be found here.
 <li>Prepare input files.</li>
 <li>Modify the <code>docker.config</code> in <code>mandatory</code> section.</li>
 <li>Install docker</li>
-<li>Command</li>
-</ol>
-<pre><code class="shell">nextflow -c docker.config run LncRNAanalysisPipe.nf
+<li>Command<pre><code>nextflow -c docker.config run LncRNAanalysisPipe.nf
 </code></pre>
-
+</li>
+</ol>
 <p>docker image can be downloaded from https://hub.docker.com/r/bioinformatist/lncpipe/tags/ with the latest tag. </p>
 <blockquote>
 <p>Alternatively, nextflow can automatically pull image from docker.io. <code>Dockerfile</code> recorded  that what we have done with the image. For docker pull image from local china, <a href="https://github.com/likelet/Blogs_tips/blob/master/README.md#setting-docker-download-mirror-site">we suggest users using mirror site instead</a>.</p>
@@ -211,55 +210,46 @@ the detail usage for non-human species could be found here.
 <ul>
 <li>
 <p><a href="https://ccb.jhu.edu/software/hisat2/index.shtml">HISAT2</a></p>
-<pre><code>```shell
-aria2c ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/downloads/hisat2-2.1.0-Linux_x86_64.zip -q -o /opt/hisat2-2.1.0-Linux_x86_64.zip &amp;&amp; \
+<pre><code>aria2c ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/downloads/hisat2-2.1.0-Linux_x86_64.zip -q -o /opt/hisat2-2.1.0-Linux_x86_64.zip &amp;&amp; \
 unzip -qq /opt/hisat2-2.1.0-Linux_x86_64.zip -d /opt/ &amp;&amp; \
 rm /opt/hisat2-2.1.0-Linux_x86_64.zip &amp;&amp; \
 cd /opt/hisat2-2.1.0 &amp;&amp; \
 rm -rf doc example *debug MANUAL* NEWS TUTORIAL &amp;&amp; \
 ln -s /opt/hisat2-2.1.0/hisat2* /usr/local/bin/ &amp;&amp; \
 ln -sf /opt/hisat2-2.1.0/*.py /usr/local/bin/
-```
 </code></pre>
 </li>
 <li>
 <p><a href="http://www.ccb.jhu.edu/software/stringtie/">StringTie</a>  </p>
-<pre><code>```shell
-aria2c http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz -q -o /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz &amp;&amp; \
+<pre><code>aria2c http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz -q -o /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz &amp;&amp; \
 tar xf /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
 rm /opt/stringtie-1.3.3b.Linux_x86_64/README &amp;&amp; \
 ln -s /opt/stringtie-1.3.3b.Linux_x86_64/stringtie /usr/local/bin/stringtie &amp;&amp; \
 rm /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz
-```
 </code></pre>
 </li>
 <li>
 <p><a href="http://www.ccb.jhu.edu/software/stringtie/gff.shtml#gffcompare">gffcompare</a>  </p>
-<pre><code>```shell
-aria2c https://github.com/gpertea/gffcompare/archive/master.zip -q -o /opt/gffcompare-master.zip &amp;&amp; \  
+<pre><code>aria2c https://github.com/gpertea/gffcompare/archive/master.zip -q -o /opt/gffcompare-master.zip &amp;&amp; \  
 aria2c https://github.com/gpertea/gclib/archive/master.zip -q -o /opt/gclib-master.zip &amp;&amp; \  
 unzip -qq /opt/gffcompare-master.zip -d /opt/ &amp;&amp; \  
 unzip -qq /opt/gclib-master.zip -d /opt/ &amp;&amp; \  
 rm /opt/gffcompare-master.zip /opt/gclib-master.zip &amp;&amp; \  
 cd /opt/gffcompare-master &amp;&amp; \  
 make release
-```
 </code></pre>
 </li>
 <li>
 <p><a href="http://bedops.readthedocs.io/en/latest/">Bedops</a>:</p>
-<pre><code>```shell
-aria2c https://github.com/bedops/bedops/releases/download/v2.4.29/bedops_linux_x86_64-v2.4.29.tar.bz2 -q -o /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 &amp;&amp; \
+<pre><code>aria2c https://github.com/bedops/bedops/releases/download/v2.4.29/bedops_linux_x86_64-v2.4.29.tar.bz2 -q -o /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 &amp;&amp; \
 tar xf /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ &amp;&amp; \
 ln -s /opt/bin/* /usr/local/bin/ &amp;&amp; \
 rm /opt/bedops_linux_x86_64-v2.4.29.tar.bz2
-```
 </code></pre>
 </li>
 <li>
 <p><a href="./www.ibiomedical.net">PLEK</a>:</p>
-<pre><code>```shell
-aria2c https://nchc.dl.sourceforge.net/project/plek/PLEK.1.2.tar.gz -q -o /opt/PLEK.1.2.tar.gz &amp;&amp; \
+<pre><code>aria2c https://nchc.dl.sourceforge.net/project/plek/PLEK.1.2.tar.gz -q -o /opt/PLEK.1.2.tar.gz &amp;&amp; \
 tar xf /opt/PLEK.1.2.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
 cd /opt/PLEK.1.2/ &amp;&amp; \
 python PLEK_setup.py || : &amp;&amp; \
@@ -268,13 +258,11 @@ chmod 755 * &amp;&amp; \
 perl -CD -pi -e'tr/\x{feff}//d &amp;&amp; s/[\r\n]+/\n/' *.py &amp;&amp; \
 ln -s /opt/PLEK.1.2/* /usr/local/bin/ &amp;&amp; \
 rm /opt/PLEK.1.2.tar.gz
-```
 </code></pre>
 </li>
 <li>
 <p><a href="https://github.com/www-bioinfo-org/CNCI">CNCI</a>:  </p>
-<pre><code>```shell
-aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /opt/CNCI-master.zip &amp;&amp; \
+<pre><code>aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /opt/CNCI-master.zip &amp;&amp; \
 unzip -qq /opt/CNCI-master.zip -d /opt/ &amp;&amp; \
 rm /opt/CNCI-master.zip &amp;&amp; \
 unzip -qq /opt/CNCI-master/libsvm-3.0.zip -d /opt/CNCI-master/ &amp;&amp; \
@@ -287,25 +275,21 @@ cd .. &amp;&amp; \
 rm draw_class_pie.R LICENSE README.md &amp;&amp; \
 chmod -R 755 * &amp;&amp; \
 ln -s /opt/CNCI-master/*.py /usr/local/bin/
-```
 </code></pre>
 </li>
 <li>
 <p><a href="http://rna-cpat.sourceforge.net">CPAT</a>:<a href="https://academic.oup.com/nar/article/41/6/e74/2902455/CPAT-Coding-Potential-Assessment-Tool-using-an">Citation</a></p>
-<pre><code>```shell
-aria2c https://jaist.dl.sourceforge.net/project/rna-cpat/v1.2.3/CPAT-1.2.3.tar.gz -q -o /opt/CPAT-1.2.3.tar.gz &amp;&amp; \
+<pre><code>aria2c https://jaist.dl.sourceforge.net/project/rna-cpat/v1.2.3/CPAT-1.2.3.tar.gz -q -o /opt/CPAT-1.2.3.tar.gz &amp;&amp; \
 tar xf /opt/CPAT-1.2.3.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
 cd /opt/CPAT-1.2.3/ &amp;&amp; \
 mv dat/* /LncPipeDB/ &amp;&amp; \
 python setup.py install &gt; /dev/null 2&gt;&amp;1 &amp;&amp; \
 rm -rf /opt/CPAT*
-```
 </code></pre>
 </li>
 <li>
 <p><a href="https://www.bioinformatics.babraham.ac.uk/projects/fastqc">FastQC</a></p>
-<pre><code>```shell
-aria2c https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip -q -o /opt/fastqc_v0.11.5.zip &amp;&amp; \
+<pre><code>aria2c https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip -q -o /opt/fastqc_v0.11.5.zip &amp;&amp; \
 unzip -qq /opt/fastqc_v0.11.5.zip -d /opt/ &amp;&amp; \
 rm /opt/fastqc_v0.11.5.zip &amp;&amp; \
 cd /opt/FastQC &amp;&amp; \
@@ -313,55 +297,48 @@ shopt -s extglob &amp;&amp; \
 rm -rfv !\("fastqc"\|*.jar\) &amp;&amp; \
 chmod 755 * &amp;&amp; \
 ln -s /opt/FastQC/fastqc /usr/local/bin/
-```
-
-or [AfterQC](https://github.com/OpenGene/AfterQC)
-
-```shell
-aria2c https://github.com/OpenGene/AfterQC/archive/v0.9.7.tar.gz -q -o /opt/AfterQC-0.9.7.tar.gz &amp;&amp; \
-tar xf /opt/AfterQC-0.9.7.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
-cd /opt/AfterQC-0.9.7 &amp;&amp; \
-make &amp;&amp; \
-perl -i -lape's/python/pypy/ if $. == 1' after.py &amp;&amp; \
-rm -rf Dockerfile Makefile README.md testdata report_sample &amp;&amp; \
-rm editdistance/*.cpp editdistance/*.h &amp;&amp; \
-ln -s /opt/AfterQC-0.9.7/*.py /usr/local/bin/ &amp;&amp; \
-rm /opt/AfterQC-0.9.7.tar.gz
-```
-
-When using afterQC, we recommended that users install `pypy` in your operation system, which can accelerated about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by author of AfterQC.
 </code></pre>
 </li>
+</ul>
+<p>or <a href="https://github.com/OpenGene/AfterQC">AfterQC</a></p>
+<pre><code>    aria2c https://github.com/OpenGene/AfterQC/archive/v0.9.7.tar.gz -q -o /opt/AfterQC-0.9.7.tar.gz &amp;&amp; \
+    tar xf /opt/AfterQC-0.9.7.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
+    cd /opt/AfterQC-0.9.7 &amp;&amp; \
+    make &amp;&amp; \
+    perl -i -lape's/python/pypy/ if $. == 1' after.py &amp;&amp; \
+    rm -rf Dockerfile Makefile README.md testdata report_sample &amp;&amp; \
+    rm editdistance/*.cpp editdistance/*.h &amp;&amp; \
+    ln -s /opt/AfterQC-0.9.7/*.py /usr/local/bin/ &amp;&amp; \
+    rm /opt/AfterQC-0.9.7.tar.gz
+</code></pre>
+<p>When using afterQC, we recommended that users install <code>pypy</code> in your operation system, which can accelerated about 3X speed for raw reads processing, as <a href="./(https://github.com/OpenGene/AfterQC#pypy-suggestion)">suggested</a> by author of AfterQC.</p>
+<ul>
 <li>
 <p><a href="https://github.com/bioinformatist/LncPipe-Reporter">LncPipeReporter</a></p>
 <pre><code>Install [pandoc](https://pandoc.org/installing.html) first. Then run commands:
-```shell
+
 Rscript -e "install.packages('devtools'); devtools::install_github('bioinformatist/LncPipeReporter')"
-```
+
 For detailed usage of LncPipeReporter in case you are going to run it separately, plz refers to [README](https://github.com/bioinformatist/LncPipeReporter#lncpipereporter) of LncPipeReporter.
 </code></pre>
 </li>
 <li>
 <p><a href="https://github.com/pachterlab/kallisto">kallisto</a></p>
-<pre><code>```shell
-aria2c https://github.com/pachterlab/kallisto/releases/download/v0.43.1/kallisto_linux-v0.43.1.tar.gz -q -o  /opt/kallisto_linux-v0.43.1.tar.gz &amp;&amp; \
+<pre><code>aria2c https://github.com/pachterlab/kallisto/releases/download/v0.43.1/kallisto_linux-v0.43.1.tar.gz -q -o  /opt/kallisto_linux-v0.43.1.tar.gz &amp;&amp; \
 tar xf /opt/kallisto_linux-v0.43.1.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
 cd /opt &amp;&amp; \
 rm ._* kallisto_linux-v0.43.1.tar.gz &amp;&amp; \
 cd kallisto_linux-v0.43.1 &amp;&amp; \
 rm -rf ._*  README.md test &amp;&amp; \
 ln -s /opt/kallisto_linux-v0.43.1/kallisto /usr/local/bin/
-```
 </code></pre>
 </li>
 <li>
 <p><a href="http://lomereiter.github.io/sambamba/">sambamba</a></p>
-<pre><code>```shell
-    aria2c https://github.com/biod/sambamba/releases/download/v0.6.7/sambamba_v0.6.7_linux.tar.bz2 -q -o /opt/sambamba_v0.6.7_linux.tar.bz2 &amp;&amp; \
+<pre><code>    aria2c https://github.com/biod/sambamba/releases/download/v0.6.7/sambamba_v0.6.7_linux.tar.bz2 -q -o /opt/sambamba_v0.6.7_linux.tar.bz2 &amp;&amp; \
     tar xf /opt/sambamba_v0.6.7_linux.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ &amp;&amp; \
     ln -s /opt/sambamba /usr/local/bin/ &amp;&amp; \
     rm /opt/sambamba_v0.6.7_linux.tar.bz2
-```
 </code></pre>
 </li>
 </ul>
@@ -369,22 +346,18 @@ ln -s /opt/kallisto_linux-v0.43.1/kallisto /usr/local/bin/
 <ul>
 <li>
 <p><a href="https://github.com/alexdobin/STAR">STAR</a></p>
-<pre><code>```shell
-aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR &amp;&amp; \
+<pre><code>aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR &amp;&amp; \
 chmod 755 /opt/STAR &amp;&amp; \
 ln -s /opt/STAR /usr/local/bin
-```
 </code></pre>
 </li>
 <li>
 <p><a href="https://github.com/cole-trapnell-lab/cufflinks">Cufflinks</a></p>
-<pre><code>```shell
-aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz &amp;&amp; \
+<pre><code>aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz &amp;&amp; \
 tar xf /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
 rm /opt/cufflinks-2.2.1.Linux_x86_64/README &amp;&amp; \
 ln -s /opt/cufflinks-2.2.1.Linux_x86_64/* /usr/local/bin/ &amp;&amp; \
 rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
-```
 </code></pre>
 </li>
 </ul>
@@ -397,42 +370,41 @@ rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
 <h2 id="configuration">Configuration</h2>
 <p>As a nextflow-based analysis pipeline, LncPipe allow users edit configure file <code>nextflow.config</code> to set the index files and default file path parameters instead of typing in command.
 We strongly recommended that users using config file rather than command input to adjust their parameters.
-For example, plz go to <code>params</code> line, and set the following information of your operation system and environment</p>
-<pre><code class="groovy">params {
-/*
-    User setting options (mandatory)
-     */
-// input file and genome reference()
-    fastq_ext = '*_{1,2}.clean.fq.gz'
-    fasta_ref = '/data/database/hg38/genome.fa'
-    design = 'design.file'
-    hisat2_index = '/data/database/hg38/hisatIndex/grch38_snp_tran/genome_snp_tran'
-    gencode_annotation_gtf = &quot;/data/database/hg38/Annotation/gencode.v24.annotation.gtf&quot;
-    lncipedia_gtf = &quot;/data/database/hg38/Annotation/lncipedia_4_0_hg38.gtf&quot;
-    cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2'
+For example, plz go to <code>params</code> line, and set the following information of your operation system and environment
+groovy</p>
+<pre><code>    params {
+    /*
+        User setting options (mandatory)
+         */
+    // input file and genome reference()
+        fastq_ext = '*_{1,2}.clean.fq.gz'
+        fasta_ref = '/data/database/hg38/genome.fa'
+        design = 'design.file'
+        hisat2_index = '/data/database/hg38/hisatIndex/grch38_snp_tran/genome_snp_tran'
+        gencode_annotation_gtf = "/data/database/hg38/Annotation/gencode.v24.annotation.gtf"
+        lncipedia_gtf = "/data/database/hg38/Annotation/lncipedia_4_0_hg38.gtf"
+        cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2'
 
-/*
-    User setting options (optional)
-     */
-    star_idex = ''//set if star used
-    bowtie2_index = ''//set if tophat used
-    aligner = &quot;hisat&quot; // or &quot;star&quot;,&quot;tophat&quot;
-    sam_processor=&quot;sambamba&quot;//or &quot;samtools&quot;
-    qctools = &quot;fastqc&quot; // or &quot;afterqc&quot;,&quot;fastp&quot;
-    singleEnd = false
-    unstrand = false
-    skip_combine = false
-    lncRep_Output = 'reporter.html'
-    lncRep_theme = 'npg'
-    lncRep_cdf_percent = 10
-    lncRep_max_lnc_len = 10000
-    lncRep_min_expressed_sample = 50
-    mem=60//Gb
-    cpu=30
-}
-
+    /*
+        User setting options (optional)
+         */
+        star_idex = ''//set if star used
+        bowtie2_index = ''//set if tophat used
+        aligner = "hisat" // or "star","tophat"
+        sam_processor="sambamba"//or "samtools"
+        qctools = "fastqc" // or "afterqc","fastp"
+        singleEnd = false
+        unstrand = false
+        skip_combine = false
+        lncRep_Output = 'reporter.html'
+        lncRep_theme = 'npg'
+        lncRep_cdf_percent = 10
+        lncRep_max_lnc_len = 10000
+        lncRep_min_expressed_sample = 50
+        mem=60//Gb
+        cpu=30
+    }
 </code></pre>
-
 <h2 id="parameters">Parameters</h2>
 <blockquote>
 <p>Those parameters would cover the setting from <code>nextflow.config</code> file
@@ -604,12 +576,11 @@ For example, plz go to <code>params</code> line, and set the following informati
 Suppose your paired end sequence files are compressed with <code>.gz</code> suffixed.
 For example:</p>
 </blockquote>
-<pre><code>Sample1_1.fq.gz
-Sample1_2.fq.gz
-Sample2_1.fq.gz
-Sample2_2.fq.gz
+<pre><code>    Sample1_1.fq.gz
+    Sample1_2.fq.gz
+    Sample2_1.fq.gz
+    Sample2_2.fq.gz
 </code></pre>
-
 <p>Then you can input pattern <code>*_{1,2}.fq.gz</code> to make the all paired end file recognized by <a href="https://github.com/likelet/LncPipe">LncPipe</a> .</p>
 <p>For singled reads file, file pattern should be feed with <code>--singleEnd</code> specified.</p>
 <p><code>--star_idex／--bowtie2_index/--hisat2_index</code></p>
@@ -625,7 +596,6 @@ Format:</p>
 <pre><code>WT:Sample1,Sample2,Sample3
 KO:Sample1,Sample2,Sample3
 </code></pre>
-
 <p>While <code>KO/WT</code> represents the two experimental condition, and sample1, sample2, sample3 are replicates which should be comma-delimited in the same line .</p>
 <p>For sample names, it should be the sample as the prefix of fastq files which was trimmed by <code>--fastq_ext</code>.</p>
 <p>For example:</p>
@@ -633,40 +603,39 @@ KO:Sample1,Sample2,Sample3
 should be Sample1.</p>
 <h2 id="output">Output</h2>
 <p>While the whole pipeline is finished properly, there is <code>Result</code> folder under current path(default) or output_folder set by user. The basic structure of Result is follows:</p>
-<pre><code>Result/
-├── QC
-│   ├── N1141_1.clean_fastqc.html
-│   ├── N1141_2.clean_fastqc.html
-│   ├── N1177_1.clean_fastqc.html
-│   └── N1177_2.clean_fastqc.html
-├── Identified_lncRNA
-│   ├── all_lncRNA_for_classifier.gtf
-│   ├── final_all.fa
-│   ├── final_all.gtf
-│   ├── lncRNA.fa
-│   ├── protein_coding.fa
-│   └── protein_coding.final.gtf
-├── LncReporter
-│   ├── Differential_Expression_analysis.csv
-│   └── Report.html
-├── Quantification
-│   ├── kallisto.count.txt
-│   └── kallisto.tpm.txt
-└── Star_alignment
-    ├── STAR_N1141
-    │   ├── N1141Aligned.sortedByCoord.out.bam
-    │   ├── N1141Log.final.out
-    │   ├── N1141Log.out
-    │   ├── N1141Log.progress.out
-    │   └── N1141SJ.out.tab
-    └── STAR_N1177
-        ├── N1177Aligned.sortedByCoord.out.bam
-        ├── N1177Log.final.out
-        ├── N1177Log.out
-        ├── N1177Log.progress.out
-        └── N1177SJ.out.tab
+<pre><code>    Result/
+    ├── QC
+    │   ├── N1141_1.clean_fastqc.html
+    │   ├── N1141_2.clean_fastqc.html
+    │   ├── N1177_1.clean_fastqc.html
+    │   └── N1177_2.clean_fastqc.html
+    ├── Identified_lncRNA
+    │   ├── all_lncRNA_for_classifier.gtf
+    │   ├── final_all.fa
+    │   ├── final_all.gtf
+    │   ├── lncRNA.fa
+    │   ├── protein_coding.fa
+    │   └── protein_coding.final.gtf
+    ├── LncReporter
+    │   ├── Differential_Expression_analysis.csv
+    │   └── Report.html
+    ├── Quantification
+    │   ├── kallisto.count.txt
+    │   └── kallisto.tpm.txt
+    └── Star_alignment
+        ├── STAR_N1141
+        │   ├── N1141Aligned.sortedByCoord.out.bam
+        │   ├── N1141Log.final.out
+        │   ├── N1141Log.out
+        │   ├── N1141Log.progress.out
+        │   └── N1141SJ.out.tab
+        └── STAR_N1177
+            ├── N1177Aligned.sortedByCoord.out.bam
+            ├── N1177Log.final.out
+            ├── N1177Log.out
+            ├── N1177Log.progress.out
+            └── N1177SJ.out.tab
 </code></pre>
-
 <ul>
 <li><code>QC</code> stored the Quality control output generated by FastQC or AfterQC software.<br></li>
 <li><code>Identified_lncRNA</code> contains all assembled lncRNA and their sequences. <em>all_lncRNA_for_classifier.gtf</em> includes both novel and known lncRNA features in <a href="http://www.ensembl.org/info/website/upload/gff.html">GTF format</a>;
@@ -686,13 +655,17 @@ should be Sample1.</p>
 <p>Thanks to the author of <a href="https://github.com/OpenGene/AfterQC">AfterQC</a>, Shifu Chen, for his help on providing a gzip output support to meet the require of LncPipe.  Thanks to the internal test by Hongwan Zhang and Yan Wang from SYSUCC Cancer bioinformatics platform.</p>
 <h2 id="faq">FAQ</h2>
 <ul>
-<li><em>1. PLEK throws an error "/data/software/PLEK.1.2/PLEK.py:line12: $'\r': can not find command", how to fix?</em><blockquote>
-<p>A: using the follow command as suggested in the installation section. 
-    <code>shell
-        perl -CD -pi -e'tr/\x{feff}//d &amp;&amp; s/[\r\n]+/\n/' *.py</code></p>
+<li>
+<p><em>1. PLEK throws an error "/data/software/PLEK.1.2/PLEK.py:line12: $'\r': can not find command", how to fix?</em></p>
+<blockquote>
+<p>A: using the follow command as suggested in the installation section. </p>
 </blockquote>
+<pre><code>perl -CD -pi -e'tr/\x{feff}//d &amp;&amp; s/[\r\n]+/\n/' *.py
+</code></pre>
 </li>
-<li><em>2. IOError: [Errno 2] No such file or directory: '/opt/CPAT-1.2.3/dat/Human_Hexamer.tsv'?</em><blockquote>
+<li>
+<p><em>2. IOError: [Errno 2] No such file or directory: '/opt/CPAT-1.2.3/dat/Human_Hexamer.tsv'?</em></p>
+<blockquote>
 <p>A: The cpat command required  the <code>Human_Hexamer.tsv</code> to predict lncRNA coding potential, plz check your <code>cpatpath</code> parameters. </p>
 </blockquote>
 </li>
@@ -795,5 +768,5 @@ For project design and new feature request:<br />
 
 <!--
 MkDocs version : 0.17.3
-Build Date UTC : 2018-05-17 16:14:37
+Build Date UTC : 2018-05-17 17:05:10
 -->
