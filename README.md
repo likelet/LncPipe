@@ -15,10 +15,26 @@ calculating efficiency, diversified classification and interactive analysis repo
 [LncPipe](https://github.com/likelet/LncPipe)  allows users cancel pipeline, reset parameters from command or modifying main script 
 directly and resume analysis from continues checkpoint. 
 
+## Table of Contents
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Schematic diagram](#schematic-diagram)
+- [Installation](#installation)
+- [Run Docker](#run-docker)
+- [Interactive reports](#interactive-reports)
+- [Parameters](#parameters)
+- [FAQ](#faq)
+- [Acknowledgements](#acknowledgements)
+- [Contact](#contact)
+- [License](#license)
+
 ## Schematic diagram
 
 
-### Install [Nextflow](https://github.com/nextflow-io/nextflow)
+## Installation 
+[Nextflow](https://github.com/nextflow-io/nextflow)  
 LncPipe is implemented with Nextflow pipeline manage system. To run our pipelines. [Nextflow](https://github.com/nextflow-io/nextflow) should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.
 Here, we show the step by step installation of [Nextflow](https://github.com/nextflow-io/nextflow) in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
 
@@ -34,7 +50,7 @@ All those pipelines were written in [Nextflow](https://github.com/nextflow-io/ne
 
 3. A type command for run nextflow  
 ```nextflow run LncRNAanalysisPipe.nf <parameters>```
-## Prepare input files 
+### Prepare input files 
 #### References, index and annotation files（required）
 
 1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
@@ -59,7 +75,7 @@ the detail usage for non-human species could be found here.
 4. LNCipedia gene annotation: null
 5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 
-## Run [LncPipe](https://github.com/likelet/LncPipe) from Docker 
+## Run Docker 
 1. Prepare input files.
 2. Modify the `docker.config` in `mandatory` section.
 3. Install docker
@@ -283,6 +299,7 @@ params {
 ## Parameters 
 > Those parameters would cover the setting from `nextflow.config` file
 * #### Mandatory(plz configure those in *nextflow.config* file)
+
 | Name | Example/Default value | Description |
 |-----------|--------------:|-------------|
 |--input_folder | `.` | input folder |
