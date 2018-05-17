@@ -2,4 +2,4 @@ site_name: LncPipe
 pages:
     - Home: index.md
     - About: about.md
-theme: mkdocs
+theme: yeti

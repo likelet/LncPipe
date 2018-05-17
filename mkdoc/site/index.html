@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="None">
+        
+        
+        <link rel="shortcut icon" href="./img/favicon.ico">
+        <title>LncPipe</title>
+        <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="./css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="./css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="./css/highlight.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="./js/jquery-1.10.2.min.js"></script>
+        <script src="./js/bootstrap-3.0.3.min.js"></script>
+        <script src="./js/highlight.pack.js"></script> 
+    </head>
+
+    <body class="homepage">
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href=".">LncPipe</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                    <li class="active">
+                        <a href=".">Home</a>
+                    </li>
+                    <li >
+                        <a href="about/">About</a>
+                    </li>
+                </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                    <li class="disabled">
+                        <a rel="next" >
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="about/">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#lncpipe">LncPipe</a></li>
+            <li><a href="#overall">Overall</a></li>
+            <li><a href="#table-of-contents">Table of Contents</a></li>
+            <li><a href="#schematic-diagram">Schematic diagram</a></li>
+            <li><a href="#installation">Installation</a></li>
+            <li><a href="#run-docker">Run Docker</a></li>
+            <li><a href="#dependencies">Dependencies</a></li>
+            <li><a href="#interactive-reports">Interactive reports</a></li>
+            <li><a href="#configuration">Configuration</a></li>
+            <li><a href="#parameters">Parameters</a></li>
+            <li><a href="#output">Output</a></li>
+            <li><a href="#tips">Tips</a></li>
+            <li><a href="#acknowledgement">Acknowledgement</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#license">License</a></li>
+            <li><a href="#citation">Citation</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="lncpipe"><a href="https://github.com/likelet/LncPipe">LncPipe</a></h1>
+<p><a href="https://github.com/likelet/LncPipe/blob/master/LICENSE"><img alt="AUR" src="https://img.shields.io/aur/license/yaourt.svg" /></a>
+ <a href="http://nextflow.io"><img alt="nextflow" src="https://img.shields.io/badge/nextflow-%E2%89%A50.24.0-brightgreen.svg" /></a></p>
+<h2 id="overall">Overall</h2>
+<p>Recently, long noncoding RNA molecules (lncRNA) captured widespread attentions for its critical 
+roles in diverse biological process and important implications in variety of human diseases and 
+cancers. Identification and profiling of lncRNAs is a fundamental step to advance our knowledge 
+on their function and regulatory mechanisms. However, RNA sequencing based lncRNA discovery is 
+limited due to complicated operations and implementation. Therefore, we presented a one-stop 
+pipeline called <a href="https://github.com/likelet/LncPipe">LncPipe</a> focused on characterizing lncRNAs from raw transcriptome sequencing 
+data. The pipeline was developed based on a popular workflow framework <a href="https://github.com/nextflow-io/nextflow">Nextflow</a>, composed of 
+four core procedures including reads alignment, assembly, identification and quantification. 
+It contains various unique features such as well-designed lncRNAs annotation strategy, optimized 
+calculating efficiency, diversified classification and interactive analysis report. Additionally, 
+<a href="https://github.com/likelet/LncPipe">LncPipe</a>  allows users cancel pipeline, reset parameters from command or modifying main script 
+directly and resume analysis from continues checkpoint. </p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+<ul>
+<li><a href="#schematic-diagram">Schematic diagram</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#run-docker">Run Docker</a></li>
+<li><a href="#interactive-reports">Interactive reports</a></li>
+<li><a href="#parameters">Parameters</a></li>
+<li><a href="#faq">FAQ</a></li>
+<li><a href="#acknowledgements">Acknowledgements</a></li>
+<li><a href="#contact">Contact</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+<h2 id="schematic-diagram">Schematic diagram</h2>
+<h2 id="installation">Installation</h2>
+<p><a href="https://github.com/nextflow-io/nextflow">Nextflow</a><br />
+LncPipe is implemented with Nextflow pipeline manage system. To run our pipelines. <a href="https://github.com/nextflow-io/nextflow">Nextflow</a> should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.
+Here, we show the step by step installation of <a href="https://github.com/nextflow-io/nextflow">Nextflow</a> in linux system as an example, which adapted from <a href="https://www.nextflow.io/docs/latest/getstarted.html">NextFlow</a>.</p>
+<ol>
+<li>
+<p>Download the executable package by copying and pasting the following command in your terminal window:
+    <code>shell
+    wget -qO- get.nextflow.io | bash</code></p>
+<blockquote>
+<p>It will create the <a href="https://github.com/nextflow-io/nextflow">Nextflow</a> main executable file in the current directory.</p>
+</blockquote>
+</li>
+<li>
+<p>Optionally, move the <code>nextflow</code> file in a directory accessible by your <code>$PATH</code> variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
+Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
+All those pipelines were written in <a href="https://github.com/nextflow-io/nextflow">Nextflow</a> commands. For more details, please see <a href="https://www.nextflow.io">here</a>.</p>
+</li>
+<li>
+<p>A type command for run nextflow  </p>
+</li>
+</ol>
+<p><code>nextflow run LncRNAanalysisPipe.nf &lt;parameters&gt;</code></p>
+<h3 id="prepare-input-files">Prepare input files</h3>
+<h4 id="references-index-and-annotation-filesrequired">References, index and annotation files（required）</h4>
+<ol>
+<li><a href="https://ccb.jhu.edu/software/hisat2/index.shtml">Hisat</a> index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz) or <a href="https://github.com/alexdobin/STAR">STAR</a> index (hg38 genome index etc.) according aligner your are going to use. 
+    &gt; Building index of hisat relatively require large amount of memory, thus we sugguested that users downloaded it directly from the hisat website.  <ol>
+<li>Genome reference (genome fasta file with suffix <code>.fa</code> , <code>UCSC</code> etc.).   </li>
+<li>GENCODE gene annotation file in GTF format  </li>
+<li>LNCipedia gene annotation file in GTF format.(set null if not available for your species)  </li>
+<li>Raw sequence file with *.fastq.gz / *.fq.gz suffixed  </li>
+</ol>
+</li>
+</ol>
+<h4 id="supported-species">Supported species</h4>
+<pre><code>&gt;Currently, LncPipe was designed for human only, but it also support other species which required users providing "known_protein_coding.gtf" and  "known_lncRNA.gtf "
+the detail usage for non-human species could be found here.
+</code></pre>
+<ul>
+<li>
+<p>human </p>
+<ol>
+<li>hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz</li>
+<li>Genome reference: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/GRCh38.p10.genome.fa.gz</li>
+<li>GENCODE gene annotation: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/gencode.v27.annotation.gtf.gz</li>
+<li>LNCipedia gene annotation: https://lncipedia.org/downloads/lncipedia_5_0_hc_hg38.gtf</li>
+<li>Raw sequence file with *.fastq.gz / *.fq.gz suffixed</li>
+</ol>
+</li>
+<li>
+<p>mouse </p>
+<ol>
+<li>hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grcm38_tran.tar.gz</li>
+<li>Genome reference: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/GRCm38.p5.genome.fa.gz</li>
+<li>GENCODE gene annotation: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/gencode.vM16.annotation.gtf.gz</li>
+<li>LNCipedia gene annotation: null</li>
+<li>Raw sequence file with *.fastq.gz / *.fq.gz suffixed</li>
+</ol>
+</li>
+</ul>
+<h2 id="run-docker">Run Docker</h2>
+<ol>
+<li>Prepare input files.</li>
+<li>Modify the <code>docker.config</code> in <code>mandatory</code> section.</li>
+<li>Install docker</li>
+<li>Command</li>
+</ol>
+<pre><code class="shell">nextflow -c docker.config run LncRNAanalysisPipe.nf
+</code></pre>
+
+<p>docker image can be downloaded from https://hub.docker.com/r/bioinformatist/lncpipe/tags/ with the latest tag. </p>
+<blockquote>
+<p>Alternatively, nextflow can automatically pull image from docker.io. <code>Dockerfile</code> recorded  that what we have done with the image. For docker pull image from local china, <a href="https://github.com/likelet/Blogs_tips/blob/master/README.md#setting-docker-download-mirror-site">we suggest users using mirror site instead</a>.</p>
+</blockquote>
+<h2 id="dependencies">Dependencies</h2>
+<p>Prerequisites install command (required when docker image is not favored, you should execute them via root)  </p>
+<ul>
+<li>
+<p><a href="https://ccb.jhu.edu/software/hisat2/index.shtml">HISAT2</a></p>
+<pre><code>```shell
+aria2c ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/downloads/hisat2-2.1.0-Linux_x86_64.zip -q -o /opt/hisat2-2.1.0-Linux_x86_64.zip &amp;&amp; \
+unzip -qq /opt/hisat2-2.1.0-Linux_x86_64.zip -d /opt/ &amp;&amp; \
+rm /opt/hisat2-2.1.0-Linux_x86_64.zip &amp;&amp; \
+cd /opt/hisat2-2.1.0 &amp;&amp; \
+rm -rf doc example *debug MANUAL* NEWS TUTORIAL &amp;&amp; \
+ln -s /opt/hisat2-2.1.0/hisat2* /usr/local/bin/ &amp;&amp; \
+ln -sf /opt/hisat2-2.1.0/*.py /usr/local/bin/
+```
+</code></pre>
+</li>
+<li>
+<p><a href="http://www.ccb.jhu.edu/software/stringtie/">StringTie</a>  </p>
+<pre><code>```shell
+aria2c http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz -q -o /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz &amp;&amp; \
+tar xf /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
+rm /opt/stringtie-1.3.3b.Linux_x86_64/README &amp;&amp; \
+ln -s /opt/stringtie-1.3.3b.Linux_x86_64/stringtie /usr/local/bin/stringtie &amp;&amp; \
+rm /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz
+```
+</code></pre>
+</li>
+<li>
+<p><a href="http://www.ccb.jhu.edu/software/stringtie/gff.shtml#gffcompare">gffcompare</a>  </p>
+<pre><code>```shell
+aria2c https://github.com/gpertea/gffcompare/archive/master.zip -q -o /opt/gffcompare-master.zip &amp;&amp; \  
+aria2c https://github.com/gpertea/gclib/archive/master.zip -q -o /opt/gclib-master.zip &amp;&amp; \  
+unzip -qq /opt/gffcompare-master.zip -d /opt/ &amp;&amp; \  
+unzip -qq /opt/gclib-master.zip -d /opt/ &amp;&amp; \  
+rm /opt/gffcompare-master.zip /opt/gclib-master.zip &amp;&amp; \  
+cd /opt/gffcompare-master &amp;&amp; \  
+make release
+```
+</code></pre>
+</li>
+<li>
+<p><a href="http://bedops.readthedocs.io/en/latest/">Bedops</a>:</p>
+<pre><code>```shell
+aria2c https://github.com/bedops/bedops/releases/download/v2.4.29/bedops_linux_x86_64-v2.4.29.tar.bz2 -q -o /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 &amp;&amp; \
+tar xf /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ &amp;&amp; \
+ln -s /opt/bin/* /usr/local/bin/ &amp;&amp; \
+rm /opt/bedops_linux_x86_64-v2.4.29.tar.bz2
+```
+</code></pre>
+</li>
+<li>
+<p><a href="./www.ibiomedical.net">PLEK</a>:</p>
+<pre><code>```shell
+aria2c https://nchc.dl.sourceforge.net/project/plek/PLEK.1.2.tar.gz -q -o /opt/PLEK.1.2.tar.gz &amp;&amp; \
+tar xf /opt/PLEK.1.2.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
+cd /opt/PLEK.1.2/ &amp;&amp; \
+python PLEK_setup.py || : &amp;&amp; \
+rm *.pdf *.txt *.h *.c *.fa *.cpp *.o *.R *.doc PLEK_setup.py &amp;&amp; \
+chmod 755 * &amp;&amp; \
+perl -CD -pi -e'tr/\x{feff}//d &amp;&amp; s/[\r\n]+/\n/' *.py &amp;&amp; \
+ln -s /opt/PLEK.1.2/* /usr/local/bin/ &amp;&amp; \
+rm /opt/PLEK.1.2.tar.gz
+```
+</code></pre>
+</li>
+<li>
+<p><a href="https://github.com/www-bioinfo-org/CNCI">CNCI</a>:  </p>
+<pre><code>```shell
+aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /opt/CNCI-master.zip &amp;&amp; \
+unzip -qq /opt/CNCI-master.zip -d /opt/ &amp;&amp; \
+rm /opt/CNCI-master.zip &amp;&amp; \
+unzip -qq /opt/CNCI-master/libsvm-3.0.zip -d /opt/CNCI-master/ &amp;&amp; \
+rm /opt/CNCI-master/libsvm-3.0.zip &amp;&amp; \
+cd /opt/CNCI-master/libsvm-3.0 &amp;&amp; \
+make &gt; /dev/null 2&gt;&amp;1 &amp;&amp; \
+shopt -s extglob &amp;&amp; \
+rm -rfv !\("svm-predict"\|"svm-scale"\) &amp;&amp; \
+cd .. &amp;&amp; \
+rm draw_class_pie.R LICENSE README.md &amp;&amp; \
+chmod -R 755 * &amp;&amp; \
+ln -s /opt/CNCI-master/*.py /usr/local/bin/
+```
+</code></pre>
+</li>
+<li>
+<p><a href="http://rna-cpat.sourceforge.net">CPAT</a>:<a href="https://academic.oup.com/nar/article/41/6/e74/2902455/CPAT-Coding-Potential-Assessment-Tool-using-an">Citation</a></p>
+<pre><code>```shell
+aria2c https://jaist.dl.sourceforge.net/project/rna-cpat/v1.2.3/CPAT-1.2.3.tar.gz -q -o /opt/CPAT-1.2.3.tar.gz &amp;&amp; \
+tar xf /opt/CPAT-1.2.3.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
+cd /opt/CPAT-1.2.3/ &amp;&amp; \
+mv dat/* /LncPipeDB/ &amp;&amp; \
+python setup.py install &gt; /dev/null 2&gt;&amp;1 &amp;&amp; \
+rm -rf /opt/CPAT*
+```
+</code></pre>
+</li>
+<li>
+<p><a href="https://www.bioinformatics.babraham.ac.uk/projects/fastqc">FastQC</a></p>
+<pre><code>```shell
+aria2c https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip -q -o /opt/fastqc_v0.11.5.zip &amp;&amp; \
+unzip -qq /opt/fastqc_v0.11.5.zip -d /opt/ &amp;&amp; \
+rm /opt/fastqc_v0.11.5.zip &amp;&amp; \
+cd /opt/FastQC &amp;&amp; \
+shopt -s extglob &amp;&amp; \
+rm -rfv !\("fastqc"\|*.jar\) &amp;&amp; \
+chmod 755 * &amp;&amp; \
+ln -s /opt/FastQC/fastqc /usr/local/bin/
+```
+
+or [AfterQC](https://github.com/OpenGene/AfterQC)
+
+```shell
+aria2c https://github.com/OpenGene/AfterQC/archive/v0.9.7.tar.gz -q -o /opt/AfterQC-0.9.7.tar.gz &amp;&amp; \
+tar xf /opt/AfterQC-0.9.7.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
+cd /opt/AfterQC-0.9.7 &amp;&amp; \
+make &amp;&amp; \
+perl -i -lape's/python/pypy/ if $. == 1' after.py &amp;&amp; \
+rm -rf Dockerfile Makefile README.md testdata report_sample &amp;&amp; \
+rm editdistance/*.cpp editdistance/*.h &amp;&amp; \
+ln -s /opt/AfterQC-0.9.7/*.py /usr/local/bin/ &amp;&amp; \
+rm /opt/AfterQC-0.9.7.tar.gz
+```
+
+When using afterQC, we recommended that users install `pypy` in your operation system, which can accelerated about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by author of AfterQC.
+</code></pre>
+</li>
+<li>
+<p><a href="https://github.com/bioinformatist/LncPipe-Reporter">LncPipeReporter</a></p>
+<pre><code>Install [pandoc](https://pandoc.org/installing.html) first. Then run commands:
+```shell
+Rscript -e "install.packages('devtools'); devtools::install_github('bioinformatist/LncPipeReporter')"
+```
+For detailed usage of LncPipeReporter in case you are going to run it separately, plz refers to [README](https://github.com/bioinformatist/LncPipeReporter#lncpipereporter) of LncPipeReporter.
+</code></pre>
+</li>
+<li>
+<p><a href="https://github.com/pachterlab/kallisto">kallisto</a></p>
+<pre><code>```shell
+aria2c https://github.com/pachterlab/kallisto/releases/download/v0.43.1/kallisto_linux-v0.43.1.tar.gz -q -o  /opt/kallisto_linux-v0.43.1.tar.gz &amp;&amp; \
+tar xf /opt/kallisto_linux-v0.43.1.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
+cd /opt &amp;&amp; \
+rm ._* kallisto_linux-v0.43.1.tar.gz &amp;&amp; \
+cd kallisto_linux-v0.43.1 &amp;&amp; \
+rm -rf ._*  README.md test &amp;&amp; \
+ln -s /opt/kallisto_linux-v0.43.1/kallisto /usr/local/bin/
+```
+</code></pre>
+</li>
+<li>
+<p><a href="http://lomereiter.github.io/sambamba/">sambamba</a></p>
+<pre><code>```shell
+    aria2c https://github.com/biod/sambamba/releases/download/v0.6.7/sambamba_v0.6.7_linux.tar.bz2 -q -o /opt/sambamba_v0.6.7_linux.tar.bz2 &amp;&amp; \
+    tar xf /opt/sambamba_v0.6.7_linux.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ &amp;&amp; \
+    ln -s /opt/sambamba /usr/local/bin/ &amp;&amp; \
+    rm /opt/sambamba_v0.6.7_linux.tar.bz2
+```
+</code></pre>
+</li>
+</ul>
+<p><strong>Alternatively, when you are going to using STAR-Cufflinks in your system, the corresponding installation command should be as follows:</strong>  </p>
+<ul>
+<li>
+<p><a href="https://github.com/alexdobin/STAR">STAR</a></p>
+<pre><code>```shell
+aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR &amp;&amp; \
+chmod 755 /opt/STAR &amp;&amp; \
+ln -s /opt/STAR /usr/local/bin
+```
+</code></pre>
+</li>
+<li>
+<p><a href="https://github.com/cole-trapnell-lab/cufflinks">Cufflinks</a></p>
+<pre><code>```shell
+aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz &amp;&amp; \
+tar xf /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ &amp;&amp; \
+rm /opt/cufflinks-2.2.1.Linux_x86_64/README &amp;&amp; \
+ln -s /opt/cufflinks-2.2.1.Linux_x86_64/* /usr/local/bin/ &amp;&amp; \
+rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
+```
+</code></pre>
+</li>
+</ul>
+<blockquote>
+<p>The <code>gffcompare</code> utility share the same function as <code>cuffcompare</code>, therefore, in STAR-cufflinks analysis pipe <code>gffcompare</code> is not required.</p>
+</blockquote>
+<h2 id="interactive-reports">Interactive reports</h2>
+<p>LncPipe output was well-summarized in an interactive manner, which was carried out by a novel-developing R package
+<a href="https://github.com/bioinformatist/LncPipeReporter">LncPipeReporter</a>.</p>
+<h2 id="configuration">Configuration</h2>
+<p>As a nextflow-based analysis pipeline, LncPipe allow users edit configure file <code>nextflow.config</code> to set the index files and default file path parameters instead of typing in command.
+We strongly recommended that users using config file rather than command input to adjust their parameters.
+For example, plz go to <code>params</code> line, and set the following information of your operation system and environment</p>
+<pre><code class="groovy">params {
+/*
+    User setting options (mandatory)
+     */
+// input file and genome reference()
+    fastq_ext = '*_{1,2}.clean.fq.gz'
+    fasta_ref = '/data/database/hg38/genome.fa'
+    design = 'design.file'
+    hisat2_index = '/data/database/hg38/hisatIndex/grch38_snp_tran/genome_snp_tran'
+    gencode_annotation_gtf = &quot;/data/database/hg38/Annotation/gencode.v24.annotation.gtf&quot;
+    lncipedia_gtf = &quot;/data/database/hg38/Annotation/lncipedia_4_0_hg38.gtf&quot;
+    cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2'
+
+/*
+    User setting options (optional)
+     */
+    star_idex = ''//set if star used
+    bowtie2_index = ''//set if tophat used
+    aligner = &quot;hisat&quot; // or &quot;star&quot;,&quot;tophat&quot;
+    sam_processor=&quot;sambamba&quot;//or &quot;samtools&quot;
+    qctools = &quot;fastqc&quot; // or &quot;afterqc&quot;,&quot;fastp&quot;
+    singleEnd = false
+    unstrand = false
+    skip_combine = false
+    lncRep_Output = 'reporter.html'
+    lncRep_theme = 'npg'
+    lncRep_cdf_percent = 10
+    lncRep_max_lnc_len = 10000
+    lncRep_min_expressed_sample = 50
+    mem=60//Gb
+    cpu=30
+}
+
+</code></pre>
+
+<h2 id="parameters">Parameters</h2>
+<blockquote>
+<p>Those parameters would cover the setting from <code>nextflow.config</code> file
+<em> Mandatory(plz configure those in </em>nextflow.config* file)</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th align="right">Example/Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--input_folder</td>
+<td align="right"><code>.</code></td>
+<td>input folder</td>
+</tr>
+<tr>
+<td>--species</td>
+<td align="right"><code>human</code></td>
+<td>Your species, mouse, fly and zebra fish are also supported</td>
+</tr>
+<tr>
+<td>--fastq_ext</td>
+<td align="right"><code>*_{1,2}.fastq.gz</code></td>
+<td>input raw paired reads</td>
+</tr>
+<tr>
+<td>--out_folder</td>
+<td align="right"><code>.</code></td>
+<td>output folder</td>
+</tr>
+<tr>
+<td>--design</td>
+<td align="right"><code>FALSE</code></td>
+<td>a txt file that stored experimental design information, plz see details from <code>--design</code> section below</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>References</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--star_index/--bowtie2_index/--hisat2_index</td>
+<td>-</td>
+<td>Path to STAR／bowtie2/hisat2(mutually exclusive) index(required if not set in config file)</td>
+</tr>
+<tr>
+<td>--fasta</td>
+<td><code>-</code></td>
+<td>Path to Fasta reference(required if not set in config file)</td>
+</tr>
+<tr>
+<td>--gencode_annotation_gtf</td>
+<td><code>-</code></td>
+<td>An annotation file from GENCODE database for annotating lncRNAs(required if not set in config file). e.g. <a href="ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz">gencode.v26.annotation.gtf</a></td>
+</tr>
+<tr>
+<td>--lncipedia_gtf</td>
+<td><code>-</code></td>
+<td>An annotation file from LNCipedia database for annotating lncRNAs(required if not set in config file) e.g. <a href="http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf">lncipedia_4_0_hc_hg38.gtf</a></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>software path (should not setting when using docker )</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--cpatpath</td>
+<td><code>-</code></td>
+<td>Home folder of cpat installed location</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>since cpat may call model data from its home path, users should specified where the model file is located in. Especially users install cpat by themselves without our install code.  </p>
+</blockquote>
+<ul>
+<li>Optional</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--singleEnd</td>
+<td><code>FALSE</code></td>
+<td>specify that the reads are single ended</td>
+</tr>
+<tr>
+<td>--merged_gtf</td>
+<td><code>FALSE</code></td>
+<td>Skip mapping and assembly step by directly providing assembled merged gtf files</td>
+</tr>
+<tr>
+<td>--unstrand</td>
+<td><code>FALSE</code></td>
+<td>specify that library is unstrand specific</td>
+</tr>
+<tr>
+<td>--aligner</td>
+<td><code>star</code></td>
+<td>Aligner for reads mapping (optional), STAR is default and supported only at present,<em>star</em>/<em>tophat</em>/<em>hisat2</em></td>
+</tr>
+<tr>
+<td>--qctools</td>
+<td><code>afterqc</code></td>
+<td>Tools for assess raw reads quality or filtered by AfterQC, <em>fastqc</em> or <em>afterqc</em></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>LncPipeReporter options</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--lncRep_Output</td>
+<td><code>reporter.html</code></td>
+<td>Specify report file name.</td>
+</tr>
+<tr>
+<td>--lncRep_theme</td>
+<td><code>npg</code></td>
+<td>Plot theme setting in interactive plot. Values from <a href="https://github.com/road2stat/ggsci">ggsci</a></td>
+</tr>
+<tr>
+<td>--lncRep_min_expressed_sample</td>
+<td><code>50</code></td>
+<td>Minimum expressed gene allowed in each sample, 50 default. Samples not passed were filtered from analysis</td>
+</tr>
+</tbody>
+</table>
+<p><code>--fastq_ext</code></p>
+<blockquote>
+<p>Raw fastq files were required for denovo analysis.This parameters should be set according to your paired or singled reads file names.
+Suppose your paired end sequence files are compressed with <code>.gz</code> suffixed.
+For example:</p>
+</blockquote>
+<pre><code>Sample1_1.fq.gz
+Sample1_2.fq.gz
+Sample2_1.fq.gz
+Sample2_2.fq.gz
+</code></pre>
+
+<p>Then you can input pattern <code>*_{1,2}.fq.gz</code> to make the all paired end file recognized by <a href="https://github.com/likelet/LncPipe">LncPipe</a> .</p>
+<p>For singled reads file, file pattern should be feed with <code>--singleEnd</code> specified.</p>
+<p><code>--star_idex／--bowtie2_index/--hisat2_index</code></p>
+<blockquote>
+<p>This parameter is <em>required</em> when not configured in nextflow.config file. It specify the star/tophat/hisat2(mutually exclusive) index folder built before running <a href="https://github.com/likelet/LncPipe">LncPipe</a> .
+If you don't know what it is，You can use <code>--fasta</code> to specify the reference sequence data. The index file would be built by <a href="https://github.com/likelet/LncPipe">LncPipe</a>  automatically.</p>
+</blockquote>
+<p><code>--design</code></p>
+<blockquote>
+<p>Experimental design file matrix for differential expression analysis. Default: <code>null</code>
+Format:</p>
+</blockquote>
+<pre><code>WT:Sample1,Sample2,Sample3
+KO:Sample1,Sample2,Sample3
+</code></pre>
+
+<p>While <code>KO/WT</code> represents the two experimental condition, and sample1, sample2, sample3 are replicates which should be comma-delimited in the same line .</p>
+<p>For sample names, it should be the sample as the prefix of fastq files which was trimmed by <code>--fastq_ext</code>.</p>
+<p>For example:</p>
+<p>if fastq file names are <code>Sample1_1.fq.gz, Sample1_2.fq.gz</code> that comes from one sample and your <code>--fastq_ext</code> is set as <code>*_{1,2}.fq.gz</code>, the sample name
+should be Sample1.</p>
+<h2 id="output">Output</h2>
+<p>While the whole pipeline is finished properly, there is <code>Result</code> folder under current path(default) or output_folder set by user. The basic structure of Result is follows:</p>
+<pre><code>Result/
+├── QC
+│   ├── N1141_1.clean_fastqc.html
+│   ├── N1141_2.clean_fastqc.html
+│   ├── N1177_1.clean_fastqc.html
+│   └── N1177_2.clean_fastqc.html
+├── Identified_lncRNA
+│   ├── all_lncRNA_for_classifier.gtf
+│   ├── final_all.fa
+│   ├── final_all.gtf
+│   ├── lncRNA.fa
+│   ├── protein_coding.fa
+│   └── protein_coding.final.gtf
+├── LncReporter
+│   ├── Differential_Expression_analysis.csv
+│   └── Report.html
+├── Quantification
+│   ├── kallisto.count.txt
+│   └── kallisto.tpm.txt
+└── Star_alignment
+    ├── STAR_N1141
+    │   ├── N1141Aligned.sortedByCoord.out.bam
+    │   ├── N1141Log.final.out
+    │   ├── N1141Log.out
+    │   ├── N1141Log.progress.out
+    │   └── N1141SJ.out.tab
+    └── STAR_N1177
+        ├── N1177Aligned.sortedByCoord.out.bam
+        ├── N1177Log.final.out
+        ├── N1177Log.out
+        ├── N1177Log.progress.out
+        └── N1177SJ.out.tab
+</code></pre>
+
+<ul>
+<li><code>QC</code> stored the Quality control output generated by FastQC or AfterQC software.<br></li>
+<li><code>Identified_lncRNA</code> contains all assembled lncRNA and their sequences. <em>all_lncRNA_for_classifier.gtf</em> includes both novel and known lncRNA features in <a href="http://www.ensembl.org/info/website/upload/gff.html">GTF format</a>;
+<em>lncRNA.fa</em> is all lncRNA sequences in fasta format. <em>protein_coding.final.gtf</em> and <em>protein_coding.fa</em> are protein coding information extracted from gencode annotation. <em>final_all.gtf</em> and <em>final_all.fa</em> are combined files for further analysis.<br></li>
+<li><code>Alignment</code> are hisat/tophat/STAR aligner standard output<br></li>
+<li><code>Quantification</code> are estimated abundance using kallisto. <em>kallisto.count.txt</em> stored reads count matrix and <em>kallisto.tpm.txt</em> are tpm(Transcripts Per Kilobase Million) matrix.</li>
+<li><code>LncReporter</code> stored the interactive report file and differential expression matrix generated by LncPipeReporter which wrapped EdgeR.</li>
+</ul>
+<h2 id="tips">Tips</h2>
+<ul>
+<li>:blush:Plz keep the consistency of your genome sequence, index library and annotation files: genome version, chromosome format, gtf coordinated e.g. The third-party software may stop for any of the above reasons. </li>
+<li>:confused:Setting your analysis parameters always in config file, differ project should  corresponding to differ configurations for reproductive analysis. To rerun a project, you can just specify -c <code>your.config</code> in your command, which can also help you to record analysis parameters.</li>
+<li>:open_mouth:Run analysis on docker container, no much to say.</li>
+<li>:grimacing:Always use the latest version to be away from the known bugs. </li>
+</ul>
+<h2 id="acknowledgement">Acknowledgement</h2>
+<p>Thanks to the author of <a href="https://github.com/OpenGene/AfterQC">AfterQC</a>, Shifu Chen, for his help on providing a gzip output support to meet the require of LncPipe.  Thanks to the internal test by Hongwan Zhang and Yan Wang from SYSUCC Cancer bioinformatics platform.</p>
+<h2 id="faq">FAQ</h2>
+<ul>
+<li><em>1. PLEK throws an error "/data/software/PLEK.1.2/PLEK.py:line12: $'\r': can not find command", how to fix?</em><blockquote>
+<p>A: using the follow command as suggested in the installation section. 
+    <code>shell
+        perl -CD -pi -e'tr/\x{feff}//d &amp;&amp; s/[\r\n]+/\n/' *.py</code></p>
+</blockquote>
+</li>
+<li><em>2. IOError: [Errno 2] No such file or directory: '/opt/CPAT-1.2.3/dat/Human_Hexamer.tsv'?</em><blockquote>
+<p>A: The cpat command required  the <code>Human_Hexamer.tsv</code> to predict lncRNA coding potential, plz check your <code>cpatpath</code> parameters. </p>
+</blockquote>
+</li>
+<li><em>3. When using htseq to quantify transicript, it throws "Error occured when reading beginning of SAM/BAM file. 'csamtools.AlignedRead' object has no attribute 'reference_start' "</em><blockquote>
+<p>A: It's a version conflict caused by htseq and hisat generated bamfile, a possible solution for this is to install the old version of htseq</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="contact">Contact</h2>
+<p>For implementation:<br />
+<em> <a href="https://github.com/likelet">Qi Zhao</a> zhaoqi@sysucc.org.cn, Sun Yat-sen University Cancer Center;<br />
+</em> <a href="http://icannotendure.space">Yu Sun</a>  sun_yu@mail.nankai.edu.cn, Nan kai University;<br />
+For project design and new feature request:<br />
+<em> <a href="https://github.com/likelet">Qi Zhao</a> zhaoqi@sysucc.org.cn, Sun Yat-sen University Cancer Center;<br />
+</em> <a href="">Zhixiang Zuo</a> zuozhx@sysucc.org.cn, Sun Yat-sen University Cancer Center;  </p>
+<blockquote>
+<p>We strongly recommend users open new issues if they have questions or find bugs.</p>
+</blockquote>
+<h2 id="license">License</h2>
+<p><a href="./LICENSE">GPL v3 license</a></p>
+<h2 id="citation">Citation</h2></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>var base_url = '.';</script>
+        <script src="./js/base.js"></script>
+        <script src="./search/require.js"></script>
+        <script src="./search/search.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>&larr;</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>&rarr;</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    </body>
+</html>
+
+<!--
+MkDocs version : 0.17.3
+Build Date UTC : 2018-05-17 16:14:37
+-->
