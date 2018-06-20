@@ -214,7 +214,7 @@ or [AfterQC](https://github.com/OpenGene/AfterQC)
 		rm /opt/AfterQC-0.9.7.tar.gz
 		  
 		
-When using afterQC, we recommended that users install `pypy` in your operation system, which can accelerated about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by author of AfterQC.
+When using afterQC, we recommend that users install `pypy` in their operation system, which can accelerate about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by the author of AfterQC.
 
 * [LncPipeReporter](https://github.com/bioinformatist/LncPipe-Reporter)
 
@@ -245,7 +245,7 @@ When using afterQC, we recommended that users install `pypy` in your operation s
             rm /opt/sambamba_v0.6.7_linux.tar.bz2
           
 		
-**Alternatively, when you are going to using STAR-Cufflinks in your system, the corresponding installation command should be as follows:**  
+**Alternatively, when you are going to using STAR-Cufflinks in your analysis, the corresponding install cmd are as follows:**  
 
 * [STAR](https://github.com/alexdobin/STAR)
 
@@ -265,16 +265,16 @@ When using afterQC, we recommended that users install `pypy` in your operation s
 		rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
 		
 		
-> The `gffcompare` utility share the same function as `cuffcompare`, therefore, in STAR-cufflinks analysis pipe `gffcompare` is not required.
+> The `gffcompare` utility share the same function as `cuffcompare`, therefore, in STAR-cufflinks analysis pipe, `gffcompare` is not required.
 
 ## Interactive reports
-LncPipe output was well-summarized in an interactive manner, which was carried out by a novel-developing R package
+LncPipe output was well-summarized in an interactive manner, which was carried out by our novel-developing R package
 [LncPipeReporter](https://github.com/bioinformatist/LncPipeReporter).
 
 ## Configuration
 As a nextflow-based analysis pipeline, LncPipe allow users edit configure file `nextflow.config` to set the index files and default file path parameters instead of typing in command.
-We strongly recommended that users using config file rather than command input to adjust their parameters.
-For example, plz go to `params` line, and set the following information of your operation system and environment
+We strongly recommend users using config file rather than command input to adjust their parameters.
+To configure, plz go to `params` line, and set the following information of your operation system and environment
 groovy
 
         params {
