@@ -46,22 +46,20 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
     
 > It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
 
-2. Optionally, move the nextflow file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it).
-Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.
-All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
+2. Optionally, move the nextflow file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it). Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
 
-3. A type command for run nextflow  
+3. A type command for run nextflow:  
 
-nextflow run LncRNAanalysisPipe.nf <parameters>
+       nextflow run LncRNAanalysisPipe.nf <parameters>
+	
 ### Prepare input files 
-#### References, index and annotation files（required）
+#### References, index and annotation files(Mandatory) . 
 
-1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. 
-    > Building index of hisat relatively require large amount of memory, thus we sugguested that users downloaded it directly from the hisat website.  
-    2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.).   
-    3. GENCODE gene annotation file in GTF format  
-    4. LNCipedia gene annotation file in GTF format.(set null if not available for your species)  
-    5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed  
+  1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. Building index of hisat relatively require large amount of memory, thus we sugguested that users downloaded it directly from the hisat website.  
+  2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.).   
+  3. GENCODE gene annotation file in GTF format  
+  4. LNCipedia gene annotation file in GTF format.(set null if not available for your species)  
+  5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed   
     
 #### Supported species
 
