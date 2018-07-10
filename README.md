@@ -480,3 +480,4 @@ For project design and new feature request:
 [GPL v3 license](LICENSE)
 ## Citation 
 
+Qi Zhao, Yu Sun, Dawei Wang, Hongwan Zhang, Kai Yu, Jian Zheng, Zhixiang Zuo. LncPipe: A Nextflow-based pipeline for identification and analysis of long non-coding RNAs from RNA-Seq data. Journal of Genetics and Genomics. 2018. (_In press_)
