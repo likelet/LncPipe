@@ -54,9 +54,10 @@ sample2_rep2_2.fq.gz
 
 * `Design.file` are required if you are going to perform differential expression analysis between groups. 
 
-###Step 2. Edit `nextflow.config` file 
+### Step 2. Edit `nextflow.config` file 
 Leave the other line unchanged, modified the following sentences like below (According to the location of download files):
-> If your are using docker in your server, plz modify `docker.config` instead.
+> If your are using docker in your server, plz modify `docker.config` instead.  
+
 ```shell
     fastq_ext = '*_{1,2}.fq.gz'
     fasta_ref = '~/database/mouse/GRCm38.p5.genome.fa'
@@ -71,7 +72,8 @@ Leave the other line unchanged, modified the following sentences like below (Acc
     known_lncRNA_gtf="gencode.vM16.annotation.gtf"
 
 ```
-###Step 3. Start your analysis trip with command below 
+### Step 3. Start your analysis trip with command below   
+
 ```shell
     nextflow run -with-trace -with-report report.html -with-timeline timeline.html LncRNAanalysisPipe.nf 
     #or running in a docker image  
