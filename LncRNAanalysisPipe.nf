@@ -301,6 +301,7 @@ if (!params.merged_gtf) {
 
     } else if (params.aligner == 'tophat' && params.bowtie2_index == false && !fasta_ref) {
         process Make_bowtie2_index {
+            cache 'deep'
             tag fasta_ref
             storeDir { params.out_folder + "/bowtie2Index" }
 
@@ -319,6 +320,7 @@ if (!params.merged_gtf) {
         println print_red("No reference sequence loaded! plz specify ") + print_red("--fasta_ref") + print_red(" with reference.")
     } else if (params.aligner == 'hisat2' && !fasta_ref) {
         process Make_hisat_index {
+            cache 'deep'
             tag fasta_ref
 
             storeDir { params.out_folder + "/hisatIndex" }
@@ -450,7 +452,7 @@ if (!params.merged_gtf) {
     */
     if (params.aligner == 'star') {
         process fastq_star_alignment_For_discovery {
-
+            cache 'deep'
             tag { file_tag }
 
             publishDir pattern: "",
@@ -516,7 +518,7 @@ if (!params.merged_gtf) {
     else if (params.aligner == 'tophat')
     {
         process fastq_tophat_alignment_For_discovery {
-
+            cache 'deep'
             tag { file_tag }
 
             publishDir pattern: "",
@@ -559,7 +561,7 @@ if (!params.merged_gtf) {
     }
     else if (params.aligner == 'hisat') {
         process fastq_hisat2_alignment_For_discovery {
-
+            cache 'deep'
             tag { file_tag }
             maxForks 6
             publishDir pattern: "",
@@ -635,7 +637,7 @@ if (!params.merged_gtf) {
     */
     if(params.aligner == 'hisat'){
         process StringTie_assembly {
-
+            cache 'deep'
             tag { file_tag }
 
             input:
@@ -672,7 +674,7 @@ if (!params.merged_gtf) {
         * Step 6: Merged GTFs into one
         */
         process StringTie_merge_assembled_gtf {
-
+            cache 'deep'
             tag { file_tag }
             maxForks 6
             publishDir pattern: "merged.gtf",
@@ -699,7 +701,7 @@ if (!params.merged_gtf) {
     }
     else{
         process Cufflinks_assembly {
-
+            cache 'deep'
             tag { file_tag }
 
             input:
@@ -762,7 +764,7 @@ if (!params.merged_gtf) {
         * Step 6: Merged GTFs into one
         */
         process cuffmerge_assembled_gtf {
-
+            cache 'deep'
             tag { file_tag }
             maxForks 6
             publishDir pattern: "CUFFMERGE/merged.gtf",
@@ -964,7 +966,7 @@ process Identify_novel_lncRNA_with_criterions {
 novelLncRnaFasta.into { novelLncRnaFasta_for_PLEK; novelLncRnaFasta_for_CPAT; novelLncRnaFasta_for_CNCI }
 
 process Predict_coding_abbilities_by_PLEK {
-
+    cache 'deep'
     // as PLEK can not return valid exit status even run smoothly, we manually set the exit status into 0 to promote analysis
     validExitStatus 0, 1, 2
     input:
@@ -1279,6 +1281,7 @@ if(!params.merged_gtf){
         }
     }else{
         process Build_kallisto_index_of_GTF_for_quantification {
+            cache 'deep'
             input:
             file transript_fasta from finalFasta_for_quantification_gtf
 
@@ -1294,7 +1297,7 @@ if(!params.merged_gtf){
         }
         constant_kallisto_index = final_kallisto_index.first()
         process Run_kallisto_for_quantification {
-
+            cache 'deep'
 
             tag { file_tag }
             maxForks 6
@@ -1338,6 +1341,8 @@ if(!params.merged_gtf){
         exit 0, print_red("htseq can not be applicable without mapping step, plz set quant tool using `kallisto`")
     }else {
         process Build_kallisto_index_of_GTF_for_quantification {
+            cache 'deep'
+
             input:
             file transript_fasta from finalFasta_for_quantification_gtf
 
@@ -1353,7 +1358,7 @@ if(!params.merged_gtf){
         }
         constant_kallisto_index = final_kallisto_index.first()
         process Run_kallisto_for_quantification {
-
+            cache 'deep'
 
             tag { file_tag }
             maxForks 6
@@ -1482,7 +1487,7 @@ if(!params.merged_gtf) {
         publishDir pattern: "*",
                 path: "${params.out_folder}/Result/", mode: 'move'
         input:
-        //alignmet log
+        //alignment log
         file design
         //gtf statistics
         file basic_charac from statistic_result
