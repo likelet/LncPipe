@@ -24,7 +24,7 @@
  */
 
 // requirement:
-// - fastqc／AfterQC
+// - fastp/fastqc／AfterQC
 // - STAR/tophat2/bowtie2/hisat2/StringTie
 // - samtools/sambamba
 // - Cufflinks/gffcompare
@@ -270,7 +270,7 @@ if (!params.merged_gtf) {
      * Step 2: Build STAR/tophat/hisat2 index if not provided
      */
     //star_index if not exist
-    if (params.aligner == 'star' && params.star_idex == false && fasta_ref) {
+    /*if (params.aligner == 'star' && params.star_idex == false && fasta_ref) {
         process Make_STARindex {
             tag fasta_ref
 
@@ -335,13 +335,13 @@ if (!params.merged_gtf) {
             """
                 #for human genome it will take more than 160GB memory and take really  long time (6 more hours), thus we recommand to down pre-build genome from hisat website
                 extract_splice_sites.py !{gencode_annotation_gtf} >genome_ht2.ss
-                extract_exons.py !{gencode_annotation_gtf} > genome_ht2.exon 
-                hisat2-build -p !{hisat2_index_threads} --ss genome_ht2.ss --exo genome_ht2.exon !{fasta_ref} genome_ht2 
+                extract_exons.py !{gencode_annotation_gtf} > genome_ht2.exon
+                hisat2-build -p !{hisat2_index_threads} --ss genome_ht2.ss --exo genome_ht2.exon !{fasta_ref} genome_ht2
                 """
         }
     } else if (params.aligner == 'tophat' && params.hisat_index == false && !fasta_ref) {
         println print_red("No reference sequence loaded! plz specify ") + print_red("--fasta_ref") + print_red(" with reference.")
-    }
+    }*/
 
     println print_purple("Analysis from fastq file")
     //Match the pairs on two channels
