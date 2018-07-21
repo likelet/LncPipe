@@ -21,7 +21,7 @@ directly and resume analysis from continues checkpoint.
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Schematic diagram](#schematic-diagram)
-- [Installation](#installation)
+- [Installation](#installation-and-quick-start)
 - [Run Docker](#run-docker)
 - [Interactive reports](#interactive-reports)
 - [Parameters](#parameters)
@@ -33,7 +33,7 @@ directly and resume analysis from continues checkpoint.
 ## Schematic diagram
 
 
-## Installation 
+## Installation and quick start
 [Nextflow](https://github.com/nextflow-io/nextflow)  
 LncPipe is implemented with Nextflow pipeline manage system. To run our pipelines. [Nextflow](https://github.com/nextflow-io/nextflow) should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.
 Here, we show the step by step installation of [Nextflow](https://github.com/nextflow-io/nextflow) in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
@@ -48,12 +48,20 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 
 2. Optionally, move the nextflow file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it). Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
 
-3. A type command for run nextflow:  
+3. pull LncPipe and configure your data, reference in *nextflow.config* or *docker.config*
 
-       nextflow run LncRNAanalysisPipe.nf <parameters>
-	
+4. A type command for run nextflow:
+
+       nextflow -c nextflow.contig run LncRNAanalysisPipe.nf
+
+   or docker command
+
+       nextflow -c docker.config run LncRNAanalysisPipe.nf
+
+
 ### Prepare input files 
-#### References, index and annotation files(Mandatory) . 
+#### References, index and annotation files(Mandatory).
+* :blush:Plz keep the consistency of your genome sequence, index library and annotation files (Important!): genome version, chromosome format, gtf coordinated e.g. The third-party software may stop for any of the above reasons.
 
   1. [Hisat](https://ccb.jhu.edu/software/hisat2/index.shtml) index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. Building index of hisat relatively require large amount of memory, thus we sugguested that users downloaded it directly from the hisat website.  
   2. Genome reference (genome fasta file with suffix `.fa` , `UCSC` etc.).   
@@ -61,7 +69,7 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
   4. LNCipedia gene annotation file in GTF format.(set null if not available for your species)  
   5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed   
     
-#### Supported species
+#### Species
 
     >Currently, LncPipe was designed for human only, but it also support other species which required users providing "known_protein_coding.gtf" and  "known_lncRNA.gtf "
     the detail usage for non-human species could be found here.  
@@ -97,173 +105,7 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 
 ## Dependencies 
 
-Prerequisites install command (required when docker image is not favored, you should execute them via root)  
-
-* [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml)
-
-		
-		aria2c ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/downloads/hisat2-2.1.0-Linux_x86_64.zip -q -o /opt/hisat2-2.1.0-Linux_x86_64.zip && \
-		unzip -qq /opt/hisat2-2.1.0-Linux_x86_64.zip -d /opt/ && \
-		rm /opt/hisat2-2.1.0-Linux_x86_64.zip && \
-		cd /opt/hisat2-2.1.0 && \
-		rm -rf doc example *debug MANUAL* NEWS TUTORIAL && \
-		ln -s /opt/hisat2-2.1.0/hisat2* /usr/local/bin/ && \
-		ln -sf /opt/hisat2-2.1.0/*.py /usr/local/bin/
-		  
-		
-* [StringTie](http://www.ccb.jhu.edu/software/stringtie/)  
-
-		
-		aria2c http://ccb.jhu.edu/software/stringtie/dl/stringtie-1.3.3b.Linux_x86_64.tar.gz -q -o /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz && \
-		tar xf /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
-		rm /opt/stringtie-1.3.3b.Linux_x86_64/README && \
-		ln -s /opt/stringtie-1.3.3b.Linux_x86_64/stringtie /usr/local/bin/stringtie && \
-		rm /opt/stringtie-1.3.3b.Linux_x86_64.tar.gz
-		  
-		
-* [gffcompare](http://www.ccb.jhu.edu/software/stringtie/gff.shtml#gffcompare)  
-
-		
-		aria2c https://github.com/gpertea/gffcompare/archive/master.zip -q -o /opt/gffcompare-master.zip && \  
-		aria2c https://github.com/gpertea/gclib/archive/master.zip -q -o /opt/gclib-master.zip && \  
-		unzip -qq /opt/gffcompare-master.zip -d /opt/ && \  
-		unzip -qq /opt/gclib-master.zip -d /opt/ && \  
-		rm /opt/gffcompare-master.zip /opt/gclib-master.zip && \  
-		cd /opt/gffcompare-master && \  
-		make release
-		  
-		
-* [Bedops](http://bedops.readthedocs.io/en/latest/):
-
-		
-		aria2c https://github.com/bedops/bedops/releases/download/v2.4.29/bedops_linux_x86_64-v2.4.29.tar.bz2 -q -o /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 && \
-		tar xf /opt/bedops_linux_x86_64-v2.4.29.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
-		ln -s /opt/bin/* /usr/local/bin/ && \
-		rm /opt/bedops_linux_x86_64-v2.4.29.tar.bz2
-		  
-		
-* [PLEK](www.ibiomedical.net):
-
-		
-		aria2c https://nchc.dl.sourceforge.net/project/plek/PLEK.1.2.tar.gz -q -o /opt/PLEK.1.2.tar.gz && \
-		tar xf /opt/PLEK.1.2.tar.gz --use-compress-prog=pigz -C /opt/ && \
-		cd /opt/PLEK.1.2/ && \
-		python PLEK_setup.py || : && \
-		rm *.pdf *.txt *.h *.c *.fa *.cpp *.o *.R *.doc PLEK_setup.py && \
-		chmod 755 * && \
-		perl -CD -pi -e'tr/\x{feff}//d && s/[\r\n]+/\n/' *.py && \
-		ln -s /opt/PLEK.1.2/* /usr/local/bin/ && \
-		rm /opt/PLEK.1.2.tar.gz
-		  
-		
-* [CNCI](https://github.com/www-bioinfo-org/CNCI):  
-
-		
-		aria2c https://codeload.github.com/www-bioinfo-org/CNCI/zip/master -q -o /opt/CNCI-master.zip && \
-		unzip -qq /opt/CNCI-master.zip -d /opt/ && \
-		rm /opt/CNCI-master.zip && \
-		unzip -qq /opt/CNCI-master/libsvm-3.0.zip -d /opt/CNCI-master/ && \
-		rm /opt/CNCI-master/libsvm-3.0.zip && \
-		cd /opt/CNCI-master/libsvm-3.0 && \
-		make > /dev/null 2>&1 && \
-		shopt -s extglob && \
-		rm -rfv !\("svm-predict"\|"svm-scale"\) && \
-		cd .. && \
-		rm draw_class_pie.R LICENSE README.md && \
-		chmod -R 755 * && \
-		ln -s /opt/CNCI-master/*.py /usr/local/bin/
-		  
-		
-* [CPAT](http://rna-cpat.sourceforge.net):[Citation](https://academic.oup.com/nar/article/41/6/e74/2902455/CPAT-Coding-Potential-Assessment-Tool-using-an)
-
-		
-		aria2c https://jaist.dl.sourceforge.net/project/rna-cpat/v1.2.3/CPAT-1.2.3.tar.gz -q -o /opt/CPAT-1.2.3.tar.gz && \
-		tar xf /opt/CPAT-1.2.3.tar.gz --use-compress-prog=pigz -C /opt/ && \
-		cd /opt/CPAT-1.2.3/ && \
-		mv dat/* /LncPipeDB/ && \
-		python setup.py install > /dev/null 2>&1 && \
-		rm -rf /opt/CPAT*
-		  
-		
-* [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc)
-
-		
-		aria2c https://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip -q -o /opt/fastqc_v0.11.5.zip && \
-		unzip -qq /opt/fastqc_v0.11.5.zip -d /opt/ && \
-		rm /opt/fastqc_v0.11.5.zip && \
-		cd /opt/FastQC && \
-		shopt -s extglob && \
-		rm -rfv !\("fastqc"\|*.jar\) && \
-		chmod 755 * && \
-		ln -s /opt/FastQC/fastqc /usr/local/bin/
-		  
-			
-or [AfterQC](https://github.com/OpenGene/AfterQC)
-			
-		
-		aria2c https://github.com/OpenGene/AfterQC/archive/v0.9.7.tar.gz -q -o /opt/AfterQC-0.9.7.tar.gz && \
-		tar xf /opt/AfterQC-0.9.7.tar.gz --use-compress-prog=pigz -C /opt/ && \
-		cd /opt/AfterQC-0.9.7 && \
-		make && \
-		perl -i -lape's/python/pypy/ if $. == 1' after.py && \
-		rm -rf Dockerfile Makefile README.md testdata report_sample && \
-		rm editdistance/*.cpp editdistance/*.h && \
-		ln -s /opt/AfterQC-0.9.7/*.py /usr/local/bin/ && \
-		rm /opt/AfterQC-0.9.7.tar.gz
-		  
-		
-When using afterQC, we recommend that users install `pypy` in their operation system, which can accelerate about 3X speed for raw reads processing, as [suggested]((https://github.com/OpenGene/AfterQC#pypy-suggestion)) by the author of AfterQC.
-
-* [LncPipeReporter](https://github.com/bioinformatist/LncPipe-Reporter)
-
-		Install [pandoc](https://pandoc.org/installing.html) first. Then run commands:
-		
-		Rscript -e "install.packages('devtools'); devtools::install_github('bioinformatist/LncPipeReporter')"
-		
-		For detailed usage of LncPipeReporter in case you are going to run it separately, plz refers to [README](https://github.com/bioinformatist/LncPipeReporter#lncpipereporter) of LncPipeReporter.
-		
-* [kallisto](https://github.com/pachterlab/kallisto)
-
-		
-		aria2c https://github.com/pachterlab/kallisto/releases/download/v0.43.1/kallisto_linux-v0.43.1.tar.gz -q -o  /opt/kallisto_linux-v0.43.1.tar.gz && \
-		tar xf /opt/kallisto_linux-v0.43.1.tar.gz --use-compress-prog=pigz -C /opt/ && \
-		cd /opt && \
-		rm ._* kallisto_linux-v0.43.1.tar.gz && \
-		cd kallisto_linux-v0.43.1 && \
-		rm -rf ._* 	README.md test && \
-		ln -s /opt/kallisto_linux-v0.43.1/kallisto /usr/local/bin/
-		  
-		
-* [sambamba](http://lomereiter.github.io/sambamba/)
-
-        
-            aria2c https://github.com/biod/sambamba/releases/download/v0.6.7/sambamba_v0.6.7_linux.tar.bz2 -q -o /opt/sambamba_v0.6.7_linux.tar.bz2 && \
-            tar xf /opt/sambamba_v0.6.7_linux.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
-            ln -s /opt/sambamba /usr/local/bin/ && \
-            rm /opt/sambamba_v0.6.7_linux.tar.bz2
-          
-		
-**Alternatively, when you are going to using STAR-Cufflinks in your analysis, the corresponding install cmd are as follows:**  
-
-* [STAR](https://github.com/alexdobin/STAR)
-
-		
-		aria2c https://raw.githubusercontent.com/alexdobin/STAR/master/bin/Linux_x86_64/STAR -q -o /opt/STAR && \
-		chmod 755 /opt/STAR && \
-		ln -s /opt/STAR /usr/local/bin
-		  
-		
-* [Cufflinks](https://github.com/cole-trapnell-lab/cufflinks)
-
-		
-		aria2c https://github.com/bioinformatist/cufflinks/releases/download/v2.2.1/cufflinks-2.2.1.Linux_x86_64.tar.gz -q -o /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz && \
-		tar xf /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz --use-compress-prog=pigz -C /opt/ && \
-		rm /opt/cufflinks-2.2.1.Linux_x86_64/README && \
-		ln -s /opt/cufflinks-2.2.1.Linux_x86_64/* /usr/local/bin/ && \
-		rm /opt/cufflinks-2.2.1.Linux_x86_64.tar.gz
-		
-		
-> The `gffcompare` utility share the same function as `cuffcompare`, therefore, in STAR-cufflinks analysis pipe, `gffcompare` is not required.
+Plz see command [here](https://github.com/likelet/LncPipe/blob/master/InstallSoftwareLocally.md)
 
 ## Interactive reports
 LncPipe output was well-summarized in an interactive manner, which was carried out by our novel-developing R package
@@ -279,23 +121,37 @@ groovy
         /*
             User setting options (mandatory)
              */
-        // input file and genome reference()
-            fastq_ext = '*_{1,2}.clean.fq.gz'
+        // input file and genome reference
+            fastq_ext = '*_{1,2}.fq.gz'
             fasta_ref = '/data/database/hg38/genome.fa'
             design = 'design.file'
             hisat2_index = '/data/database/hg38/hisatIndex/grch38_snp_tran/genome_snp_tran'
+            cpatpath='/opt/CPAT-1.2.3'
+            //human gtf only
             gencode_annotation_gtf = "/data/database/hg38/Annotation/gencode.v24.annotation.gtf"
-            lncipedia_gtf = "/data/database/hg38/Annotation/lncipedia_4_0_hg38.gtf"
-            cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2'
-        
+            lncipedia_gtf = "/data/database/hg38/Annotation/lncipedia_4_0_hg38.gtf" // set "null" if you are going to perform analysis on other species
+
+        // additional options for non-human species, else leaving them unchanged
+            species="human"// mouse , zebrafish, fly
+            known_coding_gtf=""
+            known_lncRNA_gtf=""
+            //for test
+            cpatpath = '/home/zhaoqi/software/CPAT/CPAT-1.2.2/'
+
+
         /*
             User setting options (optional)
              */
+            // tools setting
             star_idex = ''//set if star used
             bowtie2_index = ''//set if tophat used
             aligner = "hisat" // or "star","tophat"
-            sam_processor="sambamba"//or "samtools"
-            qctools = "fastqc" // or "afterqc","fastp"
+            sam_processor="sambamba"//or "samtools(deprecated)"
+            qctools ="fastp"  // or "afterqc","fastp","fastqc"
+            detools = "edger"//or "deseq2","noiseq" not supported yet
+            quant = "kallisto"// or 'htseq'
+
+            //other setting
             singleEnd = false
             unstrand = false
             skip_combine = false
@@ -304,15 +160,27 @@ groovy
             lncRep_cdf_percent = 10
             lncRep_max_lnc_len = 10000
             lncRep_min_expressed_sample = 50
-            mem=60//Gb
+            mem=60
             cpu=30
+        }
+
+        manifest {
+            homePage = 'https//github.com/likelet/LncPipe'
+            description = 'LncPipe:a Nextflow-based Long non-coding RNA analysis PIPELINE'
+            mainScript = 'LncRNAanalysisPipe.nf'
+        }
+
+
+        timeline {
+            enabled: true
+            file: "timeline.html"
         }
 
 
 
 ## Parameters 
 > Those parameters would cover the setting from `nextflow.config` file
-* Mandatory(plz configure those in *nextflow.config* file)
+* Mandatory(plz configure those options in *nextflow.config* or *docker.config* file)
 
 | Name | Example/Default value | Description |
 |-----------|--------------:|-------------|
@@ -326,7 +194,7 @@ groovy
 
 | Name | Required | Description |
 |-----------|--------------|-------------|
-|--star_index/--bowtie2_index/--hisat2_index  | -| Path to STAR／bowtie2/hisat2(mutually exclusive) index(required if not set in config file)  |
+|--star_index/--bowtie2_index/--hisat2_index  | -| Path to STAR?bowtie2/hisat2(mutually exclusive) index(required if not set in config file)  |
 |--fasta  | `-` | Path to Fasta reference(required if not set in config file)|
 |--gencode_annotation_gtf  | `-` | An annotation file from GENCODE database for annotating lncRNAs(required if not set in config file). e.g. [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz) |
 |--lncipedia_gtf  | `-` | An annotation file from LNCipedia database for annotating lncRNAs(required if not set in config file) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
@@ -348,7 +216,7 @@ groovy
 |--merged_gtf | `FALSE` | Skip mapping and assembly step by directly providing assembled merged gtf files|
 |--unstrand     | `FALSE` | specify that library is unstrand specific  |
 |--aligner |  `star` | Aligner for reads mapping (optional), STAR is default and supported only at present,*star*/*tophat*/*hisat2*|
-|--qctools |  `afterqc` | Tools for assess raw reads quality or filtered by AfterQC, *fastqc* or *afterqc*|
+|--qctools |  `fastp` | Tools for assess raw reads quality or filtered by *fastp*, *fastqc* or *afterqc*|
 
 * LncPipeReporter options
 
@@ -373,10 +241,10 @@ Then you can input pattern `*_{1,2}.fq.gz` to make the all paired end file recog
 For singled reads file, file pattern should be feed with `--singleEnd` specified.
 
 
-`--star_idex／--bowtie2_index/--hisat2_index`
+`--star_idex?--bowtie2_index/--hisat2_index`
 
 > This parameter is *required* when not configured in nextflow.config file. It specify the star/tophat/hisat2(mutually exclusive) index folder built before running [LncPipe](https://github.com/likelet/LncPipe) .
-If you don't know what it is，You can use `--fasta` to specify the reference sequence data. The index file would be built by [LncPipe](https://github.com/likelet/LncPipe)  automatically.
+If you don't know what it is?You can use `--fasta` to specify the reference sequence data. The index file would be built by [LncPipe](https://github.com/likelet/LncPipe)  automatically.
 
 
 `--design`
@@ -396,40 +264,40 @@ For example:
 should be Sample1.
 
 ## Output
-While the whole pipeline is finished properly, there is `Result` folder under current path(default) or output_folder set by user. The basic structure of Result is follows:
+ `Result` folder under current path(default) or output_folder set by user. A typical structure of `Result` is follows:
 
         Result/
-        ├── QC
-        │   ├── N1141_1.clean_fastqc.html
-        │   ├── N1141_2.clean_fastqc.html
-        │   ├── N1177_1.clean_fastqc.html
-        │   └── N1177_2.clean_fastqc.html
-        ├── Identified_lncRNA
-        │   ├── all_lncRNA_for_classifier.gtf
-        │   ├── final_all.fa
-        │   ├── final_all.gtf
-        │   ├── lncRNA.fa
-        │   ├── protein_coding.fa
-        │   └── protein_coding.final.gtf
-        ├── LncReporter
-        │   ├── Differential_Expression_analysis.csv
-        │   └── Report.html
-        ├── Quantification
-        │   ├── kallisto.count.txt
-        │   └── kallisto.tpm.txt
-        └── Star_alignment
-            ├── STAR_N1141
-            │   ├── N1141Aligned.sortedByCoord.out.bam
-            │   ├── N1141Log.final.out
-            │   ├── N1141Log.out
-            │   ├── N1141Log.progress.out
-            │   └── N1141SJ.out.tab
-            └── STAR_N1177
-                ├── N1177Aligned.sortedByCoord.out.bam
-                ├── N1177Log.final.out
-                ├── N1177Log.out
-                ├── N1177Log.progress.out
-                └── N1177SJ.out.tab
+            ├── QC
+            │   ├── N1141_1.clean_fastqc.html
+            │   ├── N1141_2.clean_fastqc.html
+            │   ├── N1177_1.clean_fastqc.html
+            │   └── N1177_2.clean_fastqc.html
+            ├── Identified_lncRNA
+            │   ├── all_lncRNA_for_classifier.gtf
+            │   ├── final_all.fa
+            │   ├── final_all.gtf
+            │   ├── lncRNA.fa
+            │   ├── protein_coding.fa
+            │   └── protein_coding.final.gtf
+            ├── LncReporter
+            │   ├── Differential_Expression_analysis.csv
+            │   └── Report.html
+            ├── Quantification
+            │   ├── kallisto.count.txt
+            │   └── kallisto.tpm.txt
+            └── Star_alignment
+                ├── STAR_N1141
+                │   ├── N1141Aligned.sortedByCoord.out.bam
+                │   ├── N1141Log.final.out
+                │   ├── N1141Log.out
+                │   ├── N1141Log.progress.out
+                │   └── N1141SJ.out.tab
+                └── STAR_N1177
+                    ├── N1177Aligned.sortedByCoord.out.bam
+                    ├── N1177Log.final.out
+                    ├── N1177Log.out
+                    ├── N1177Log.progress.out
+                    └── N1177SJ.out.tab
 
 
 * `QC` stored the Quality control output generated by FastQC or AfterQC software.<br>
