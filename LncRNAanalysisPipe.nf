@@ -88,7 +88,7 @@ if (params.help) {
             print_cyan('      --fastq_ext <*_fq.gz>         ') + print_green('Filename pattern for pairing raw reads, e.g: *_{1,2}.fastq.gz for paired reads\n') +
             print_cyan('      --out_folder <path>           ') + print_green('The output directory where the results will be saved(optional), current path is default\n') +
             print_cyan('      --aligner <hisat>             ') + print_green('Aligner for reads mapping (optional), HISAT is default and supported only at present, "hisat"/"star"/"tophat"\n') +
-            print_cyan('      --qctools <fastqc>            ') + print_green('Tools for assess reads quality, fastqc(default)/afterqc\n') +
+            print_cyan('      --qctools <fastqc>            ') + print_green('Tools for assess reads quality, fastp(default)/afterqc\n') +
             print_cyan('      --detools <edger>            ') + print_green('Tools for differential analysis, edger(default)/deseq/noiseq\n') +
             print_cyan('      --quant <kallisto>            ') + print_green('Tools for estimating abundance of transcript, kallisto(default)/htseq\n') +
             '\n' +
@@ -121,13 +121,26 @@ if (params.help) {
     exit 0
 }
 
+//check parameters
+allowed_params = ["input_folder","fastq_ext","out_folder","aligner","qctools","detools","quant",
+                  "merged_gtf","design","singleEnd","unstrand",
+                  "fasta","gencode_annotation_gtf","lncipedia_gtf",
+                  "lncRep_Output", "lncRep_theme","lncRep_min_expressed_sample",
+                  "sam_processor","mail"]
+params.each { entry ->
+    if (! allowed_params.contains(entry.key)) {
+        println("The parameter <${entry}.key> is not known");
+        System.exit(2);
+    }
+}
+
+
 //default values
 params.input_folder = './'
 params.out_folder = './'
 
-// Reference
 
-
+//dose merged_gtf provided
 params.merged_gtf = null
 
 
@@ -138,7 +151,7 @@ unstrand = params.unstrand ? true : false
 log.info print_purple("You are running LncPipe with the following parameters:")
 log.info print_purple("Checking parameters ...")
 log.info print_yellow("=====================================")
-log.info print_yellow("Species mode:           ") + print_green(params.species)
+log.info print_yellow("Species:                        ") + print_green(params.species)
 log.info print_yellow("Fastq file extension:           ") + print_green(params.fastq_ext)
 log.info print_yellow("Single end :                    ") + print_green(params.singleEnd)
 log.info print_yellow("skip annotation process:        ") + print_green(params.skip_combine)
@@ -146,8 +159,8 @@ log.info print_yellow("Input folder:                   ") + print_green(params.i
 log.info print_yellow("Output folder:                  ") + print_green(params.out_folder)
 log.info print_yellow("Genome sequence location:       ") + print_green(params.fasta_ref)
 log.info print_yellow("Star index path:                ") + print_green(params.star_idex)
-log.info print_yellow("hisat index path:                ") + print_green(params.hisat2_index)
-log.info print_yellow("bowtie/tophat index path:                ") + print_green(params.bowtie2_index)
+log.info print_yellow("hisat index path:               ") + print_green(params.hisat2_index)
+log.info print_yellow("bowtie/tophat index path:       ") + print_green(params.bowtie2_index)
 log.info print_yellow("GENCODE annotation location:    ") + print_green(params.gencode_annotation_gtf)
 log.info print_yellow("lncipedia annotation location:  ") + print_green(params.lncipedia_gtf)
 log.info print_yellow("=====================================")
@@ -1061,6 +1074,7 @@ process Summary_renaming_and_classification {
     file knowlncRNAgtf from KnownLncRNAgtf
     file gencode_protein_coding_gtf from proteinCodingGTF
     file novel_lncRNA_stringent_Gtf from novel_lncRNA_stringent_gtf
+    file fasta_ref
 
     output:
 //    file "lncRNA.final.v2.gtf" into finalLncRNA_gtf
