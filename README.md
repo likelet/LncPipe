@@ -223,7 +223,7 @@ groovy
 |--merged_gtf | `FALSE` | Skip mapping and assembly step by directly providing assembled merged gtf files|
 |--unstrand     | `FALSE` | specify that library is unstrand specific  |
 |--aligner |  `star` | Aligner for reads mapping (optional), STAR is default and supported only at present,*star*/*tophat*/*hisat2*|
-|--qctools |  `fastp` | Tools for assess raw reads quality or filtered by *fastp*, *fastqc* or *afterqc*|
+|--qctools |  `fastp` | Tools for assess raw reads quality or filtered by *fastp*, *fastqc*, *afterqc* or *none*(skip qc step)|
 
 * LncPipeReporter options
 

@@ -87,8 +87,8 @@ if (params.help) {
             print_cyan('      --input_folder <path>         ') + print_green('Path to input data(optional), current path default\n') +
             print_cyan('      --fastq_ext <*_fq.gz>         ') + print_green('Filename pattern for pairing raw reads, e.g: *_{1,2}.fastq.gz for paired reads\n') +
             print_cyan('      --out_folder <path>           ') + print_green('The output directory where the results will be saved(optional), current path is default\n') +
-            print_cyan('      --aligner <hisat>             ') + print_green('Aligner for reads mapping (optional), HISAT is default and supported only at present, "hisat"/"star"/"tophat"\n') +
-            print_cyan('      --qctools <fastqc>            ') + print_green('Tools for assess reads quality, fastp(default)/afterqc\n') +
+            print_cyan('      --aligner <hisat>             ') + print_green('Aligner for reads mapping (optional),"hisat"(defalt)/"star"/"tophat"\n') +
+            print_cyan('      --qctools <fastqc>            ') + print_green('Tools for assess reads quality, fastp(default)/afterqc/fastqc/none(skip QC step)\n') +
             print_cyan('      --detools <edger>            ') + print_green('Tools for differential analysis, edger(default)/deseq/noiseq\n') +
             print_cyan('      --quant <kallisto>            ') + print_green('Tools for estimating abundance of transcript, kallisto(default)/htseq\n') +
             '\n' +
@@ -314,7 +314,7 @@ if (!params.merged_gtf) {
 
     } else if (params.aligner == 'tophat' && params.bowtie2_index == false && !fasta_ref) {
         process Make_bowtie2_index {
-            cache 'deep'
+            
             tag fasta_ref
             storeDir { params.out_folder + "/bowtie2Index" }
 
@@ -331,9 +331,9 @@ if (!params.merged_gtf) {
         }
     } else if (params.aligner == 'tophat' && !fasta_ref) {
         println print_red("No reference sequence loaded! plz specify ") + print_red("--fasta_ref") + print_red(" with reference.")
-    } else if (params.aligner == 'hisat2' && !fasta_ref) {
+    } else if (params.aligner == 'hisat' && !fasta_ref) {
         process Make_hisat_index {
-            cache 'deep'
+            
             tag fasta_ref
 
             storeDir { params.out_folder + "/hisatIndex" }
@@ -375,6 +375,8 @@ if (!params.merged_gtf) {
         .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
         process Run_fastQC {
             tag { fastq_tag }
+            label 'qc'
+
             publishDir pattern: "*.html",
                     path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
 
@@ -395,12 +397,11 @@ if (!params.merged_gtf) {
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
             exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
-        }
-        .set { reads_for_fastqc}
+        }.set { reads_for_fastqc}
         process Run_afterQC {
 
             tag { fastq_tag }
-
+            label 'qc'
             publishDir pattern: "QC/*.html",
                     path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
 
@@ -433,6 +434,7 @@ if (!params.merged_gtf) {
         process Run_FastP {
 
             tag { fastq_tag }
+            label 'qc'
 
             publishDir pattern: "*.html",
                     path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
@@ -457,6 +459,12 @@ if (!params.merged_gtf) {
             '''
             }
         }
+    }else{
+        Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
+                .ifEmpty {
+            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+        }
+                .into{readPairs_for_discovery; readPairs_for_kallisto;fastqc_for_waiting}
     }
     fastqc_for_waiting = fastqc_for_waiting.first()
 
@@ -465,7 +473,7 @@ if (!params.merged_gtf) {
     */
     if (params.aligner == 'star') {
         process fastq_star_alignment_For_discovery {
-            cache 'deep'
+            
             tag { file_tag }
 
             publishDir pattern: "",
@@ -531,7 +539,7 @@ if (!params.merged_gtf) {
     else if (params.aligner == 'tophat')
     {
         process fastq_tophat_alignment_For_discovery {
-            cache 'deep'
+            
             tag { file_tag }
 
             publishDir pattern: "",
@@ -574,9 +582,9 @@ if (!params.merged_gtf) {
     }
     else if (params.aligner == 'hisat') {
         process fastq_hisat2_alignment_For_discovery {
-            cache 'deep'
+            
             tag { file_tag }
-            maxForks 6
+            label 'para'
             publishDir pattern: "",
                     path: { params.out_folder + "/Result/hisat_alignment" }, mode: 'copy', overwrite: true
 
@@ -650,7 +658,7 @@ if (!params.merged_gtf) {
     */
     if(params.aligner == 'hisat'){
         process StringTie_assembly {
-            cache 'deep'
+            
             tag { file_tag }
 
             input:
@@ -687,9 +695,9 @@ if (!params.merged_gtf) {
         * Step 6: Merged GTFs into one
         */
         process StringTie_merge_assembled_gtf {
-            cache 'deep'
+            
             tag { file_tag }
-            maxForks 6
+            label 'para'
             publishDir pattern: "merged.gtf",
                     path: { params.out_folder + "/Result/Merged_assemblies" }, mode: 'copy', overwrite: true
 
@@ -714,7 +722,7 @@ if (!params.merged_gtf) {
     }
     else{
         process Cufflinks_assembly {
-            cache 'deep'
+            
             tag { file_tag }
 
             input:
@@ -777,9 +785,9 @@ if (!params.merged_gtf) {
         * Step 6: Merged GTFs into one
         */
         process cuffmerge_assembled_gtf {
-            cache 'deep'
+            
             tag { file_tag }
-            maxForks 6
+            label 'para'
             publishDir pattern: "CUFFMERGE/merged.gtf",
                     path: { params.out_folder + "/Result/All_assemblies" }, mode: 'copy', overwrite: true
 
@@ -830,6 +838,8 @@ else {
         .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
         process Run_fastQC {
             tag { fastq_tag }
+            label 'qc'
+
             publishDir pattern: "*.html",
                     path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
 
@@ -855,6 +865,7 @@ else {
         process Run_afterQC {
 
             tag { fastq_tag }
+            label 'qc'
 
             publishDir pattern: "QC/*.html",
                     path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
@@ -888,6 +899,7 @@ else {
         process Run_FastP {
 
             tag { fastq_tag }
+            label 'qc'
 
             publishDir pattern: "*.html",
                     path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
@@ -912,6 +924,13 @@ else {
             '''
             }
         }
+    }
+    else{
+        Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
+                .ifEmpty {
+            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+        }
+        .into{readPairs_for_discovery; readPairs_for_kallisto;fastqc_for_waiting}
     }
     fastqc_for_waiting2 = fastqc_for_waiting.first()
 
@@ -979,7 +998,7 @@ process Identify_novel_lncRNA_with_criterions {
 novelLncRnaFasta.into { novelLncRnaFasta_for_PLEK; novelLncRnaFasta_for_CPAT; novelLncRnaFasta_for_CNCI }
 
 process Predict_coding_abbilities_by_PLEK {
-    cache 'deep'
+    
     // as PLEK can not return valid exit status even run smoothly, we manually set the exit status into 0 to promote analysis
     validExitStatus 0, 1, 2
     input:
@@ -1295,7 +1314,7 @@ if(!params.merged_gtf){
         }
     }else{
         process Build_kallisto_index_of_GTF_for_quantification {
-            cache 'deep'
+            
             input:
             file transript_fasta from finalFasta_for_quantification_gtf
 
@@ -1311,10 +1330,10 @@ if(!params.merged_gtf){
         }
         constant_kallisto_index = final_kallisto_index.first()
         process Run_kallisto_for_quantification {
-            cache 'deep'
+            
 
             tag { file_tag }
-            maxForks 6
+            label 'para'
 
             input:
             file kallistoIndex from constant_kallisto_index
@@ -1355,7 +1374,7 @@ if(!params.merged_gtf){
         exit 0, print_red("htseq can not be applicable without mapping step, plz set quant tool using `kallisto`")
     }else {
         process Build_kallisto_index_of_GTF_for_quantification {
-            cache 'deep'
+            
 
             input:
             file transript_fasta from finalFasta_for_quantification_gtf
@@ -1372,10 +1391,11 @@ if(!params.merged_gtf){
         }
         constant_kallisto_index = final_kallisto_index.first()
         process Run_kallisto_for_quantification {
-            cache 'deep'
+            
 
             tag { file_tag }
-            maxForks 6
+            label 'para'
+
             input:
             file kallistoIndex from constant_kallisto_index
             set val(samplename), file(pair) from readPairs_for_kallisto
