@@ -73,9 +73,9 @@ if (params.help) {
     log.info "LncPipe: a Nextflow-based Long non-coding RNA analysis Pipeline v$version"
     log.info "LncPipe integrates several NGS processing tools to identify novel long non-coding RNAs from"
     log.info "unprocessed RNA sequencing data. Before run this pipeline, users need to install several softwares"
-    log.info "or have docker installed in their system. When docker installed, our preduild image can supported all"
-    log.info "running method. The detail usages information can be found at https://github.com/likelet/LncPipe ."
-    log.info "Bugs or feature requests should be reported by opening issues in our git project, unless you have already  "
+    log.info "or have docker installed in their system. When docker installed, our prebuilt image can supported all"
+    log.info "running environment. The detailed usages information can be found at https://github.com/likelet/LncPipe ."
+    log.info "Bugs or new feature requests could be reported by opening issues in our git project, unless you have already  "
     log.info "tried to fixed it yourself "
     log.info print_purple('------------------------------------------------------------------------')
     log.info ''
