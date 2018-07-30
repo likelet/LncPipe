@@ -58,7 +58,7 @@ def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
 //Help information
 // Nextflow  version
-version="v0.2.0"
+version="v0.2.3"
 //=======================================================================================
 // Nextflow Version check
 if( !nextflow.version.matches('0.26+') ) {
@@ -74,7 +74,7 @@ if (params.help) {
     log.info "LncPipe integrates several NGS processing tools to identify novel long non-coding RNAs from"
     log.info "unprocessed RNA sequencing data. Before run this pipeline, users need to install several softwares"
     log.info "or have docker installed in their system. When docker installed, our prebuilt image can supported all"
-    log.info "running environment. The detailed usages information can be found at https://github.com/likelet/LncPipe ."
+    log.info "running environment. The detailed usages can be found at https://github.com/likelet/LncPipe ."
     log.info "Bugs or new feature requests could be reported by opening issues in our git project, unless you have already  "
     log.info "tried to fixed it yourself "
     log.info print_purple('------------------------------------------------------------------------')
@@ -96,12 +96,12 @@ if (params.help) {
             print_cyan('      --merged_gtf <gtffile>        ') + print_green('Start analysis with assemblies already produced and skip fastqc/alignment step, DEFAOUL NULL\n') +
             print_cyan('      --design <file>               ') + print_green('A flat file stored the experimental design information ( required when perform differential expression analysis)\n') +
             print_cyan('      --singleEnd                   ') + print_green('Reads type, True for single ended \n') +
-            print_cyan('      --unstrand                    ') + print_green('RNA library construction strategy, specified for unstranded library \n') +
+            print_cyan('      --unstrand                    ') + print_green('RNA library construction strategy, specified for \'unstranded\' library \n') +
             '\n' +
             print_yellow('    References:                      If not specified in the configuration file or you wish to overwrite any of the references.\n') +
             print_cyan('      --fasta                       ') + print_green('Path to Fasta reference(required)\n') +
-            print_cyan('      --gencode_annotation_gtf      ') + print_green('An annotation file from GENCODE database for annotating lncRNAs(required)\n') +
-            print_cyan('      --lncipedia_gtf               ') + print_green('An annotation file from LNCipedia database for annotating lncRNAs(required)\n') + print_cyan('      --rRNAmask                    ') + print_green('rRNA GTF for removing rRNA transcript from gtf files(required)\n') +
+            print_cyan('      --gencode_annotation_gtf      ') + print_green('An annotation file from GENCODE database in GTF format (required)\n') +
+            print_cyan('      --lncipedia_gtf               ') + print_green('An annotation file from LNCipedia database in GTF format (required)\n') +
             '\n' +
             print_yellow('    LncPipeReporter Options:         LncPipeReporter setting  \n') +
             print_cyan('      --lncRep_Output                ') + print_green('Specify report file name, \"report.html\" default.\n') +
