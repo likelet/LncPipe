@@ -58,7 +58,7 @@ def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
 //Help information
 // Nextflow  version
-version="v0.2.3"
+version="v0.2.31"
 //=======================================================================================
 // Nextflow Version check
 if( !nextflow.version.matches('0.26+') ) {
@@ -89,7 +89,7 @@ if (params.help) {
             print_cyan('      --out_folder <path>           ') + print_green('The output directory where the results will be saved(optional), current path is default\n') +
             print_cyan('      --aligner <hisat>             ') + print_green('Aligner for reads mapping (optional),"hisat"(defalt)/"star"/"tophat"\n') +
             print_cyan('      --qctools <fastqc>            ') + print_green('Tools for assess reads quality, fastp(default)/afterqc/fastqc/none(skip QC step)\n') +
-            print_cyan('      --detools <edger>            ') + print_green('Tools for differential analysis, edger(default)/deseq/noiseq\n') +
+            print_cyan('      --detools <edger>             ') + print_green('Tools for differential analysis, edger(default)/deseq/noiseq\n') +
             print_cyan('      --quant <kallisto>            ') + print_green('Tools for estimating abundance of transcript, kallisto(default)/htseq\n') +
             '\n' +
             print_yellow('    Options:                         General options for run this pipeline\n') +
@@ -122,18 +122,19 @@ if (params.help) {
 }
 
 //check parameters
+/*
 allowed_params = ["input_folder","fastq_ext","out_folder","aligner","qctools","detools","quant",
-                  "merged_gtf","design","singleEnd","unstrand",
-                  "fasta","gencode_annotation_gtf","lncipedia_gtf",
-                  "lncRep_Output", "lncRep_theme","lncRep_min_expressed_sample",
-                  "sam_processor","mail"]
+                   "merged_gtf","design","singleEnd","unstrand",
+                   "fasta","gencode_annotation_gtf","lncipedia_gtf",
+                   "lncRep_Output", "lncRep_theme","lncRep_min_expressed_sample",
+                   "sam_processor","mail"]
 params.each { entry ->
     if (! allowed_params.contains(entry.key)) {
         println("The parameter <${entry}.key> is not known");
         System.exit(2);
     }
 }
-
+*/
 
 //default values
 params.input_folder = './'
@@ -370,7 +371,7 @@ if (!params.merged_gtf) {
     if (params.qctools == 'fastqc') {
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: !{reads}\nNB: Path needs to be enclosed in quotes!\n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nNB: Path needs to be enclosed in quotes!\n")
         }
         .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
         process Run_fastQC {
@@ -396,7 +397,7 @@ if (!params.merged_gtf) {
     else if (params.qctools == 'afterqc'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }.set { reads_for_fastqc}
         process Run_afterQC {
 
@@ -462,7 +463,7 @@ if (!params.merged_gtf) {
     }else{
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
                 .into{readPairs_for_discovery; readPairs_for_kallisto;fastqc_for_waiting}
     }
@@ -833,7 +834,7 @@ else {
     if (params.qctools == 'fastqc') {
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: !{reads}\nNB: Path needs to be enclosed in quotes!\n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nNB: Path needs to be enclosed in quotes!\n")
         }
         .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
         process Run_fastQC {
@@ -1490,7 +1491,7 @@ detools = params.detools
 design=null
 if(params.design){
     design = file(params.design)
-    if (!design.exists()) exit 1, "Design file not found, plz check your design path: !{params.design}"
+    if (!design.exists()) exit 1, "Design file not found, plz check your design path: ${params.design}"
 }
 
 if(!params.merged_gtf) {
