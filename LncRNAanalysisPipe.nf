@@ -429,7 +429,7 @@ if (!params.merged_gtf) {
     else if (params.qctools == 'fastp'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
         process Run_FastP {
@@ -860,7 +860,7 @@ else {
     else if (params.qctools == 'afterqc'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
         process Run_afterQC {
@@ -894,7 +894,7 @@ else {
     else if (params.qctools == 'fastp'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
         process Run_FastP {
@@ -929,7 +929,7 @@ else {
     else{
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: !{reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
         .into{readPairs_for_discovery; readPairs_for_kallisto;fastqc_for_waiting}
     }
@@ -1512,9 +1512,9 @@ if(!params.merged_gtf) {
         file "*" into final_output
         shell:
         file_tag = "Generating report ..."
-        '''
-        Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',theme = 'npg',cdf.percent = !{lncRep_cdf_percent},max.lncrna.len = !{lncRep_max_lnc_len},min.expressed.sample = !{lncRep_min_expressed_sample}, ask = FALSE)"
-      '''
+        """
+         Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
+        """
     }
 }else{
     process Run_LncPipeReporter {
@@ -1533,9 +1533,9 @@ if(!params.merged_gtf) {
         file "*" into final_output
         shell:
         file_tag = "Generating report ..."
-        '''
-        Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=!{detools},theme = 'npg',cdf.percent = !{lncRep_cdf_percent},max.lncrna.len = !{lncRep_max_lnc_len},min.expressed.sample = !{lncRep_min_expressed_sample}, ask = FALSE)"
-      '''
+        """
+        Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
+      """
     }
 }
 
