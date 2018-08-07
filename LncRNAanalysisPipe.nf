@@ -1129,7 +1129,8 @@ process Summary_renaming_and_classification {
         gtf2bed < novel.lncRNA.stringent.filter.gtf |sort-bed - > novel.lncRNA.stringent.filter.bed
         gtf2bed < !{knowlncRNAgtf} |sort-bed - > known.lncRNA.bed
         perl !{baseDir}/bin/rename_lncRNA_2.pl
-        mv lncRNA.final.v2.gtf all_lncRNA_for_classifier.gtf
+        # mv lncRNA.final.v2.gtf all_lncRNA_for_classifier.gtf
+        grep -v NA-1-1 lncRNA.final.v2.gtf > all_lncRNA_for_classifier.gtf
         perl !{baseDir}/bin/rename_proteincoding.pl !{gencode_protein_coding_gtf}> protein_coding.final.gtf
         cat all_lncRNA_for_classifier.gtf protein_coding.final.gtf > final_all.gtf
         gffread final_all.gtf -g !{fasta_ref} -w final_all.fa -W
