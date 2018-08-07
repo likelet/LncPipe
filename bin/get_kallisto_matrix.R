@@ -44,12 +44,12 @@ map.file2=unique(map.file2)
 row.names(map.file2)=map.file2[,1]
 typelist=map.file2[levels(as.factor(genelist)),2]
 trans.kallisto.count.merge <- cbind(trans.kallisto.coun.out[,1],typelist,trans.kallisto.coun.out[,-1])
-colnames(trans.kallisto.count.merge)[1:2]=c("ID","type")
+colnames(trans.kallisto.count.merge)[1:2]=c("ID","Type")
 fwrite(trans.kallisto.count.merge ,file="kallisto.count.txt",sep="\t",quote=F,row.names=F)
 
 #write tpm  matrix of  protein coding and lncRNA
 trans.kallisto.TPM.merge <- cbind(trans.kallisto.TPM.out[,1],typelist,trans.kallisto.TPM.out[,-1])
-colnames(trans.kallisto.TPM.merge)[1:2]=c("ID","type")
+colnames(trans.kallisto.TPM.merge)[1:2]=c("ID","Type")
 #annoted gene type
 fwrite(trans.kallisto.TPM.merge ,file="kallisto.tpm.txt",sep="\t",quote=F,row.names=F)
 
