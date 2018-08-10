@@ -1153,10 +1153,34 @@ process Rerun_CPAT_to_evaluate_lncRNA {
     output:
     file "lncRNA.final.CPAT.out" into final_lncRNA_CPAT_result
     shell:
-    '''
+
+    f(params.species=="human"){
+        '''
         cpat.py -g !{lncRNA_final_cpat_fasta} \
                                        -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
                                        -d !{params.cpatpath}/dat/Human_logitModel.RData \
+                                       -o lncRNA.final.CPAT.out
+        '''
+    }else if (params.species=="mouse"){
+        '''
+        cpat.py -g !{lncRNA_final_cpat_fasta} \
+                                       -x !{params.cpatpath}/dat/Mouse_Hexamer.tsv \
+                                       -d !{params.cpatpath}/dat/Mouse_logitModel.RData \
+                                       -o lncRNA.final.CPAT.out
+        '''
+
+    }else if (params.species=="zebrafish"){
+        '''
+        cpat.py -g !{lncRNA_final_cpat_fasta} \
+                                       -x !{params.cpatpath}/dat/zebrafish_Hexamer.tsv \
+                                       -d !{params.cpatpath}/dat/zebrafish_logitModel.RData \
+                                       -o lncRNA.final.CPAT.out
+        '''
+    }else {
+        '''
+        cpat.py -g !{lncRNA_final_cpat_fasta} \
+                                       -x !{params.cpatpath}/dat/fly_Hexamer.tsv \
+                                       -d !{params.cpatpath}/dat/fly_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
         '''
 
