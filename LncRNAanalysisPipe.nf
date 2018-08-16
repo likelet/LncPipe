@@ -1154,7 +1154,7 @@ process Rerun_CPAT_to_evaluate_lncRNA {
     file "lncRNA.final.CPAT.out" into final_lncRNA_CPAT_result
     shell:
 
-    f(params.species=="human"){
+    if(params.species=="human"){
         '''
         cpat.py -g !{lncRNA_final_cpat_fasta} \
                                        -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
