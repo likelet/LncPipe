@@ -1183,7 +1183,7 @@ process Rerun_CPAT_to_evaluate_lncRNA {
                                        -d !{params.cpatpath}/dat/fly_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
         '''
-
+   }
 }
 //evaluate coding
 process Rerun_CPAT_to_evaluate_coding {
