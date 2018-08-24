@@ -2,18 +2,12 @@
 [![AUR](https://img.shields.io/aur/license/yaourt.svg)](https://github.com/likelet/LncPipe/blob/master/LICENSE)
  [![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.24.0-brightgreen.svg)](http://nextflow.io)
 ## Overall
-Recently, long noncoding RNA molecules (lncRNA) captured widespread attentions for its critical 
+Recently, long noncoding RNA molecules (lncRNA) captured widespread attentions for their critical 
 roles in diverse biological process and important implications in variety of human diseases and 
 cancers. Identification and profiling of lncRNAs is a fundamental step to advance our knowledge 
 on their function and regulatory mechanisms. However, RNA sequencing based lncRNA discovery is 
-limited due to complicated operations and implementation. Therefore, we presented a one-stop 
-pipeline called [LncPipe](https://github.com/likelet/LncPipe) focused on characterizing lncRNAs from raw transcriptome sequencing 
-data. The pipeline was developed based on a popular workflow framework [Nextflow](https://github.com/nextflow-io/nextflow), composed of 
-four core procedures including reads alignment, assembly, identification and quantification. 
-It contains various unique features such as well-designed lncRNAs annotation strategy, optimized 
-calculating efficiency, diversified classification and interactive analysis report. Additionally, 
-[LncPipe](https://github.com/likelet/LncPipe)  allows users cancel pipeline, reset parameters from command or modifying main script 
-directly and resume analysis from continues checkpoint. 
+currently limited due to complicated operations and implementation of the tools involved. Therefore, we present a one-stop multi-tool integrated pipeline called [LncPipe](https://github.com/likelet/LncPipe) focused on characterizing lncRNAs from raw transcriptome sequencing data. 
+The pipeline was developed based on a popular workflow framework [Nextflow](https://github.com/nextflow-io/nextflow), composed of four core procedures including reads alignment, assembly, identification and quantification. It contains various unique features such as well-designed lncRNAs annotation strategy, optimized calculating efficiency, diversified classification and interactive analysis report. [LncPipe](https://github.com/likelet/LncPipe) allows users additional control in interuppting the pipeline, resetting parameters from command line, modifying main script directly and resume analysis from previous checkpoint.
 
 ## Table of Contents
 
@@ -33,12 +27,14 @@ directly and resume analysis from continues checkpoint.
 ## Schematic diagram
 
 
-## Installation and quick start
+## Installation
 [Nextflow](https://github.com/nextflow-io/nextflow)  
-LncPipe is implemented with Nextflow pipeline manage system. To run our pipelines. [Nextflow](https://github.com/nextflow-io/nextflow) should be preinstalled at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools do not supported.
-Here, we show the step by step installation of [Nextflow](https://github.com/nextflow-io/nextflow) in linux system as an example, which adapted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html).
+LncPipe is implemented with Nextflow pipeline management system. To run LncPipe. [Nextflow](https://github.com/nextflow-io/nextflow) should be pre-installed at  POSIX compatible system (Linux, Solaris, OS X, etc), It requires BASH and Java 7 or higher to be installed. We do not recommend running the pipes in the Windows since most of bioinformatic tools are not supported.
 
-* 1. Download the executable package by copying and pasting the following command in your terminal window:
+## Quick start
+Here, we show step by step installation of [Nextflow](https://github.com/nextflow-io/nextflow) in a linux system as an example (adopted from [NextFlow](https://www.nextflow.io/docs/latest/getstarted.html)).
+
+* 1. Download the NextFlow executable package by pasting the following command into your terminal window:
 
 
         wget -qO- get.nextflow.io | bash  
@@ -46,11 +42,18 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
     
 > It will create the [Nextflow](https://github.com/nextflow-io/nextflow) main executable file in the current directory.
 
-* 2. Optionally, move the nextflow file in a directory accessible by your `$PATH` variable (this is only required to avoid to remember and type the Nextflow full path each time you need to run it). Of course you can download the lastest binary version of NextFlow by yourself from the https://github.com/nextflow-io/nextflow/releases and add the path into your system environment.All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
+* 2. Optionally, move the nextflow file to a directory accessible by your `$PATH` variable (only required to avoid typing the full path to this file each time you need to run it). Of course, you can download the lastest binary version of NextFlow by yourself from [here](https://github.com/nextflow-io/nextflow/releases) and add the path to your system environment.All those pipelines were written in [Nextflow](https://github.com/nextflow-io/nextflow) commands. For more details, please see [here](https://www.nextflow.io).
 
-* 3. pull LncPipe and configure your data, reference in *nextflow.config* or *docker.config*
+* 3. Download the LncPipe github repository by:
+```
+git clone https://github.com/likelet/LncPipe.git
+```
 
-* 4. A type command for run nextflow:
+* 4. Configure the design.file with experimental conditions and replicate info
+
+* 5. Configure your data and reference files in *nextflow.config* or *docker.config*
+
+* 4. Run LncPipe nextflow pipeline:
 
        nextflow -c nextflow.contig run LncRNAanalysisPipe.nf
 
@@ -60,28 +63,29 @@ Here, we show the step by step installation of [Nextflow](https://github.com/nex
 
 
 ### Prepare input files 
+
 #### References, index and annotation files(Mandatory).
-* **:blush:Plz keep the consistency of your genome sequence,
-index library and annotation files (Important!): genome version,
-chromosome format, gtf coordinated e.g. The third-party software may stop for any of the above reasons.**
+* **:blush:Please keep the consistency of your genome sequence,index library and annotation files (Important!): genome version, chromosome format, gtf coordinated e.g. The dependent third-party softwares may stop for any discrepencies in file-formatting.**
+*  Genome reference (genome fasta file with suffix `.fa` etc.)
 
-  *  [Hisat2](https://ccb.jhu.edu/software/hisat2/index.shtml)
-  index (e.g. human index can be downloaded from ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz) or [STAR](https://github.com/alexdobin/STAR) index (hg38 genome index etc.) according aligner your are going to use. Building index of hisat2  require large amount of memory, thus we sugguested that users downloaded it directly from the hisat2 website.
+*  GENCODE gene annotation file in GTF format
 
-  *  Genome reference (genome fasta file with suffix `.fa` etc.).
+*  LNCipedia gene annotation file in GTF format.(set null if not available for your species)
 
-  *  GENCODE gene annotation file in GTF format
+*  Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 
-  *  LNCipedia gene annotation file in GTF format.(set null if not available for your species)
+**Note on indexes for read aligners** Building of indexes for alignment requires large amounts of memory and can slow down the analyis. We therefore recommend users to directly download pre-built indexes for your species prior to running LncPipe.
+   [Hisat2 indexes can be found here](https://ccb.jhu.edu/software/hisat2/index.shtml)
+   e.g: Human index can be downloaded from (ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz)
+   [STAR indexes can be found here](https://github.com/alexdobin/STAR)
 
-  *  Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
-    
+
 #### Species
 
-    >Currently, LncPipe was designed for human only, but it also support other species which required users providing "known_protein_coding.gtf" and  "known_lncRNA.gtf "
-    the detail usage for non-human species could be found here.  
+    >Currently, LncPipe has been tested for detection of lncRNAs in 'humans' only.
+    However, LncPipe can be manually configured to run the anlysis for other species as well and requires additional files  "known_protein_coding.gtf" and  "known_lncRNA.gtf" for coding probability calculations. More information on usage for non-human species can be found here.  
 
-* human 
+* Reference files for humans 
 
     1. hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz
     2. Genome reference: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/GRCh38.p10.genome.fa.gz
@@ -89,7 +93,7 @@ chromosome format, gtf coordinated e.g. The third-party software may stop for an
     4. LNCipedia gene annotation: https://lncipedia.org/downloads/lncipedia_5_0_hc_hg38.gtf
     5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 
-* mouse 
+* Reference files for mouse 
 
     1. hisat index: ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grcm38_tran.tar.gz
     2. Genome reference: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/GRCm38.p5.genome.fa.gz
@@ -99,30 +103,32 @@ chromosome format, gtf coordinated e.g. The third-party software may stop for an
 
 ## Run Docker 
 
-1. Prepare input files.
+1. Prepare input files as mentioned earlier.
 2. Modify the `docker.config` in `mandatory` section.
-3. Install docker
-4. Command
+3. Install docker and download the latest LncPipe build using:
+       ```
+       docker pull bioinformatist/lncpipe
+       ```
+4. Run LncPipe using the following command:
 
 
         nextflow -c docker.config run LncRNAanalysisPipe.nf
 
-   docker image can be downloaded from https://hub.docker.com/r/bioinformatist/lncpipe/tags/ with the latest tag. 
-> Alternatively, nextflow can automatically pull image from docker.io. `Dockerfile` recorded  that what we have done with the image. For docker pull image from local china, [we suggest users using mirror site instead](https://github.com/likelet/Blogs_tips/blob/master/README.md#setting-docker-download-mirror-site).
+>The docker image for LncPipe is available on the docker-hub (https://hub.docker.com/r/bioinformatist/lncpipe/tags/). 
+> Alternatively, nextflow can automatically pull image from docker.io. `Dockerfile` recorded  that what we have done with the image. For user from local China looking to pull the docker image can use this [mirror site instead](https://github.com/likelet/Blogs_tips/blob/master/README.md#setting-docker-download-mirror-site).
 
 ## Dependencies 
 
-Plz see command [here](https://github.com/likelet/LncPipe/blob/master/InstallSoftwareLocally.md)
+TO Install softwares locally on your machine, please see install instructions [here](https://github.com/likelet/LncPipe/blob/master/InstallSoftwareLocally.md)
 
 ## Interactive reports
-LncPipe output was well-summarized in an interactive manner, which was carried out by our novel-developing R package
-[LncPipeReporter](https://github.com/bioinformatist/LncPipeReporter).
+
+The results of LncPipe are summarized and visualized via interactive plots by our novel R package [LncPipeReporter](https://github.com/bioinformatist/LncPipeReporter). Users can also try LncPipeReporter as stand-alone for visualizing known and novel lncRNAs.
 
 ## Configuration
-As a nextflow-based analysis pipeline, LncPipe allow users edit configure file `nextflow.config` to set the index files and default file path parameters instead of typing in command.
-We strongly recommend users using config file rather than command input to adjust their parameters.
-To configure, plz go to `params` line, and set the following information of your operation system and environment
-groovy
+As a nextflow-based analysis pipeline, LncPipe allow users edit configure file `nextflow.config` to set the index files and default file path parameters instead of typing them into the command line.
+
+To configure, please go to `params` line, and set the following information of various file locations and system environment settings
 
         params {
         /*
@@ -234,8 +240,8 @@ groovy
 |--lncRep_min_expressed_sample  | `50` |Minimum expressed gene allowed in each sample, 50 default. Samples not passed were filtered from analysis|
 
 `--fastq_ext`
-> Raw fastq files were required for denovo analysis.This parameters should be set according to your paired or singled reads file names.
-Suppose your paired end sequence files are compressed with `.gz` suffixed.
+> Raw fastq files are required for de-novo analysis.This parameters should be set according to your paired or singled reads file names.
+
 For example:
 
         Sample1_1.fq.gz
@@ -243,9 +249,9 @@ For example:
         Sample2_1.fq.gz
         Sample2_2.fq.gz
 
-Then you can input pattern `*_{1,2}.fq.gz` to make the all paired end file recognized by [LncPipe](https://github.com/likelet/LncPipe) .
+Then you can input pattern `*_{1,2}.fq.gz` to make the all paired-end file recognized by [LncPipe](https://github.com/likelet/LncPipe) .
 
-For singled reads file, file pattern should be feed with `--singleEnd` specified.
+For singled reads file, file pattern should be fed with `--singleEnd` parameter specified
 
 
 `--star_idex?--bowtie2_index/--hisat2_index`
