@@ -1466,7 +1466,7 @@ if(params.quant=="htseq"){
         publishDir pattern: "htseq*.txt",
                 path: "${params.out_folder}/Result/Quantification/", mode: 'copy'
         input:
-        file abundance_tsv_matrix from kallisto_tcv_collection.collect()
+        file abundance_tsv_matrix from htseq_tcv_collection.collect()
         file annotated_gtf from finalGTF_for_annotate_gtf
         output:
         file "htseq.count.txt" into expression_matrixfile_count
