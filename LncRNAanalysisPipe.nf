@@ -1,10 +1,10 @@
 #!/usr/bin/env nextflow
 
 /*
- * LncPipe was implemented by Dr. Qi Zhao from Sun Yat-sen University Cancer Center.
+ * LncPipe was implemented by Dr. Qi Zhao from Sun Yat-sen University Cancer Center, China.
  *
  *
- *   LncPipe is free software: you can redistribute it and/or modify
+ *   LncPipe is a free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
@@ -72,15 +72,13 @@ if (params.help) {
     log.info print_purple('------------------------------------------------------------------------')
     log.info "LncPipe: a Nextflow-based Long non-coding RNA analysis Pipeline v$version"
     log.info "LncPipe integrates several NGS processing tools to identify novel long non-coding RNAs from"
-    log.info "unprocessed RNA sequencing data. Before run this pipeline, users need to install several softwares"
-    log.info "or have docker installed in their system. When docker installed, our prebuilt image can supported all"
-    log.info "running environment. The detailed usages can be found at https://github.com/likelet/LncPipe ."
-    log.info "Bugs or new feature requests could be reported by opening issues in our git project, unless you have already  "
-    log.info "tried to fixed it yourself "
+    log.info "un-processed RNA sequencing data. To run this pipeline, users either need to install required tools manually"
+    log.info "or use the docker image for LncPipe that comes with all tools pre-installed. (note: docker needs to be installed on your system). More information on usage can be found at https://github.com/likelet/LncPipe ."
+    log.info "Bugs or new feature requests can be reported by opening issues in our github repository."
     log.info print_purple('------------------------------------------------------------------------')
     log.info ''
     log.info print_yellow('Usage: ')
-    log.info print_yellow('    The typical command for running the pipeline is as follows (we do not recommend users passing parameter with command, plz modify config file instead  ):\n') +
+    log.info print_yellow('    The typical command for running the pipeline is as follows (we do not recommend users passing configuration parameters through command line, please modify the config.file instead):\n') +
             print_purple('       Nextflow run LncRNAanalysisPipe.nf \n') +
 
             print_yellow('    General arguments:             Input and output setting\n') +
@@ -159,8 +157,8 @@ log.info print_yellow("skip annotation process:        ") + print_green(params.s
 log.info print_yellow("Input folder:                   ") + print_green(params.input_folder)
 log.info print_yellow("Output folder:                  ") + print_green(params.out_folder)
 log.info print_yellow("Genome sequence location:       ") + print_green(params.fasta_ref)
-log.info print_yellow("Star index path:                ") + print_green(params.star_idex)
-log.info print_yellow("hisat index path:               ") + print_green(params.hisat2_index)
+log.info print_yellow("STAR index path:                ") + print_green(params.star_idex)
+log.info print_yellow("HISAT2 index path:               ") + print_green(params.hisat2_index)
 log.info print_yellow("bowtie/tophat index path:       ") + print_green(params.bowtie2_index)
 log.info print_yellow("GENCODE annotation location:    ") + print_green(params.gencode_annotation_gtf)
 log.info print_yellow("lncipedia annotation location:  ") + print_green(params.lncipedia_gtf)
@@ -193,7 +191,7 @@ fasta_ref = file(params.fasta_ref)
 if (!fasta_ref.exists()) exit 1, "Reference genome not found: ${params.fasta_ref}"
 if(params.aligner=='star'){
     star_idex = file(params.star_idex)
-    if (!star_idex.exists()) exit 1, "Reference genome star index not found: ${params.star_idex}"
+    if (!star_idex.exists()) exit 1, "STAR index not found: ${params.star_idex}"
 }else if(params.aligner =='hisat'){
     hisat2_index = Channel.fromPath("${params.hisat2_index}*")
             .ifEmpty { exit 1, "HISAT2 index not found: ${params.hisat2_index}" }
@@ -206,9 +204,10 @@ input_folder = file(params.input_folder)
 
 
 /*
-*Step 1: Preparing annotations
+*Step 1: Prepare Annotations
  */
-println print_purple("Combination of known annotations from GTFs")
+ 
+println print_purple("Combining known annotations from GTFs")
 if (params.species=="human") {
     gencode_annotation_gtf = file(params.gencode_annotation_gtf)
     if (!gencode_annotation_gtf.exists()) exit 1, "GENCODE annotation file not found: ${params.gencode_annotation_gtf}"
@@ -281,7 +280,7 @@ else {// for mouse or other species, user should provide known_protein_coding an
 // whether the merged gtf have already produced.
 if (!params.merged_gtf) {
     /*
-     * Step 2: Build STAR/tophat/hisat2 index if not provided
+     * Step 2: Build read aligner (STAR/tophat/HISAT2) index, if not provided
      */
     //star_index if not exist
     /*if (params.aligner == 'star' && params.star_idex == false && fasta_ref) {
@@ -311,7 +310,7 @@ if (!params.merged_gtf) {
                 """
         }
     } else if (params.aligner == 'star' && params.star_idex == false && !fasta_ref) {
-        println print_red("No reference sequence loaded! plz specify ") + print_red("--fasta_ref") + print_red(" with reference.")
+        println print_red("No reference fasta sequence loaded! please specify ") + print_red("--fasta_ref") + print_red(" with reference.")
 
     } else if (params.aligner == 'tophat' && params.bowtie2_index == false && !fasta_ref) {
         process Make_bowtie2_index {
@@ -331,7 +330,7 @@ if (!params.merged_gtf) {
                 """
         }
     } else if (params.aligner == 'tophat' && !fasta_ref) {
-        println print_red("No reference sequence loaded! plz specify ") + print_red("--fasta_ref") + print_red(" with reference.")
+        println print_red("No reference fasta equence loaded! please specify ") + print_red("--fasta_ref") + print_red(" with reference.")
     } else if (params.aligner == 'hisat' && !fasta_ref) {
         process Make_hisat_index {
             
@@ -356,7 +355,7 @@ if (!params.merged_gtf) {
                 """
         }
     } else if (params.aligner == 'tophat' && params.hisat_index == false && !fasta_ref) {
-        println print_red("No reference sequence loaded! plz specify ") + print_red("--fasta_ref") + print_red(" with reference.")
+        println print_red("No reference fasta sequence loaded! please specify ") + print_red("--fasta_ref") + print_red(" with reference.")
     }*/
 
     println print_purple("Analysis from fastq file")
@@ -365,7 +364,7 @@ if (!params.merged_gtf) {
     reads = params.input_folder + params.fastq_ext
 
     /*
-    * Step 2: FastQC/AfterQC raw reads
+    * Step 3: QC (FastQC/AfterQC/Fastp) of raw reads
     */
     println print_purple("Perform quality control of raw fastq files ")
     if (params.qctools == 'fastqc') {
@@ -470,7 +469,7 @@ if (!params.merged_gtf) {
     fastqc_for_waiting = fastqc_for_waiting.first()
 
     /*
-    * Step 4: Initialized reads alignment by aligner
+    * Step 4: Initialize read alignment (STAR/HISAT2/tophat)
     */
     if (params.aligner == 'star') {
         process fastq_star_alignment_For_discovery {
@@ -655,7 +654,7 @@ if (!params.merged_gtf) {
     }
 
     /*
-    * Step 5: Reads assembling by using stringtie
+    * Step 5: Transcript assembly using Stringtie
     */
     if(params.aligner == 'hisat'){
         process StringTie_assembly {
@@ -938,7 +937,7 @@ else {
 }
 
 /*
-*Step 7: Comparing assembled gtf with known ones (GENCODE)
+*Step 7: Compare assembled gtf with known annotations (GENCODE)
 */
     process Merge_assembled_gtf_with_GENCODE {
 
@@ -961,7 +960,7 @@ else {
 
 
 /*
-*Step 8: Filtered GTFs to distinguish novel lncRNAS
+*Step 8: Filter GTFs to distinguish novel lncRNAS
 */
 process Identify_novel_lncRNA_with_criterions {
 
@@ -994,11 +993,11 @@ process Identify_novel_lncRNA_with_criterions {
 }
 
 /*
-*Step 9: Predicting the potential coding abilities using CPAT, PLEK and CNCI
+*Step 9: Predict coding potential abilities using CPAT and PLEK (CNCI functionality coming soon!)
 */
-novelLncRnaFasta.into { novelLncRnaFasta_for_PLEK; novelLncRnaFasta_for_CPAT; novelLncRnaFasta_for_CNCI }
+novelLncRnaFasta.into { novelLncRnaFasta_for_PLEK; novelLncRnaFasta_for_CPAT; }
 
-process Predict_coding_abbilities_by_PLEK {
+process Predict_coding_abilities_by_PLEK {
     
     // as PLEK can not return valid exit status even run smoothly, we manually set the exit status into 0 to promote analysis
     validExitStatus 0, 1, 2
@@ -1016,7 +1015,7 @@ process Predict_coding_abbilities_by_PLEK {
         '''
 
 }
-process Predict_coding_abbilities_by_CPAT {
+process Predict_coding_abilities_by_CPAT {
     input:
     file novel_lncRNA_fasta from novelLncRnaFasta_for_CPAT
     output:
@@ -1057,7 +1056,7 @@ process Predict_coding_abbilities_by_CPAT {
 
 
 /*
-*Step 9: Merged and filtered lncRNA with coding potential output
+*Step 9: Merged and filter lncRNAs based on coding potential (CPAT/PLEK)
 */
 process Filter_lncRNA_by_coding_potential_result {
     input:
@@ -1214,8 +1213,7 @@ process Secondary_basic_statistic {
     shell:
     '''
         #!/usr/bin/perl -w
-         #since the CPAT arbitrary transformed gene names into upper case 
-        #To make the gene names consistently, we apply 'uc' function to unity the gene names 
+        #since CPAT arbitrarily transforms gene names into upper case, we apply 'uc' function to keep the gene names consistent.  
         use strict;
         open OUT,">basic_charac.txt" or die;
         
@@ -1300,12 +1298,12 @@ process Secondary_basic_statistic {
 
 
 
-//Keep the chanel as constant variable to be used several times in quantification analysis
+//Keep the channel as constant variable to be used several times in quantification analysis
 
-//The following code is designed for an alternative case that one the merged_gtf have already been generated under other condition.
+//The following code is designed for use if the merged_gtf have already been generated previously.
 if(!params.merged_gtf){
     /*
-*Step 11: Quantification step
+*Step 11: Quantification step (Kallisto/Htseq)
 */
     if(params.quant=="htseq"){
         process Run_htseq_for_quantification{
@@ -1394,7 +1392,7 @@ if(!params.merged_gtf){
 
 }else{
     /*
-*Step 11: Quantification step
+*Step 11: Quantification step (Kallisto/Htseq)
 */
     if(params.quant=="htseq"){
         exit 0, print_red("htseq can not be applicable without mapping step, plz set quant tool using `kallisto`")
@@ -1457,7 +1455,7 @@ if(!params.merged_gtf){
 
 
 /*
-*Step 12: Combine matrix for statistic  and differential expression analysis
+*Step 12: Generate count matrix for differential expression analysis
 */
 
 if(params.quant=="htseq"){
@@ -1499,11 +1497,8 @@ if(params.quant=="htseq"){
     }
 }
 
-
-
-
 /*
-Step 13: perform Differential Expression analysis and generate report
+Step 13: Perform Differential Expression analysis and generate report
  */
 
 // Initialize parameter for lncPipeReporter
