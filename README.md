@@ -51,7 +51,7 @@ git clone https://github.com/likelet/LncPipe.git
 
 * 4. Configure the design.file with experimental conditions and replicate info
 
-* 5. Configure your data and reference files in *nextflow.config* or *docker.config*
+* 5. Configure your data and reference files in *nextflow.config* or *docker.config* or *singularity.config*
 
 * 4. Run LncPipe nextflow pipeline:
 
@@ -60,7 +60,11 @@ git clone https://github.com/likelet/LncPipe.git
    or docker command
 
        nextflow -c docker.config run LncRNAanalysisPipe.nf
-
+   
+   or singularity comand  
+   
+       singularity build lncPipe.image docker://bioinformatist/lncpipe
+       singularity -c singularity.config run LncRNAanalysisPipe.nf
 
 ### Prepare input files 
 
