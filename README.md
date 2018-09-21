@@ -62,9 +62,11 @@ git clone https://github.com/likelet/LncPipe.git
        nextflow -c docker.config run LncRNAanalysisPipe.nf
    
    or singularity comand  
-   
+        
+       # create image 
        singularity build lncPipe.image docker://bioinformatist/lncpipe
-       singularity -c singularity.config run LncRNAanalysisPipe.nf
+       # run commond 
+       nextflow -c singularity.config run LncRNAanalysisPipe.nf
 
 ### Prepare input files 
 
