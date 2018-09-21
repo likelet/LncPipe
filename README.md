@@ -55,17 +55,17 @@ git clone https://github.com/likelet/LncPipe.git
 
 * 4. Run LncPipe nextflow pipeline:
 
-       nextflow -c nextflow.contig run LncRNAanalysisPipe.nf
+       nextflow -c nextflow.config run LncRNAanalysisPipe.nf
 
    or docker command
 
        nextflow -c docker.config run LncRNAanalysisPipe.nf
    
-   or singularity comand  
+   or singularity command  
         
        # create image 
        singularity build lncPipe.image docker://bioinformatist/lncpipe
-       # run commond 
+       # run command 
        nextflow -c singularity.config run LncRNAanalysisPipe.nf
 
 ### Prepare input files 
