@@ -157,7 +157,7 @@ log.info print_yellow("skip annotation process:        ") + print_green(params.s
 log.info print_yellow("Input folder:                   ") + print_green(params.input_folder)
 log.info print_yellow("Output folder:                  ") + print_green(params.out_folder)
 log.info print_yellow("Genome sequence location:       ") + print_green(params.fasta_ref)
-log.info print_yellow("STAR index path:                ") + print_green(params.star_idex)
+log.info print_yellow("STAR index path:                ") + print_green(params.star_index)
 log.info print_yellow("HISAT2 index path:               ") + print_green(params.hisat2_index)
 log.info print_yellow("bowtie/tophat index path:       ") + print_green(params.bowtie2_index)
 log.info print_yellow("GENCODE annotation location:    ") + print_green(params.gencode_annotation_gtf)
@@ -190,8 +190,8 @@ if (fork_number < 1) {
 fasta_ref = file(params.fasta_ref)
 if (!fasta_ref.exists()) exit 1, "Reference genome not found: ${params.fasta_ref}"
 if(params.aligner=='star'){
-    star_idex = file(params.star_idex)
-    if (!star_idex.exists()) exit 1, "STAR index not found: ${params.star_idex}"
+    star_index = file(params.star_index)
+    if (!star_index.exists()) exit 1, "STAR index not found: ${params.star_index}"
 }else if(params.aligner =='hisat'){
     hisat2_index = Channel.fromPath("${params.hisat2_index}*")
             .ifEmpty { exit 1, "HISAT2 index not found: ${params.hisat2_index}" }
@@ -283,7 +283,7 @@ if (!params.merged_gtf) {
      * Step 2: Build read aligner (STAR/tophat/HISAT2) index, if not provided
      */
     //star_index if not exist
-    /*if (params.aligner == 'star' && params.star_idex == false && fasta_ref) {
+    /*if (params.aligner == 'star' && params.star_index == false && fasta_ref) {
         process Make_STARindex {
             tag fasta_ref
 
@@ -294,7 +294,7 @@ if (!params.merged_gtf) {
             file gencode_annotation_gtf
 
             output:
-            file "star_index" into star_idex
+            file "star_index" into star_index
 
             shell:
             star_threads = ava_cpu- 1
@@ -309,7 +309,7 @@ if (!params.merged_gtf) {
                     --genomeFastaFiles $fasta_ref
                 """
         }
-    } else if (params.aligner == 'star' && params.star_idex == false && !fasta_ref) {
+    } else if (params.aligner == 'star' && params.star_index == false && !fasta_ref) {
         println print_red("No reference fasta sequence loaded! please specify ") + print_red("--fasta_ref") + print_red(" with reference.")
 
     } else if (params.aligner == 'tophat' && params.bowtie2_index == false && !fasta_ref) {
@@ -483,7 +483,7 @@ if (!params.merged_gtf) {
             set val(samplename), file(pair) from readPairs_for_discovery
             file tempfiles from fastqc_for_waiting // just for waiting
             file fasta_ref
-            file star_idex
+            file star_index
 
             output:
             set val(file_tag_new), file("${file_tag_new}Aligned.sortedByCoord.out.bam") into mappedReads,forHtseqMappedReads
@@ -499,7 +499,7 @@ if (!params.merged_gtf) {
                 """
                          STAR --runThreadN !{star_threads} \
                             --twopassMode Basic \
-                            --genomeDir !{star_idex} \
+                            --genomeDir !{star_index} \
                             --readFilesIn !{pair} \
                             --readFilesCommand zcat \
                             --outSAMtype BAM SortedByCoordinate \
@@ -518,7 +518,7 @@ if (!params.merged_gtf) {
                 println print_purple("Initial reads mapping of " + samplename + " performed by STAR in paired-end mode")
                 '''
                             STAR --runThreadN !{star_threads}  \
-                                 --twopassMode Basic --genomeDir !{star_idex} \
+                                 --twopassMode Basic --genomeDir !{star_index} \
                                  --readFilesIn !{pair[0]} !{pair[1]} \
                                  --readFilesCommand zcat \
                                  --outSAMtype BAM SortedByCoordinate \
