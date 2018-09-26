@@ -833,7 +833,7 @@ else {
     if (params.qctools == 'fastqc') {
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: ${reads}\nNB: Path needs to be enclosed in quotes!\n")
+            exit 1, print_red("Fastq file not found, plz check your file path : ${reads}\n")
         }
         .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
         process Run_fastQC {
@@ -859,7 +859,7 @@ else {
     else if (params.qctools == 'afterqc'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Fastq file not found :  ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
         process Run_afterQC {
@@ -893,7 +893,7 @@ else {
     else if (params.qctools == 'fastp'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Fastq file not found :  ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
         process Run_FastP {
@@ -1213,7 +1213,7 @@ process Secondary_basic_statistic {
     shell:
     '''
         #!/usr/bin/perl -w
-        #since CPAT arbitrarily transforms gene names into upper case, we apply 'uc' function to keep the gene names consistent.  
+        #since CPAT arbitrarily transforms gene names into upper case, we apply 'uc' function to keep the genenames' consistency.  
         use strict;
         open OUT,">basic_charac.txt" or die;
         
