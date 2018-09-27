@@ -58,7 +58,7 @@ def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
 //Help information
 // Nextflow  version
-version="v0.2.31"
+version="v0.2.4"
 //=======================================================================================
 // Nextflow Version check
 if( !nextflow.version.matches('0.26+') ) {
@@ -86,7 +86,7 @@ if (params.help) {
             print_cyan('      --fastq_ext <*_fq.gz>         ') + print_green('Filename pattern for pairing raw reads, e.g: *_{1,2}.fastq.gz for paired reads\n') +
             print_cyan('      --out_folder <path>           ') + print_green('The output directory where the results will be saved(optional), current path is default\n') +
             print_cyan('      --aligner <hisat>             ') + print_green('Aligner for reads mapping (optional),"hisat"(defalt)/"star"/"tophat"\n') +
-            print_cyan('      --qctools <fastqc>            ') + print_green('Tools for assess reads quality, fastp(default)/afterqc/fastqc/none(skip QC step)\n') +
+            print_cyan('      --qctools <fastp>            ') + print_green('Tools for assess reads quality, fastp(default)/afterqc/fastqc/none(skip QC step)\n') +
             print_cyan('      --detools <edger>             ') + print_green('Tools for differential analysis, edger(default)/deseq/noiseq\n') +
             print_cyan('      --quant <kallisto>            ') + print_green('Tools for estimating abundance of transcript, kallisto(default)/htseq\n') +
             '\n' +
@@ -960,7 +960,7 @@ else {
 
 
 /*
-*Step 8: Filter GTFs to distinguish novel lncRNAS
+*Step 8: Filter GTFs to distinguish novel lncRNAs
 */
 process Identify_novel_lncRNA_with_criterions {
 
@@ -1508,56 +1508,102 @@ lncRep_cdf_percent = params.lncRep_cdf_percent
 lncRep_max_lnc_len = params.lncRep_max_lnc_len
 lncRep_min_expressed_sample = params.lncRep_min_expressed_sample
 detools = params.detools
-design=null
-if(params.design){
+design=params.design
+if(design!=null){
     design = file(params.design)
     if (!design.exists()) exit 1, "Design file not found, plz check your design path: ${params.design}"
-}
 
-if(!params.merged_gtf) {
-    process Run_LncPipeReporter {
-        tag { file_tag }
-        publishDir pattern: "*",
-                path: "${params.out_folder}/Result/", mode: 'move'
-        input:
-        //alignmet log
-        file design
-        file alignmetlogs from alignment_logs.collect()
-        //gtf statistics
-        file basic_charac from statistic_result
-        //Expression matrix
-        file kallisto_count_matrix from expression_matrixfile_count
+    if(!params.merged_gtf) {
+        process Run_LncPipeReporter {
+            tag { file_tag }
+            publishDir pattern: "*",
+                    path: "${params.out_folder}/Result/", mode: 'move'
+            input:
+            //alignmet log
+            file design
+            file alignmetlogs from alignment_logs.collect()
+            //gtf statistics
+            file basic_charac from statistic_result
+            //Expression matrix
+            file kallisto_count_matrix from expression_matrixfile_count
 
-        output:
-        file "*" into final_output
-        shell:
-        file_tag = "Generating report ..."
-        """
+            output:
+            file "*" into final_output
+            shell:
+            file_tag = "Generating report ..."
+            """
          Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
         """
-    }
-}else{
-    process Run_LncPipeReporter {
-        tag { file_tag }
-        publishDir pattern: "*",
-                path: "${params.out_folder}/Result/", mode: 'move'
-        input:
-        //alignment log
-        file design
-        //gtf statistics
-        file basic_charac from statistic_result
-        //Expression matrix
-        file kallisto_count_matrix from expression_matrixfile_count
+        }
+    }else{
+        process Run_LncPipeReporter {
+            tag { file_tag }
+            publishDir pattern: "*",
+                    path: "${params.out_folder}/Result/", mode: 'move'
+            input:
+            //alignment log
+            file design
+            //gtf statistics
+            file basic_charac from statistic_result
+            //Expression matrix
+            file kallisto_count_matrix from expression_matrixfile_count
 
-        output:
-        file "*" into final_output
-        shell:
-        file_tag = "Generating report ..."
-        """
+            output:
+            file "*" into final_output
+            shell:
+            file_tag = "Generating report ..."
+            """
         Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
       """
+        }
+    }
+
+}else{
+    if(!params.merged_gtf) {
+        process Run_LncPipeReporter_without_Design {
+            tag { file_tag }
+            publishDir pattern: "*",
+                    path: "${params.out_folder}/Result/", mode: 'move'
+            input:
+            //alignmet log
+            file alignmetlogs from alignment_logs.collect()
+            //gtf statistics
+            file basic_charac from statistic_result
+            //Expression matrix
+            file kallisto_count_matrix from expression_matrixfile_count
+
+            output:
+            file "*" into final_output
+            shell:
+            file_tag = "Generating report ..."
+            """
+         Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
+        """
+        }
+    }else{
+        process Run_LncPipeReporter_without_Design {
+            tag { file_tag }
+            publishDir pattern: "*",
+                    path: "${params.out_folder}/Result/", mode: 'move'
+            input:
+            //alignment log
+            //gtf statistics
+            file basic_charac from statistic_result
+            //Expression matrix
+            file kallisto_count_matrix from expression_matrixfile_count
+
+            output:
+            file "*" into final_output
+            shell:
+            file_tag = "Generating report ..."
+            """
+        Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
+      """
+        }
     }
 }
+
+
 
 //pipeline log
 if(workflow.success) {
