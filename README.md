@@ -17,6 +17,7 @@ The pipeline was developed based on a popular workflow framework [Nextflow](http
 - [Schematic diagram](#schematic-diagram)
 - [Installation](#installation-and-quick-start)
 - [Run Docker](#run-docker)
+- [Run with example data](https://github.com/likelet/LncPipeTestData)
 - [Interactive reports](#interactive-reports)
 - [Parameters](#parameters)
 - [FAQ](#faq)
@@ -53,7 +54,7 @@ git clone https://github.com/likelet/LncPipe.git
 
 * 5. Configure your data and reference files in *nextflow.config* or *docker.config* or *singularity.config*
 
-* 4. Run LncPipe nextflow pipeline:
+* 6. Run LncPipe nextflow pipeline:
 
        nextflow -c nextflow.config run LncRNAanalysisPipe.nf
 
@@ -67,7 +68,10 @@ git clone https://github.com/likelet/LncPipe.git
        singularity build lncPipe.image docker://bioinformatist/lncpipe
        # run command 
        nextflow -c singularity.config run LncRNAanalysisPipe.nf
+* __7.Run with test data __ . 
 
+   PlZ go to https://github.com/likelet/LncPipeTestData 
+   
 ### Prepare input files 
 
 #### References, index and annotation files(Mandatory).
