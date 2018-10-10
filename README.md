@@ -76,7 +76,9 @@ git clone https://github.com/likelet/LncPipe.git
 
 #### References, index and annotation files(Mandatory).
 * **:blush:Please keep the consistency of your genome sequence,index library and annotation files (Important!): genome version, chromosome format, gtf coordinated e.g. The dependent third-party softwares may stop for any discrepencies in file-formatting.**
-*  Genome reference (genome fasta file with suffix `.fa` etc.)
+*  Genome reference (genome fasta file with suffix `.fa` etc. )
+
+*  Genome Index for alignment (hisat2 or tophat or STAR)
 
 *  GENCODE gene annotation file in GTF format
 
@@ -84,10 +86,6 @@ git clone https://github.com/likelet/LncPipe.git
 
 *  Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 
-**Note on indexes for read aligners** Building of indexes for alignment requires large amounts of memory and can slow down the analyis. We therefore recommend users to directly download pre-built indexes for your species prior to running LncPipe.
-   [Hisat2 indexes can be found here](https://ccb.jhu.edu/software/hisat2/index.shtml)
-   e.g: Human index can be downloaded from (ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/grch38_tran.tar.gz)
-   [STAR indexes can be found here](https://github.com/alexdobin/STAR)
 
 
 #### Species
