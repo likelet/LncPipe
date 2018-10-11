@@ -268,11 +268,11 @@ else {// for mouse or other species, user should provide known_protein_coding an
     KnownLncRNAgtf=file(params.known_lncRNA_gtf)
     if (!KnownLncRNAgtf.exists()) exit 1, print_red("In non-human mode, known lncRNA GTF annotation file not found: ${params.known_lncRNA_gtf}")
     known_coding_gtf=file(params.known_coding_gtf)
-    if (!KnownLncRNAgtf.exists()) exit 1, print_red("In non-human mode, known protein coding GTF annotation file not found: ${params.known_coding_gtf}")
+    if (!known_coding_gtf.exists()) exit 1, print_red("In non-human mode, known protein coding GTF annotation file not found: ${params.known_coding_gtf}")
     gencode_annotation_gtf = file(params.gencode_annotation_gtf)
-    if (!gencode_annotation_gtf.exists()) exit 1, "GENCODE annotation file not found: ${params.gencode_annotation_gtf}"
+    if (!gencode_annotation_gtf.exists()) exit 1, print_red("GENCODE annotation file not found: ${params.gencode_annotation_gtf}")
     known_coding_gtf.into{proteinCodingGTF; proteinCodingGTF_forClass}
-    KnownLncRNAgtf.gtf.set{KnownLncRNAgtf}
+    knownLncRNAgtf.gtf.set{knownLncRNAgtf}
 
 }
 
