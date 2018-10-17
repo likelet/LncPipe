@@ -58,7 +58,7 @@ def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
 //Help information
 // Nextflow  version
-version="v0.2.4"
+version="v0.2.42"
 //=======================================================================================
 // Nextflow Version check
 if( !nextflow.version.matches('0.26+') ) {
@@ -225,7 +225,8 @@ if (params.species=="human") {
         file lncipedia_gtf
         output:
         file "gencode_protein_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
-        file "known.lncRNA.gtf" into KnownLncRNAgtf
+        file "known.lncRNA.gtf" into KnownLncRNAgtf, KnownLncRNAgtf_for_rename
+        file "*_mod.gtf" into mod_file_for_rename
 
         shell:
         cufflinks_threads = ava_cpu- 1
@@ -237,7 +238,7 @@ if (params.species=="human") {
         touch filenames.txt
         for file in *.gtf 
         do
-        perl -lpe 's/ [^"](\\S+) ;/ "$1" ;/g\' $file > ${file}_mod.gtf 
+        perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' $file > ${file}_mod.gtf 
         echo ${file}_mod.gtf >>filenames.txt
         
         done
@@ -1107,6 +1108,7 @@ process Summary_renaming_and_classification {
     file "protein_coding.fa" into final_coding_gene_for_CPAT_fa
     file "lncRNA.fa" into final_lncRNA_for_CPAT_fa
     file "lncRNA_classification.txt" into lncRNA_classification
+    file "lncRNA.mapping.file" into rename_mapping_file
     //file "lncRNA.final.CPAT.out" into lncRNA_CPAT_statistic
     //file "protein_coding.final.CPAT.out" into protein_coding_CPAT_statistic
 

@@ -1,6 +1,37 @@
 #!/usr/bin/perl -w
 use strict;
 
+#!/usr/bin/perl -w
+use strict;
+
+my %know_lnc;
+open FH,"known.lncRNA.bed" or die;
+while(<FH>){
+	chomp;
+	my @field=split "\t";
+	if($field[7] eq 'transcript'){
+	$know_lnc{$field[0].'\t'.$field[1].'\t'.$field[2].'\t'.$field[5]} = $field[3];
+}
+}
+
+my %genecode;
+open FH,"gencode.v25.annotation.chrX.gtf_mod.gtf" or die;
+while(<FH>){
+	chomp;
+	my @field=split "\t";
+	$_=~/gene_name "(.+?)"/;
+	my $gene_name=$1;
+	if($field[2] eq 'transcript'){
+		my $loc = $field[0].'\t'.($field[3]-1).'\t'.$field[4].'\t'.$field[6];
+		foreach my $location (keys %know_lnc){
+			if($location eq $loc){
+				$genecode{$know_lnc{$loc}} = $gene_name;
+			}
+		}
+}
+}
+
+
 
 
 my %exon;
@@ -66,12 +97,11 @@ foreach my $k (keys %gene){
 	print OUT $gene{$k}{CHR}."\t".$gene{$k}{START}."\t".$gene{$k}{END}."\t".$k."\t.\t".$gene{$k}{STRAND}."\n";
 }
 
-`sort-bed lncRNA.for_anno.bed > lncRNA.for_anno.srt.bed`;
+`singularity exec /home/zhaoqi/nextflowTest/lncPipe.image sort-bed lncRNA.for_anno.bed > lncRNA.for_anno.srt.bed`;
 
-`closest-features --dist lncRNA.for_anno.srt.bed  gencode.protein_coding.gene.bed > lncRNA.for_anno.srt.neighbour.txt`;
+`singularity exec /home/zhaoqi/nextflowTest/lncPipe.image closest-features --dist lncRNA.for_anno.srt.bed  gencode.protein_coding.gene.bed > lncRNA.for_anno.srt.neighbour.txt`;
 
 open FH,"lncRNA.for_anno.srt.neighbour.txt" or die;
-
 my %map;
 my %genename2gene;
 my $naidx=0;
@@ -101,7 +131,7 @@ while(<FH>){
 		$field[3]=~/gene_name "(.+?)"/;
 		$down_gene=$1;
 		$down_dist=abs($field[4]);
-		my @tmp=split "\t",$field[1];
+		my @tmp=split "\t",$field[3];
 		$down_strand=$tmp[5];
 	}
 	if($field[1] eq "NA" and $field[3] eq "NA"){
@@ -155,9 +185,8 @@ while(<FH>){
 		}
 	}
 	}
-
 }
-
+my %MSTRG2genename;
 open OUT1,">lncRNA.final.v2.gtf" or die;
 open OUT2,">lncRNA.final.v2.map" or die;
 foreach my $genename (keys %map){
@@ -172,6 +201,7 @@ foreach my $genename (keys %map){
 		my %tmp2=%$tmp2;
 		$gindex++;
 		my $geneid=$genename."-".$gindex;
+		$MSTRG2genename{$cuffid} = $geneid;
 		my $tindex=0;
 		print OUT2 $geneid."\t".$cuffid."\n";
 		foreach my $tid (keys %tmp2){
@@ -185,8 +215,11 @@ foreach my $genename (keys %map){
 			}
 
 		}
-	}	
-	
-
-	
+	}		
+}
+open OUT3,">lncRNA.mapping.file" or die;
+foreach my $mstr(sort(keys %genecode)){
+	if(defined($MSTRG2genename{$mstr})){
+	print OUT3 $mstr."\t".$genecode{$mstr}."\t".$MSTRG2genename{$mstr}."\n";
+	}
 }
