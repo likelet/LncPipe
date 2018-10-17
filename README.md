@@ -95,17 +95,29 @@ git clone https://github.com/likelet/LncPipe.git
 
 * Reference files for humans 
 
-    1. hisat index built from Genome: [download](http://cancerbio.info/pub/hg38_hisat_index.tar.gz)
-    2. Genome reference: [download](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/GRCh38.p10.genome.fa.gz)
-    3. GENCODE gene annotation: [download](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/gencode.v27.annotation.gtf.gz)
-    4. LNCipedia gene annotation: [download](https://lncipedia.org/downloads/lncipedia_5_0_hc_hg38.gtf)
+    1. hisat index built from Genome: 
+    http://cancerbio.info/pub/hg38_hisat_index.tar.gz 
+    
+    2. Genome reference: 
+    ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/GRCh38.p10.genome.fa.gz 
+    
+    3. GENCODE gene annotation: 
+    ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/gencode.v27.annotation.gtf.gz 
+     
+    4. LNCipedia gene annotation: 
+     https://lncipedia.org/downloads/lncipedia_5_0_hc_hg38.gtf  
+     
     5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 
 * Reference files for mouse 
 
     1. hisat index built from Genome
-    2. Genome reference: [download](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/GRCm38.p5.genome.fa.gz)
-    3. GENCODE gene annotation: [download](ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/gencode.vM16.annotation.gtf.gz)
+    2. Genome reference:   
+    ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/GRCm38.p5.genome.fa.gz  
+    
+    3. GENCODE gene annotation: 
+    ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/gencode.vM16.annotation.gtf.gz
+    
     4. LNCipedia gene annotation: null
     5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
 
