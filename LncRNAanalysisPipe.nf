@@ -1097,6 +1097,8 @@ process Summary_renaming_and_classification {
     file gencode_protein_coding_gtf from proteinCodingGTF
     file novel_lncRNA_stringent_Gtf from novel_lncRNA_stringent_gtf
     file fasta_ref
+    file KnownLncRNAgtf_for_rename
+    file mod_file_for_rename
 
     output:
 //    file "lncRNA.final.v2.gtf" into finalLncRNA_gtf
