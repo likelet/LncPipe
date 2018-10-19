@@ -26,8 +26,7 @@ The nf-core/lncpipe pipeline comes with documentation about the pipeline, found 
 
 
 # [LncPipe](https://github.com/likelet/LncPipe) 
-[![AUR](https://img.shields.io/aur/license/yaourt.svg)](https://github.com/likelet/LncPipe/blob/master/LICENSE)
- [![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.24.0-brightgreen.svg)](http://nextflow.io)
+
 ## Overall
 Recently, long noncoding RNA molecules (lncRNA) captured widespread attentions for their critical 
 roles in diverse biological process and important implications in variety of human diseases and 
