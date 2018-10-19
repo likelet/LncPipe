@@ -1,2 +1,2 @@
-*.pl linguist-language=Groovy
-*.nf linguist-language=Groovy
+*.pl linguist-language=Nextflow
+*.nf linguist-language=Nextflow
