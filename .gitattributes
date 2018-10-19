@@ -1,2 +1,1 @@
-*.pl linguist-language=Nextflow
-*.nf linguist-language=Nextflow
+*.config linguist-language=nextflow
