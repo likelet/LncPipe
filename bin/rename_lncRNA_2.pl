@@ -1,18 +1,14 @@
 #!/usr/bin/perl -w
 use strict;
 
-#!/usr/bin/perl -w
-use strict;
-
 my %know_lnc;
 open FH,"known.lncRNA.bed" or die;
 while(<FH>){
 	chomp;
 	my @field=split "\t";
-	if($field[7] eq 'transcript'){
-	$know_lnc{$field[0].'\t'.$field[1].'\t'.$field[2].'\t'.$field[5]} = $field[3];
+	$know_lnc{$field[0].'\t'.$field[1].'\t'.$field[2].'\t'.$field[5].'\t'.$field[7]} = $field[3];
 }
-}
+
 
 my %genecode;
 open FH,"gencode.v25.annotation.chrX.gtf_mod.gtf" or die;
@@ -21,18 +17,26 @@ while(<FH>){
 	my @field=split "\t";
 	$_=~/gene_name "(.+?)"/;
 	my $gene_name=$1;
-	if($field[2] eq 'transcript'){
-		my $loc = $field[0].'\t'.($field[3]-1).'\t'.$field[4].'\t'.$field[6];
-		foreach my $location (keys %know_lnc){
-			if($location eq $loc){
-				$genecode{$know_lnc{$loc}} = $gene_name;
-			}
+	my $loc = $field[0].'\t'.($field[3]-1).'\t'.$field[4].'\t'.$field[6].'\t'.$field[2];
+	foreach my $location (keys %know_lnc){
+		if($location eq $loc){
+			$genecode{$know_lnc{$loc}} = $gene_name;
 		}
+	}
 }
+open FH,"lncipedia_4_0.chrX.gtf_mod.gtf" or die;
+while(<FH>){
+	chomp;
+	my @field=split "\t";
+	$_=~/gene_id "(.+?)"/;
+	my $gene_name=$1;
+	my $loc = $field[0].'\t'.($field[3]-1).'\t'.$field[4].'\t'.$field[6].'\t'.$field[2];
+	foreach my $location (keys %know_lnc){
+		if($location eq $loc){
+			$genecode{$know_lnc{$loc}} = $gene_name;
+		}
+	}
 }
-
-
-
 
 my %exon;
 my %gene;
@@ -97,9 +101,9 @@ foreach my $k (keys %gene){
 	print OUT $gene{$k}{CHR}."\t".$gene{$k}{START}."\t".$gene{$k}{END}."\t".$k."\t.\t".$gene{$k}{STRAND}."\n";
 }
 
-`singularity exec /home/zhaoqi/nextflowTest/lncPipe.image sort-bed lncRNA.for_anno.bed > lncRNA.for_anno.srt.bed`;
+`sort-bed lncRNA.for_anno.bed > lncRNA.for_anno.srt.bed`;
 
-`singularity exec /home/zhaoqi/nextflowTest/lncPipe.image closest-features --dist lncRNA.for_anno.srt.bed  gencode.protein_coding.gene.bed > lncRNA.for_anno.srt.neighbour.txt`;
+`closest-features --dist lncRNA.for_anno.srt.bed  gencode.protein_coding.gene.bed > lncRNA.for_anno.srt.neighbour.txt`;
 
 open FH,"lncRNA.for_anno.srt.neighbour.txt" or die;
 my %map;
@@ -152,6 +156,8 @@ while(<FH>){
 					$map{$genename}{$geneid}=$up_dist;
 				}
 				
+			}else{
+				#print "LALALALALA"."\n";
 			}
 		}else{
 			$genename="LINC-".$up_gene;
@@ -173,6 +179,8 @@ while(<FH>){
 				}else{
 					$map{$genename}{$geneid}=$down_dist;
 				}
+			}else{
+				#print "HAHAHAHAHAHAA"."\n";
 			}
 		}else{
 			$genename="LINC-".$down_gene;
@@ -221,5 +229,7 @@ open OUT3,">lncRNA.mapping.file" or die;
 foreach my $mstr(sort(keys %genecode)){
 	if(defined($MSTRG2genename{$mstr})){
 	print OUT3 $mstr."\t".$genecode{$mstr}."\t".$MSTRG2genename{$mstr}."\n";
+	}else{
+		#print $mstr."\n";
 	}
 }

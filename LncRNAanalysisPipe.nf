@@ -225,7 +225,7 @@ if (params.species=="human") {
         file lncipedia_gtf
         output:
         file "gencode_protein_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
-        file "known.lncRNA.gtf" into KnownLncRNAgtf, KnownLncRNAgtf_for_rename
+        file "known.lncRNA.gtf" into KnownLncRNAgtf
         file "*_mod.gtf" into mod_file_for_rename
 
         shell:
@@ -1097,7 +1097,6 @@ process Summary_renaming_and_classification {
     file gencode_protein_coding_gtf from proteinCodingGTF
     file novel_lncRNA_stringent_Gtf from novel_lncRNA_stringent_gtf
     file fasta_ref
-    file KnownLncRNAgtf_for_rename
     file mod_file_for_rename
 
     output:
