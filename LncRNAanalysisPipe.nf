@@ -1,5 +1,16 @@
 #!/usr/bin/env nextflow
-
+/*
+========================================================================================
+                         nf-core/lncpipe
+========================================================================================
+ nf-core/lncpipe Analysis Pipeline.
+ #### Homepage / Documentation
+ https://github.com/nf-core/lncpipe
+ https://github.com/likelet/LncPipe
+ #### Authors
+ Qi Zhao @qi_likelet <zhaoqi@sysucc.org.cn>
+----------------------------------------------------------------------------------------
+*/
 /*
  * LncPipe was implemented by Dr. Qi Zhao from Sun Yat-sen University Cancer Center, China.
  *
