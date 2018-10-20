@@ -1,5 +1,5 @@
-# nf-core/lncpipe
-**nf-core LncPipe test**
+# ![nf-core/lncpipe](docs/img/nf-core-lncpipe_logo.png)
+**A Nextflow-based pipeline for comprehensive analyses of long non-coding RNAs from RNA-seq datasets**
 
 [![Build Status](https://travis-ci.org/nf-core/lncpipe.svg?branch=master)](https://travis-ci.org/nf-core/lncpipe)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.32.0-brightgreen.svg)](https://www.nextflow.io/)
@@ -10,7 +10,7 @@
 https://img.shields.io/badge/singularity-available-7E4C74.svg)
 
 ### Introduction
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable man$
+Recently, long noncoding RNA molecules (lncRNA) captured widespread attentions for their critical roles in diverse biological process and important implications in variety of human diseases and cancers. Identification and profiling of lncRNAs is a fundamental step to advance our knowledge on their function and regulatory mechanisms. However, RNA sequencing based lncRNA discovery is currently limited due to complicated operations and implementation of the tools involved. Therefore, we present a one-stop multi-tool integrated pipeline called [LncPipe](https://github.com/likelet/LncPipe) focused on characterizing lncRNAs from raw transcriptome sequencing data. The pipeline was developed based on a popular workflow framework [Nextflow](https://github.com/nextflow-io/nextflow), composed of four core procedures including reads alignment, assembly, identification and quantification. It contains various unique features such as well-designed lncRNAs annotation strategy, optimized calculating efficiency, diversified classification and interactive analysis report. [LncPipe](https://github.com/likelet/LncPipe) allows users additional control in interuppting the pipeline, resetting parameters from command line, modifying main script directly and resume analysis from previous checkpoint.
 
 
 ### Documentation
@@ -26,15 +26,6 @@ The nf-core/lncpipe pipeline comes with documentation about the pipeline, found 
 
 
 # [LncPipe](https://github.com/likelet/LncPipe) 
-
-## Overall
-Recently, long noncoding RNA molecules (lncRNA) captured widespread attentions for their critical 
-roles in diverse biological process and important implications in variety of human diseases and 
-cancers. Identification and profiling of lncRNAs is a fundamental step to advance our knowledge 
-on their function and regulatory mechanisms. However, RNA sequencing based lncRNA discovery is 
-currently limited due to complicated operations and implementation of the tools involved. Therefore, we present a one-stop multi-tool integrated pipeline called [LncPipe](https://github.com/likelet/LncPipe) focused on characterizing lncRNAs from raw transcriptome sequencing data. 
-The pipeline was developed based on a popular workflow framework [Nextflow](https://github.com/nextflow-io/nextflow), composed of four core procedures including reads alignment, assembly, identification and quantification. It contains various unique features such as well-designed lncRNAs annotation strategy, optimized calculating efficiency, diversified classification and interactive analysis report. [LncPipe](https://github.com/likelet/LncPipe) allows users additional control in interuppting the pipeline, resetting parameters from command line, modifying main script directly and resume analysis from previous checkpoint.
-
 ## Table of Contents
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
