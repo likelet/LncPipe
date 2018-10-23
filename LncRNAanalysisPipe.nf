@@ -58,11 +58,11 @@ def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
 //Help information
 // Nextflow  version
-version="v0.2.4"
+version="v0.2.5"
 //=======================================================================================
 // Nextflow Version check
-if( !nextflow.version.matches('0.26+') ) {
-    println print_yellow("This workflow requires Nextflow version 0.26 or greater -- You are running version ")+ print_red(nextflow.version)
+if( !nextflow.version.matches('0.32+') ) {
+    println print_yellow("This workflow requires Nextflow version 0.32 or greater -- You are running version ")+ print_red(nextflow.version)
     exit 1
 }
 //help information
@@ -217,7 +217,7 @@ if (params.species=="human") {
         touch filenames.txt
         for file in *.gtf
         do
-        perl -lpe 's/ [^"](\\S+) ;/ "$1" ;/g\' $file > ${file}_mod.gtf
+        perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' $file > ${file}_mod.gtf
         echo ${file}_mod.gtf >>filenames.txt
 
         done
@@ -1076,6 +1076,7 @@ process Summary_renaming_and_classification {
     file gencode_protein_coding_gtf from proteinCodingGTF
     file novel_lncRNA_stringent_Gtf from novel_lncRNA_stringent_gtf
     file fasta_ref
+    file mod_file_for_rename
 
     output:
 //    file "lncRNA.final.v2.gtf" into finalLncRNA_gtf
@@ -1087,6 +1088,7 @@ process Summary_renaming_and_classification {
     file "protein_coding.fa" into final_coding_gene_for_CPAT_fa
     file "lncRNA.fa" into final_lncRNA_for_CPAT_fa
     file "lncRNA_classification.txt" into lncRNA_classification
+    file "lncRNA.mapping.file" into rename_mapping_file
     //file "lncRNA.final.CPAT.out" into lncRNA_CPAT_statistic
     //file "protein_coding.final.CPAT.out" into protein_coding_CPAT_statistic
 
