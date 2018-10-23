@@ -58,7 +58,7 @@ def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
 //Help information
 // Nextflow  version
-version="v0.2.42"
+version="v0.2.4"
 //=======================================================================================
 // Nextflow Version check
 if( !nextflow.version.matches('0.26+') ) {
@@ -165,26 +165,6 @@ log.info print_yellow("lncipedia annotation location:  ") + print_green(params.l
 log.info print_yellow("=====================================")
 log.info "\n"
 
-// run information of system file
-//automatic set optimize resource for analysis based on current system resources
-ava_mem = (double) (Runtime.getRuntime().freeMemory())
-ava_cpu = Runtime.getRuntime().availableProcessors()
-if (params.cpu != null && ava_cpu > params.cpu) {
-    ava_cpu = params.cpu
-} else if (params.cpu != null && ava_cpu < params.cpu) {
-    print print_yellow("Exceeding the max available processors, \n use default parameter to run pipe. ")
-}
-if (params.mem != null && ava_mem > params.mem) {
-    ava_mem = params.mem
-} else if (params.mem != null && ava_mem < params.mem) {
-    print print_yellow("Exceeding the max available memory, \n use default parameter to run pipe. ")
-}
-// set individual cpu for fork run
-idv_cpu = 40
-int fork_number = ava_cpu / idv_cpu
-if (fork_number < 1) {
-    fork_number = 1
-}
 
 // read file
 fasta_ref = file(params.fasta_ref)
@@ -206,7 +186,7 @@ input_folder = file(params.input_folder)
 /*
 *Step 1: Prepare Annotations
  */
- 
+
 println print_purple("Combining known annotations from GTFs")
 if (params.species=="human") {
     gencode_annotation_gtf = file(params.gencode_annotation_gtf)
@@ -226,29 +206,28 @@ if (params.species=="human") {
         output:
         file "gencode_protein_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
         file "known.lncRNA.gtf" into KnownLncRNAgtf
-        file "*_mod.gtf" into mod_file_for_rename
 
         shell:
-        cufflinks_threads = ava_cpu- 1
+        cufflinks_threads = task.cpus
 
 
         if(params.aligner=='hisat'){//fix the gtf format required by hisat
             '''
         set -o pipefail
         touch filenames.txt
-        for file in *.gtf 
+        for file in *.gtf
         do
-        perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' $file > ${file}_mod.gtf 
+        perl -lpe 's/ [^"](\\S+) ;/ "$1" ;/g\' $file > ${file}_mod.gtf
         echo ${file}_mod.gtf >>filenames.txt
-        
+
         done
-        
+
         stringtie --merge -o merged_lncRNA.gtf  filenames.txt
         cat !{gencode_annotation_gtf}_mod.gtf  |grep "protein_coding" > gencode_protein_coding.gtf
         gffcompare -r gencode_protein_coding.gtf -p !{cufflinks_threads} merged_lncRNA.gtf
         awk '$3 =="u"||$3=="x"{print $5}' gffcmp.merged_lncRNA.gtf.tmap |sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl merged_lncRNA.gtf - > merged.filter.gtf
         mv  merged.filter.gtf known.lncRNA.gtf
-        
+
         '''
         }else {
 
@@ -259,7 +238,7 @@ if (params.species=="human") {
         cuffcompare -o merged_lncRNA -r gencode_protein_coding.gtf -p !{cufflinks_threads} merged_lncRNA/merged.gtf
         awk '$3 =="u"||$3=="x"{print $5}' merged_lncRNA/merged_lncRNA.merged.gtf.tmap  |sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl merged_lncRNA/merged.gtf - > merged.filter.gtf
         mv  merged.filter.gtf known.lncRNA.gtf
-        
+
         '''
         }
     }
@@ -315,7 +294,7 @@ if (!params.merged_gtf) {
 
     } else if (params.aligner == 'tophat' && params.bowtie2_index == false && !fasta_ref) {
         process Make_bowtie2_index {
-            
+
             tag fasta_ref
             storeDir { params.out_folder + "/bowtie2Index" }
 
@@ -334,7 +313,7 @@ if (!params.merged_gtf) {
         println print_red("No reference fasta equence loaded! please specify ") + print_red("--fasta_ref") + print_red(" with reference.")
     } else if (params.aligner == 'hisat' && !fasta_ref) {
         process Make_hisat_index {
-            
+
             tag fasta_ref
 
             storeDir { params.out_folder + "/hisatIndex" }
@@ -388,7 +367,7 @@ if (!params.merged_gtf) {
             file "*.html" into fastqc_for_waiting
             shell:
             fastq_tag = samplename
-            fastq_threads = idv_cpu - 1
+            fastq_threads = task.cpus
             '''
             fastqc -t !{fastq_threads} !{fastq_file[0]} !{fastq_file[1]}
         '''
@@ -414,7 +393,7 @@ if (!params.merged_gtf) {
             set val(fastq_tag), file('*.good.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
             shell:
             fastq_tag = samplename
-            fastq_threads = idv_cpu - 1
+            fastq_threads = task.cpus
             if (params.singleEnd) {
                 '''
             after.py -z -1 !{fastq_file[0]} -g ./
@@ -448,11 +427,11 @@ if (!params.merged_gtf) {
             set val(fastq_tag), file('*qc.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
             shell:
             fastq_tag = samplename
-            fastq_threads = idv_cpu - 1
+            fastq_threads = task.cpus
             if (params.singleEnd) {
                 '''
             fastp -i !{fastq_file[0]} -o !{samplename}.qc.gz -h !{samplename}_fastp.html
-           
+
             '''
             } else {
                 '''
@@ -474,7 +453,7 @@ if (!params.merged_gtf) {
     */
     if (params.aligner == 'star') {
         process fastq_star_alignment_For_discovery {
-            
+
             tag { file_tag }
 
             publishDir pattern: "",
@@ -493,7 +472,7 @@ if (!params.merged_gtf) {
             println print_purple("Start mapping with STAR aligner " + samplename)
             file_tag = samplename
             file_tag_new = file_tag
-            star_threads = ava_cpu - 1
+            star_threads = task.cpus
 
             if (params.singleEnd) {
                 println print_purple("Initial reads mapping of " + samplename + " performed by STAR in single-end mode")
@@ -513,7 +492,7 @@ if (!params.merged_gtf) {
                             --outFilterType BySJout \
                             --alignSJoverhangMin 8 \
                             --alignSJDBoverhangMin 1 \
-                            --outFileNamePrefix !{file_tag_new} 
+                            --outFileNamePrefix !{file_tag_new}
                     """
             } else {
                 println print_purple("Initial reads mapping of " + samplename + " performed by STAR in paired-end mode")
@@ -532,7 +511,7 @@ if (!params.merged_gtf) {
                                  --outFilterType BySJout \
                                  --alignSJoverhangMin 8 \
                                  --alignSJDBoverhangMin 1 \
-                                 --outFileNamePrefix !{file_tag_new} 
+                                 --outFileNamePrefix !{file_tag_new}
                     '''
             }
         }
@@ -540,7 +519,7 @@ if (!params.merged_gtf) {
     else if (params.aligner == 'tophat')
     {
         process fastq_tophat_alignment_For_discovery {
-            
+
             tag { file_tag }
 
             publishDir pattern: "",
@@ -561,7 +540,7 @@ if (!params.merged_gtf) {
             println print_purple("Start mapping with tophat2 aligner " + samplename)
             file_tag = samplename
             file_tag_new = file_tag
-            tophat_threads = ava_cpu- 1
+            tophat_threads = task.cpus
             index_base = bowtie2_index[0].toString() - ~/.\d.bt2/
             strand_str="fr-firststrand"
             if(unstrand){
@@ -570,20 +549,20 @@ if (!params.merged_gtf) {
             if (params.singleEnd) {
                 println print_purple("Initial reads mapping of " + samplename + " performed by Tophat in single-end mode")
                 '''
-                         tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout --library-type !{strand_str} !{index_base} !{pair} 
-                         
+                         tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout --library-type !{strand_str} !{index_base} !{pair}
+
                 '''
             } else {
                 println print_purple("Initial reads mapping of " + samplename + " performed by Tophat in paired-end mode")
                 '''
-                     tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout --library-type !{strand_str} !{index_base} !{pair[0]} !{pair[1]} 
+                     tophat -p !{tophat_threads} -G !{gtf} -–no-novel-juncs -o !{samplename}_thout --library-type !{strand_str} !{index_base} !{pair[0]} !{pair[1]}
                 '''
             }
         }
     }
     else if (params.aligner == 'hisat') {
         process fastq_hisat2_alignment_For_discovery {
-            
+
             tag { file_tag }
             label 'para'
             publishDir pattern: "",
@@ -603,7 +582,7 @@ if (!params.merged_gtf) {
             println print_purple("Start mapping with hisat2 aligner " + samplename)
             file_tag = samplename
             file_tag_new = file_tag
-            hisat2_threads = ava_cpu- 2
+            hisat2_threads = task.cpus
             index_base = hisat2_id[0].toString() - ~/.\d.ht2/
 
             if(unstrand){
@@ -612,11 +591,11 @@ if (!params.merged_gtf) {
                     '''
                    mkdir tmp
                    hisat2  -p !{hisat2_threads} --dta  -x  !{index_base}  -U !{pair}  -S !{file_tag_new}.sam 2>!{file_tag_new}.hisat2_summary.txt
-                  sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam 
+                  sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam
                   sambamba sort -o !{file_tag_new}.sort.bam --tmpdir ./tmp -t !{hisat2_threads} temp.bam
                   rm !{file_tag_new}.sam
                   rm temp.bam
-                  
+
                 '''
                 } else {
                     println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in paired-end mode")
@@ -634,11 +613,11 @@ if (!params.merged_gtf) {
                     '''
                    mkdir tmp
                    hisat2  -p !{hisat2_threads} --dta --rna-strandness !{params.hisat_strand} -x  !{index_base}  -U !{pair}  -S !{file_tag_new}.sam 2>!{file_tag_new}.hisat2_summary.txt
-                  sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam 
+                  sambamba view -S -f bam -t !{hisat2_threads} !{file_tag_new}.sam -o temp.bam
                   sambamba sort -o !{file_tag_new}.sort.bam --tmpdir ./tmp -t !{hisat2_threads} temp.bam
                   rm !{file_tag_new}.sam
                   rm temp.bam
-                  
+
                 '''
                 } else {
                     println print_purple("Initial reads mapping of " + samplename + " performed by hisat2 in paired-end mode")
@@ -659,7 +638,7 @@ if (!params.merged_gtf) {
     */
     if(params.aligner == 'hisat'){
         process StringTie_assembly {
-            
+
             tag { file_tag }
 
             input:
@@ -674,7 +653,7 @@ if (!params.merged_gtf) {
             shell:
             file_tag = samplename
             file_tag_new = file_tag
-            stringtie_threads = ava_cpu- 2
+            stringtie_threads = task.cpus
 
             if(unstrand){
                 '''
@@ -696,7 +675,7 @@ if (!params.merged_gtf) {
         * Step 6: Merged GTFs into one
         */
         process StringTie_merge_assembled_gtf {
-            
+
             tag { file_tag }
             label 'para'
             publishDir pattern: "merged.gtf",
@@ -712,18 +691,18 @@ if (!params.merged_gtf) {
             file "merged.gtf" into mergeTranscripts_forCompare, mergeTranscripts_forExtract, mergeTranscripts_forCodeingProtential
             shell:
 
-            stringtie_threads = ava_cpu- 1
+            stringtie_threads = task.cpus
 
             '''
             stringtie --merge -p !{stringtie_threads} -o merged.gtf !{gtf_filenames}
-            
-            
+
+
             '''
         }
     }
     else{
         process Cufflinks_assembly {
-            
+
             tag { file_tag }
 
             input:
@@ -737,7 +716,7 @@ if (!params.merged_gtf) {
 
             shell:
             file_tag_new = file_tag
-            cufflinks_threads = ava_cpu- 1
+            cufflinks_threads = task.cpus
             strand_str="fr-firststrand"
             if(unstrand){
                 strand_str="fr-unstranded"
@@ -745,7 +724,7 @@ if (!params.merged_gtf) {
             if (params.aligner == 'tophat') {
                 '''
             #run cufflinks
-            
+
             cufflinks -g !{gencode_annotation_gtf} \
                       -b !{fasta_ref} \
                       --library-type !{strand_str}\
@@ -753,14 +732,14 @@ if (!params.merged_gtf) {
                       --3-overhang-tolerance 2000 \
                       -o Cufout_!{file_tag_new} \
                       -p !{cufflinks_threads} !{alignment_bam}
-                      
+
             mv Cufout_!{file_tag_new}/transcripts.gtf Cufout_!{file_tag_new}_transcripts.gtf
             '''
 
             } else if (params.aligner == 'star') {
                 '''
             #run cufflinks
-            
+
             cufflinks -g !{gencode_annotation_gtf} \
                       -b !{fasta_ref} \
                       --library-type !{strand_str} \
@@ -768,7 +747,7 @@ if (!params.merged_gtf) {
                       --3-overhang-tolerance 2000 \
                       -o Cufout_!{file_tag_new} \
                       -p !{cufflinks_threads} !{alignment_bam}
-                      
+
             mv Cufout_!{file_tag_new}/transcripts.gtf Cufout_!{file_tag_new}_transcripts.gtf
             '''
 
@@ -786,7 +765,7 @@ if (!params.merged_gtf) {
         * Step 6: Merged GTFs into one
         */
         process cuffmerge_assembled_gtf {
-            
+
             tag { file_tag }
             label 'para'
             publishDir pattern: "CUFFMERGE/merged.gtf",
@@ -803,7 +782,7 @@ if (!params.merged_gtf) {
             file "CUFFMERGE/merged.gtf" into mergeTranscripts_forCompare, mergeTranscripts_forExtract, mergeTranscripts_forCodeingProtential
             shell:
 
-            cufflinks_threads = ava_cpu- 1
+            cufflinks_threads = task.cpus
 
             '''
             mkdir CUFFMERGE
@@ -811,7 +790,7 @@ if (!params.merged_gtf) {
                       -s !{fasta_ref} \
                       -p !{cufflinks_threads} \
                          !{gtf_filenames}
-            
+
             '''
         }
     }
@@ -851,7 +830,7 @@ else {
             file "*.html" into fastqc_for_waiting
             shell:
             fastq_tag = samplename
-            fastq_threads = idv_cpu - 1
+            fastq_threads = task.cpus
             '''
             fastqc -t !{fastq_threads} !{fastq_file[0]} !{fastq_file[1]}
         '''
@@ -879,7 +858,7 @@ else {
             set val(fastq_tag), file('*.good.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
             shell:
             fastq_tag = samplename
-            fastq_threads = idv_cpu - 1
+            fastq_threads = task.cpus
             if (params.singleEnd) {
                 '''
             after.py -z -1 !{fastq_file[0]} -g ./
@@ -913,11 +892,11 @@ else {
             set val(fastq_tag), file('*qc.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
             shell:
             fastq_tag = samplename
-            fastq_threads = idv_cpu - 1
+            fastq_threads = task.cpus
             if (params.singleEnd) {
                 '''
             fastp -i !{fastq_file[0]} -o !{samplename}.qc.gz -h !{samplename}_fastp.html
-           
+
             '''
             } else {
                 '''
@@ -951,7 +930,7 @@ else {
         file "merged_lncRNA.merged.gtf.tmap" into comparedGTF_tmap
         shell:
 
-        gffcompare_threads = ava_cpu- 1
+        gffcompare_threads = task.cpus
         '''
         #!/bin/sh
         gffcompare -r !{gencode_annotation_gtf} -p !{gffcompare_threads} !{mergeGtfFile} -o merged_lncRNA
@@ -984,7 +963,7 @@ process Identify_novel_lncRNA_with_criterions {
         awk '$10 >200{print}' novel.gtf.tmap > novel.longRNA.gtf.tmap
         #   extract gtf
         awk '{print $5}' novel.longRNA.gtf.tmap |perl !{baseDir}/bin/extract_gtf_by_name.pl !{mergedGTF} - >novel.longRNA.gtf
-        awk '{if($3=="exon"){print $0}}' novel.longRNA.gtf > novel.longRNA.format.gtf 
+        awk '{if($3=="exon"){print $0}}' novel.longRNA.gtf > novel.longRNA.format.gtf
         perl !{baseDir}/bin/get_exoncount.pl novel.longRNA.format.gtf  > novel.longRNA.exoncount.txt
         # gtf2gff3
         #check whether required
@@ -999,7 +978,7 @@ process Identify_novel_lncRNA_with_criterions {
 novelLncRnaFasta.into { novelLncRnaFasta_for_PLEK; novelLncRnaFasta_for_CPAT; }
 
 process Predict_coding_abilities_by_PLEK {
-    
+
     // as PLEK can not return valid exit status even run smoothly, we manually set the exit status into 0 to promote analysis
     validExitStatus 0, 1, 2
     input:
@@ -1007,7 +986,7 @@ process Predict_coding_abilities_by_PLEK {
     output:
     file "novel.longRNA.PLEK.out" into novel_longRNA_PLEK_result
     shell:
-    plek_threads = ava_cpu- 1
+    plek_threads = task.cpus
     '''
         PLEK.py -fasta !{novel_lncRNA_fasta} \
                                    -out novel.longRNA.PLEK.out \
@@ -1097,7 +1076,6 @@ process Summary_renaming_and_classification {
     file gencode_protein_coding_gtf from proteinCodingGTF
     file novel_lncRNA_stringent_Gtf from novel_lncRNA_stringent_gtf
     file fasta_ref
-    file mod_file_for_rename
 
     output:
 //    file "lncRNA.final.v2.gtf" into finalLncRNA_gtf
@@ -1109,13 +1087,12 @@ process Summary_renaming_and_classification {
     file "protein_coding.fa" into final_coding_gene_for_CPAT_fa
     file "lncRNA.fa" into final_lncRNA_for_CPAT_fa
     file "lncRNA_classification.txt" into lncRNA_classification
-    file "lncRNA.mapping.file" into rename_mapping_file
     //file "lncRNA.final.CPAT.out" into lncRNA_CPAT_statistic
     //file "protein_coding.final.CPAT.out" into protein_coding_CPAT_statistic
 
     shell:
 
-    cufflinks_threads = ava_cpu- 1
+    cufflinks_threads = task.cpus
 
     '''
         set -o pipefail
@@ -1124,7 +1101,7 @@ process Summary_renaming_and_classification {
                     -p !{cufflinks_threads} !{novel_lncRNA_stringent_Gtf}
         awk '$3 =="u"||$3=="x"{print $5}' filter.novel.lncRNA.stringent.gtf.tmap |sort|uniq| \
                     perl !{baseDir}/bin/extract_gtf_by_name.pl !{novel_lncRNA_stringent_Gtf} - > novel.lncRNA.stringent.filter.gtf
-        
+
         #rename lncRNAs according to neighbouring protein coding genes
         awk '$3 =="gene"{print }' !{gencode_protein_coding_gtf} | perl -F'\\t' -lane '$F[8]=~/gene_id "(.*?)";/ && print join qq{\\t},@F[0,3,4],$1,@F[5,6,1,2,7,8,9]' - | \
             sort-bed - > gencode.protein_coding.gene.bed
@@ -1138,10 +1115,10 @@ process Summary_renaming_and_classification {
         gffread final_all.gtf -g !{fasta_ref} -w final_all.fa -W
         gffread all_lncRNA_for_classifier.gtf -g !{fasta_ref} -w lncRNA.fa -W
         gffread protein_coding.final.gtf -g !{fasta_ref} -w protein_coding.fa -W
-        #classification 
-        perl !{baseDir}/bin/lincRNA_classification.pl all_lncRNA_for_classifier.gtf !{gencode_protein_coding_gtf} lncRNA_classification.txt 
-        
-        
+        #classification
+        perl !{baseDir}/bin/lincRNA_classification.pl all_lncRNA_for_classifier.gtf !{gencode_protein_coding_gtf} lncRNA_classification.txt
+
+
         '''
 }
 
@@ -1216,12 +1193,12 @@ process Secondary_basic_statistic {
     shell:
     '''
         #!/usr/bin/perl -w
-        #since CPAT arbitrarily transforms gene names into upper case, we apply 'uc' function to keep the genenames' consistency.  
+        #since CPAT arbitrarily transforms gene names into upper case, we apply 'uc' function to keep the genenames' consistency.
         use strict;
         open OUT,">basic_charac.txt" or die;
-        
+
         open FH,"all_lncRNA_for_classifier.gtf" or die;
-        
+
         my %class;
         my %g2t;
         my %trans_len;
@@ -1240,7 +1217,7 @@ process Secondary_basic_statistic {
         $exon_num{$tid}=(exists $exon_num{$tid})?$exon_num{$tid}+1:1;
         }
         open FH,"protein_coding.final.gtf" or die;
-        
+
         while(<FH>){
         chomp;
         my @field=split "\t";
@@ -1254,7 +1231,7 @@ process Secondary_basic_statistic {
         $trans_len{$tid}=(exists $trans_len{$tid})?$trans_len{$tid}+$len:$len;
         $exon_num{$tid}=(exists $exon_num{$tid})?$exon_num{$tid}+1:1;
         }
-        
+
         my %lin_class;
         open IN,"lncRNA_classification.txt" or die;                 #change the file name
         while(<IN>){
@@ -1263,9 +1240,9 @@ process Secondary_basic_statistic {
         $lin_class{$data[0]} = $data[1];
         }
         open FH,"lncRNA.final.CPAT.out" or die;
-        
+
         <FH>;
-        
+
         while(<FH>){
             chomp;
             my @field=split "\t";
@@ -1278,11 +1255,11 @@ process Secondary_basic_statistic {
             }
             print OUT $g2t{$tid}."\t".$tid."\t".$class{$tid}."\t".$field[5]."\t".$trans_len{$tid}."\t".$exon_num{$tid}."\t".$class."\n";
         }
-            
+
         open FH,"protein_coding.final.CPAT.out" or die;
-        
+
         <FH>;
-                    
+
         while(<FH>){
             chomp;
             my @field=split "\t";
@@ -1324,14 +1301,14 @@ if(!params.merged_gtf){
             file_tag_new = file_tag
             if(params.unstrand){
                 '''
-                sambamba view !{bamfile} > !{samplename}.sam # resolved error caused by bam and htseq version conflicts 
-                htseq-count -t exon -i gene_id -s no -r pos -f sam !{samplename}.sam !{final_gtf} > !{samplename}.htseq.count 
+                sambamba view !{bamfile} > !{samplename}.sam # resolved error caused by bam and htseq version conflicts
+                htseq-count -t exon -i gene_id -s no -r pos -f sam !{samplename}.sam !{final_gtf} > !{samplename}.htseq.count
                 rm !{samplename}.sam
                 '''
             }else {
                 '''
-                sambamba view !{bamfile} > !{samplename}.sam # resolved error caused by bam and htseq version conflicts 
-                htseq-count -t exon -i gene_id -r pos -f sam !{samplename}.sam !{final_gtf} > !{samplename}.htseq.count 
+                sambamba view !{bamfile} > !{samplename}.sam # resolved error caused by bam and htseq version conflicts
+                htseq-count -t exon -i gene_id -r pos -f sam !{samplename}.sam !{final_gtf} > !{samplename}.htseq.count
                 rm !{samplename}.sam
                 '''
             }
@@ -1341,7 +1318,7 @@ if(!params.merged_gtf){
         }
     }else{
         process Build_kallisto_index_of_GTF_for_quantification {
-            
+
             input:
             file transript_fasta from finalFasta_for_quantification_gtf
 
@@ -1350,14 +1327,14 @@ if(!params.merged_gtf){
 
             shell:
             '''
-            #index kallisto reference 
+            #index kallisto reference
             kallisto index -i transcripts.idx !{transript_fasta}
-            
+
             '''
         }
         constant_kallisto_index = final_kallisto_index.first()
         process Run_kallisto_for_quantification {
-            
+
 
             tag { file_tag }
             label 'para'
@@ -1372,12 +1349,12 @@ if(!params.merged_gtf){
             shell:
             file_tag = samplename
             file_tag_new = file_tag
-            kallisto_threads = ava_cpu- 1
+            kallisto_threads = task.cpus
             if (params.singleEnd) {
                 println print_purple("Quantification by kallisto in single end mode")
                 '''
                 #quantification by kallisto in single end mode
-                kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20  !{pair} 
+                kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads}  --single -l 180 -s 20  !{pair}
                 mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
                 '''
 
@@ -1385,8 +1362,8 @@ if(!params.merged_gtf){
             } else {
                 println print_purple("quantification by kallisto in paired end mode")
                 '''
-                #quantification by kallisto 
-                kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} !{pair[1]}
+                #quantification by kallisto
+                kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads}  !{pair[0]} !{pair[1]}
                 mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
                 '''
             }
@@ -1401,7 +1378,7 @@ if(!params.merged_gtf){
         exit 0, print_red("htseq can not be applicable without mapping step, plz set quant tool using `kallisto`")
     }else {
         process Build_kallisto_index_of_GTF_for_quantification {
-            
+
 
             input:
             file transript_fasta from finalFasta_for_quantification_gtf
@@ -1411,14 +1388,14 @@ if(!params.merged_gtf){
 
             shell:
             '''
-    #index kallisto reference 
+    #index kallisto reference
     kallisto index -i transcripts.idx !{transript_fasta}
-    
+
     '''
         }
         constant_kallisto_index = final_kallisto_index.first()
         process Run_kallisto_for_quantification {
-            
+
 
             tag { file_tag }
             label 'para'
@@ -1433,22 +1410,22 @@ if(!params.merged_gtf){
             shell:
             file_tag = samplename
             file_tag_new = file_tag
-            kallisto_threads = ava_cpu - 1
+            kallisto_threads = task.cpus
             if (params.singleEnd) {
                 println print_purple("Quantification by kallisto in single end mode")
                 '''
         #quantification by kallisto in single end mode
-        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20 !{pair} 
+        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads}  --single -l 180 -s 20 !{pair}
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
-        
+
         '''
 
 
             } else {
                 println print_purple("Quantification by kallisto in paired end mode")
                 '''
-        #quantification by kallisto 
-        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} !{pair[1]}
+        #quantification by kallisto
+        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads}  !{pair[0]} !{pair[1]}
         mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
         '''
             }
@@ -1641,4 +1618,3 @@ if(workflow.success) {
 workflow.onError {
     println print_yellow("Oops... Pipeline execution stopped with the following message: ")+print_red(workflow.errorMessage)
 }
-
