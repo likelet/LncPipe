@@ -132,9 +132,4 @@ FROM ubuntu LABEL authors="zhaoqi@sysucc.org.cn,sun_yu@mail.nankai.edu.cn" \
 	tar xf /opt/sambamba_v0.6.7_linux.tar.bz2 --use-compress-prog=pbzip2 -C /opt/ && \
 	ln -s /opt/sambamba /usr/local/bin/ && \
 	rm /opt/sambamba_v0.6.7_linux.tar.bz2
-#FROM nfcore/base
-#LABEL description="Docker image containing all requirements for nf-core/lncpipe pipeline"
 
-#COPY environment.yml /
-#RUN conda env create -f /environment.yml && conda clean -a
-#ENV PATH /opt/conda/envs/nf-core-lncpipe-1.0dev/bin:$PATH
