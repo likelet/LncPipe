@@ -1,6 +1,9 @@
 #!/usr/bin/perl -w
 use strict;
 
+die ("usage: <Genecode gtf file> <lncipedia gtf file>") unless @ARGV == 2;
+#print "#Query file ".$ARGV[0]." with file_number ".$ARGV[1]."\n";
+
 my %know_lnc;
 open FH,"known.lncRNA.bed" or die;
 while(<FH>){
@@ -11,7 +14,7 @@ while(<FH>){
 
 
 my %genecode;
-open FH,"gencode.v25.annotation.chrX.gtf_mod.gtf" or die;
+open FH,"$ARGV[0]" or die;
 while(<FH>){
 	chomp;
 	my @field=split "\t";
@@ -24,7 +27,7 @@ while(<FH>){
 		}
 	}
 }
-open FH,"lncipedia_4_0.chrX.gtf_mod.gtf" or die;
+open FH,"$ARGV[1]" or die;
 while(<FH>){
 	chomp;
 	my @field=split "\t";
