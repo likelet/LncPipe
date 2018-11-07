@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
+#die ("usage: <Genecode gtf file> <lncipedia gtf file>") unless @ARGV > 2;
+#print "#Query file ".$ARGV[0]." with file_number ".$ARGV[1]."\n";
 
 my %know_lnc;
 open FH,"known.lncRNA.bed" or die;
@@ -11,7 +13,8 @@ while(<FH>){
 
 
 my %genecode;
-open FH,"gencode.v25.annotation.chrX.gtf_mod.gtf" or die;
+if (@ARGV == 2){
+open FH,"$ARGV[0]" or die;
 while(<FH>){
 	chomp;
 	my @field=split "\t";
@@ -24,7 +27,7 @@ while(<FH>){
 		}
 	}
 }
-open FH,"lncipedia_4_0.chrX.gtf_mod.gtf" or die;
+open FH,"$ARGV[1]" or die;
 while(<FH>){
 	chomp;
 	my @field=split "\t";
@@ -37,7 +40,23 @@ while(<FH>){
 		}
 	}
 }
-
+}elsif (@ARGV == 1){
+open FH,"$ARGV[0]" or die;
+while(<FH>){
+	chomp;
+	my @field=split "\t";
+	$_=~/gene_name "(.+?)"/;
+	my $gene_name=$1;
+	my $loc = $field[0].'\t'.($field[3]-1).'\t'.$field[4].'\t'.$field[6].'\t'.$field[2];
+	foreach my $location (keys %know_lnc){
+		if($location eq $loc){
+			$genecode{$know_lnc{$loc}} = $gene_name;
+		}
+	}
+}
+}else{
+	die ("usage: at least one gtf file is needed!!!")
+}
 my %exon;
 my %gene;
 

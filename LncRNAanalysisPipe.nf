@@ -58,10 +58,10 @@ def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
 //Help information
 // Nextflow  version
-version="v0.2.42"
+version="v0.2.43"
 //=======================================================================================
 // Nextflow Version check
-if( !nextflow.version.matches('0.26+') ) {
+if( !nextflow.version.matches('0.30+') ) {
     println print_yellow("This workflow requires Nextflow version 0.26 or greater -- You are running version ")+ print_red(nextflow.version)
     exit 1
 }
@@ -234,31 +234,33 @@ if (params.species=="human") {
 
         if(params.aligner=='hisat'){//fix the gtf format required by hisat
             '''
-        set -o pipefail
-        touch filenames.txt
-        for file in *.gtf 
-        do
-        perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' $file > ${file}_mod.gtf 
-        echo ${file}_mod.gtf >>filenames.txt
+            set -o pipefail
+            touch filenames.txt
+            
+            perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{gencode_annotation_gtf} > gencode_annotation_gtf_mod.gtf 
+            perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{lncipedia_gtf} > lncipedia_mod.gtf 
+            
+            echo  gencode_annotation_gtf_mod.gtf   >>filenames.txt
+            echo lncipedia_mod.gtf   >>filenames.txt
+           
+            
+            stringtie --merge -o merged_lncRNA.gtf  filenames.txt
+            cat gencode_annotation_gtf_mod.gtf   |grep "protein_coding" > gencode_protein_coding.gtf
+            gffcompare -r gencode_protein_coding.gtf -p !{cufflinks_threads} merged_lncRNA.gtf
+            awk '$3 =="u"||$3=="x"{print $5}' gffcmp.merged_lncRNA.gtf.tmap |sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl merged_lncRNA.gtf - > merged.filter.gtf
+            mv  merged.filter.gtf known.lncRNA.gtf
         
-        done
-        
-        stringtie --merge -o merged_lncRNA.gtf  filenames.txt
-        cat !{gencode_annotation_gtf}_mod.gtf  |grep "protein_coding" > gencode_protein_coding.gtf
-        gffcompare -r gencode_protein_coding.gtf -p !{cufflinks_threads} merged_lncRNA.gtf
-        awk '$3 =="u"||$3=="x"{print $5}' gffcmp.merged_lncRNA.gtf.tmap |sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl merged_lncRNA.gtf - > merged.filter.gtf
-        mv  merged.filter.gtf known.lncRNA.gtf
-        
-        '''
+            '''
         }else {
 
             '''
-        set -o pipefail
-        cuffmerge -o merged_lncRNA  !{lncRNA_gtflistfile}
-        cat !{gencode_annotation_gtf} |grep "protein_coding" > gencode_protein_coding.gtf
-        cuffcompare -o merged_lncRNA -r gencode_protein_coding.gtf -p !{cufflinks_threads} merged_lncRNA/merged.gtf
-        awk '$3 =="u"||$3=="x"{print $5}' merged_lncRNA/merged_lncRNA.merged.gtf.tmap  |sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl merged_lncRNA/merged.gtf - > merged.filter.gtf
-        mv  merged.filter.gtf known.lncRNA.gtf
+            set -o pipefail
+            
+            cuffmerge -o merged_lncRNA  !{lncRNA_gtflistfile}
+            cat !{gencode_annotation_gtf} |grep "protein_coding" > gencode_protein_coding.gtf
+            cuffcompare -o merged_lncRNA -r gencode_protein_coding.gtf -p !{cufflinks_threads} merged_lncRNA/merged.gtf
+            awk '$3 =="u"||$3=="x"{print $5}' merged_lncRNA/merged_lncRNA.merged.gtf.tmap  |sort|uniq|perl !{baseDir}/bin/extract_gtf_by_name.pl merged_lncRNA/merged.gtf - > merged.filter.gtf
+            mv  merged.filter.gtf known.lncRNA.gtf
         
         '''
         }
@@ -1117,7 +1119,8 @@ process Summary_renaming_and_classification {
 
     cufflinks_threads = ava_cpu- 1
 
-    '''
+    if(params.species=="human"){
+        '''
         set -o pipefail
         gffcompare -G -o filter \
                     -r !{knowlncRNAgtf} \
@@ -1130,7 +1133,8 @@ process Summary_renaming_and_classification {
             sort-bed - > gencode.protein_coding.gene.bed
         gtf2bed < novel.lncRNA.stringent.filter.gtf |sort-bed - > novel.lncRNA.stringent.filter.bed
         gtf2bed < !{knowlncRNAgtf} |sort-bed - > known.lncRNA.bed
-        perl !{baseDir}/bin/rename_lncRNA_2.pl
+        
+        perl !{baseDir}/bin/rename_lncRNA_2.pl gencode_annotation_gtf_mod.gtf lncipedia_mod.gtf 
         # mv lncRNA.final.v2.gtf all_lncRNA_for_classifier.gtf
         grep -v NA-1-1 lncRNA.final.v2.gtf > all_lncRNA_for_classifier.gtf
         perl !{baseDir}/bin/rename_proteincoding.pl !{gencode_protein_coding_gtf}> protein_coding.final.gtf
@@ -1143,6 +1147,35 @@ process Summary_renaming_and_classification {
         
         
         '''
+    }else{
+        '''
+        set -o pipefail
+        gffcompare -G -o filter \
+                    -r !{knowlncRNAgtf} \
+                    -p !{cufflinks_threads} !{novel_lncRNA_stringent_Gtf}
+        awk '$3 =="u"||$3=="x"{print $5}' filter.novel.lncRNA.stringent.gtf.tmap |sort|uniq| \
+                    perl !{baseDir}/bin/extract_gtf_by_name.pl !{novel_lncRNA_stringent_Gtf} - > novel.lncRNA.stringent.filter.gtf
+        
+        #rename lncRNAs according to neighbouring protein coding genes
+        awk '$3 =="gene"{print }' !{gencode_protein_coding_gtf} | perl -F'\\t' -lane '$F[8]=~/gene_id "(.*?)";/ && print join qq{\\t},@F[0,3,4],$1,@F[5,6,1,2,7,8,9]' - | \
+            sort-bed - > gencode.protein_coding.gene.bed
+        gtf2bed < novel.lncRNA.stringent.filter.gtf |sort-bed - > novel.lncRNA.stringent.filter.bed
+        gtf2bed < !{knowlncRNAgtf} |sort-bed - > known.lncRNA.bed
+        perl !{baseDir}/bin/rename_lncRNA_2.pl non_human_mod.gtf
+        # mv lncRNA.final.v2.gtf all_lncRNA_for_classifier.gtf
+        grep -v NA-1-1 lncRNA.final.v2.gtf > all_lncRNA_for_classifier.gtf
+        perl !{baseDir}/bin/rename_proteincoding.pl !{gencode_protein_coding_gtf}> protein_coding.final.gtf
+        cat all_lncRNA_for_classifier.gtf protein_coding.final.gtf > final_all.gtf
+        gffread final_all.gtf -g !{fasta_ref} -w final_all.fa -W
+        gffread all_lncRNA_for_classifier.gtf -g !{fasta_ref} -w lncRNA.fa -W
+        gffread protein_coding.final.gtf -g !{fasta_ref} -w protein_coding.fa -W
+        #classification 
+        perl !{baseDir}/bin/lincRNA_classification.pl all_lncRNA_for_classifier.gtf !{gencode_protein_coding_gtf} lncRNA_classification.txt 
+        
+        
+        '''
+    }
+
 }
 
 /*
@@ -1599,9 +1632,21 @@ if(design!=null){
             file "*" into final_output
             shell:
             file_tag = "Generating report ..."
+            if(params.aligner=='hisat'){
+                """
+grep -H '' | perl -F':\\\\s{2,}|\\\\s\\\\|\\\\t' -lanE'/:\$/ ? next : say join qq{\\t}, @F'
+             Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
             """
-        Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
-      """
+            }else if(params.aligner=='star'){
+                """
+             Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
+            """
+            }else if(params.aligner=='tophat'){
+                """
+             Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
+            """
+            }
+
         }
     }
 }
