@@ -20,4 +20,4 @@ dependencies:
   - afterqc=0.9.7
   - gffcompare=0.10.1
   - sambamba=0.6.8
-  
+  - plek=1.2
