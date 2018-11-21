@@ -1547,7 +1547,7 @@ detools = params.detools
 design=params.design
 if(design!=null){
     design = file(params.design)
-    if (!design.exists()) exit 1, "Design file not found, plz check your design path: ${params.design}"
+    if (!design.exists()) exit 1, "Design file not found, plz check your design file path: ${params.design}"
 
     if(!params.merged_gtf) {
         process Run_LncPipeReporter {
@@ -1589,8 +1589,9 @@ if(design!=null){
             shell:
             file_tag = "Generating report ..."
             """
-        Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
-      """
+            perl -F':|,' -lanE'BEGIN{say qq{SampleID\tcondition}} $del = shift @F; say qq{$_\t$del} for @F' ${design}  > design.matrix 
+            Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
+            """
         }
     }
 
@@ -1613,8 +1614,8 @@ if(design!=null){
             shell:
             file_tag = "Generating report ..."
             """
-         Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
-        """
+             Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
+            """
         }
     }else{
         process Run_LncPipeReporter_without_Design {
@@ -1632,20 +1633,11 @@ if(design!=null){
             file "*" into final_output
             shell:
             file_tag = "Generating report ..."
-            if(params.aligner=='hisat'){
-                """
-grep -H '' | perl -F':\\\\s{2,}|\\\\s\\\\|\\\\t' -lanE'/:\$/ ? next : say join qq{\\t}, @F'
+
+            """
              Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
             """
-            }else if(params.aligner=='star'){
-                """
-             Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
-            """
-            }else if(params.aligner=='tophat'){
-                """
-             Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
-            """
-            }
+
 
         }
     }
@@ -1667,17 +1659,17 @@ if(workflow.success) {
             ['mail', '-s', subject, recipient].execute() <<
                     """
 
-    LncPipe execution summary
-    ---------------------------
-    Your command line: ${workflow.commandLine}
-    Completed at: ${workflow.complete}
-    Duration    : ${workflow.duration}
-    Success     : ${workflow.success}
-    workDir     : ${workflow.workDir}
-    exit status : ${workflow.exitStatus}
-    Error report: ${workflow.errorReport ?: '-'}
-
-    """
+            LncPipe execution summary
+            ---------------------------
+            Your command line: ${workflow.commandLine}
+            Completed at: ${workflow.complete}
+            Duration    : ${workflow.duration}
+            Success     : ${workflow.success}
+            workDir     : ${workflow.workDir}
+            exit status : ${workflow.exitStatus}
+            Error report: ${workflow.errorReport ?: '-'}
+        
+            """
         }
 
 
