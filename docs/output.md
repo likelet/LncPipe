@@ -60,9 +60,13 @@ Plz see a detailed illustration in our [literature](https://linkinghub.elsevier.
   * zip file containing the FastQC report, tab-delimited data file and plot images
 
 
-**Output directory: `results/Identified_lncRNA`**
-**Output directory: `results/LncReporter`**
-**Output directory: `results/Identified_lncRNA`**
-**Output directory: `results/Quantification`**
+**Output directory: `results/Identified_lncRNA`**  
+
+**Output directory: `results/LncReporter`**  
+
+**Output directory: `results/Identified_lncRNA`**  
+
+**Output directory: `results/Quantification`**  
+
 **Output directory: `results/*_alignment`**
 
