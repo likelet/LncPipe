@@ -1,6 +1,6 @@
 FROM nfcore/base
 MAINTAINER Qi Zhao <youremailzhao>
-LABEL authors="youremailzhao" \
+LABEL authors="zhaoqi@sysucc.org.cn" \
     description="Docker image containing all requirements for the nfcore/lncpipe pipeline"
 
 COPY environment.yml /
