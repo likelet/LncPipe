@@ -1,5 +1,7 @@
 # nf-core/lncpipe: Reference Genomes Configuration
 
+We are sorry that the current lncPipe only support few types of organism: human, mouse, fly and zebrafish, as one essential tool CPAT included in LncPipe only available for 4 species
+
 The nf-core/lncpipe pipeline needs a reference genome for alignment and annotation.
 
 These paths can be supplied on the command line at run time (see the [usage docs](../usage.md)),
@@ -28,22 +30,4 @@ params {
   // Optional - default genome. Ignored if --genome 'OTHER-GENOME' specified on command line
   genome = 'YOUR-ID'
 }
-```
-
-You can add as many genomes as you like as long as they have unique IDs.
-
-## illumina iGenomes
-To make the use of reference genomes easier, illumina has developed a centralised resource called [iGenomes](https://support.illumina.com/sequencing/sequencing_software/igenome.html).
-Multiple reference index types are held together with consistent structure for multiple genomes.
-
-We have put a copy of iGenomes up onto AWS S3 hosting and this pipeline is configured to use this by default.
-The hosting fees for AWS iGenomes are currently kindly funded by a grant from Amazon.
-The pipeline will automatically download the required reference files when you run the pipeline.
-For more information about the AWS iGenomes, see https://ewels.github.io/AWS-iGenomes/
-
-Downloading the files takes time and bandwidth, so we recommend making a local copy of the iGenomes resource.
-Once downloaded, you can customise the variable `params.igenomes_base` in your custom configuration file to point to the reference location.
-For example:
-```nextflow
-params.igenomes_base = '/path/to/data/igenomes/'
 ```
