@@ -28,8 +28,14 @@ The nf-core/lncpipe pipeline comes with documentation about the pipeline, found 
 ## Schematic diagram 
 ![workflow](docs/img/workflow.png)
 
+## Acknowledgment
+Thanks to the author of [AfterQC](https://github.com/OpenGene/AfterQC)/fastp, Shifu Chen, for his help on providing a gzip output support to meet the require of LncPipe.  Thanks to the internal test by Hongwan Zhang and Yan Wang from SYSUCC Cancer bioinformatics platform.
+And also many thanks to the wonderful guys @apeltzer, @ewels and others from nf-core that help me to polish the code and structure of lncpipe.  
+
+
 ## Citation 
 
+For details of LncPipe, plz read the article beblow :happy:
 Qi Zhao, Yu Sun, Dawei Wang, Hongwan Zhang, Kai Yu, Jian Zheng, Zhixiang Zuo. LncPipe: A Nextflow-based pipeline for identification and analysis of long non-coding RNAs from RNA-Seq data. [J Genet Genomics. 2018 Jul 20;45(7):399-401](https://linkinghub.elsevier.com/retrieve/pii/S1673-8527(18)30117-6) 
 
 
