@@ -17,41 +17,44 @@ if (@ARGV == 2){
 open FH,"$ARGV[0]" or die;
 while(<FH>){
 	chomp;
+	if ($_ =~ /^#/){
+		next
+	}
 	my @field=split "\t";
 	$_=~/gene_name "(.+?)"/;
 	my $gene_name=$1;
 	my $loc = $field[0].'\t'.($field[3]-1).'\t'.$field[4].'\t'.$field[6].'\t'.$field[2];
-	foreach my $location (keys %know_lnc){
-		if($location eq $loc){
+	if (defined($know_lnc{$loc})){
 			$genecode{$know_lnc{$loc}} = $gene_name;
-		}
 	}
 }
 open FH,"$ARGV[1]" or die;
 while(<FH>){
 	chomp;
+	if ($_ =~ /^#/){
+		next
+	}
 	my @field=split "\t";
 	$_=~/gene_id "(.+?)"/;
 	my $gene_name=$1;
 	my $loc = $field[0].'\t'.($field[3]-1).'\t'.$field[4].'\t'.$field[6].'\t'.$field[2];
-	foreach my $location (keys %know_lnc){
-		if($location eq $loc){
+	if (defined($know_lnc{$loc})){
 			$genecode{$know_lnc{$loc}} = $gene_name;
-		}
 	}
 }
 }elsif (@ARGV == 1){
 open FH,"$ARGV[0]" or die;
 while(<FH>){
 	chomp;
+	if ($_ =~ /^#/){
+		next
+	}
 	my @field=split "\t";
 	$_=~/gene_name "(.+?)"/;
 	my $gene_name=$1;
 	my $loc = $field[0].'\t'.($field[3]-1).'\t'.$field[4].'\t'.$field[6].'\t'.$field[2];
-	foreach my $location (keys %know_lnc){
-		if($location eq $loc){
+	if (defined($know_lnc{$loc})){
 			$genecode{$know_lnc{$loc}} = $gene_name;
-		}
 	}
 }
 }else{
