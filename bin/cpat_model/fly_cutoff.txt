@@ -1,0 +1,2 @@
+Coding Probability Cutoff: 0.39
+Achieved  Sensitivity and Specificity: 0.963

@@ -127,7 +127,7 @@ params.each { entry ->
 
 //default values
 params.input_folder = './'
-params.out_folder = './'
+params.outdir = './'
 params.multiqc_config = "$baseDir/assets/multiqc_config.yaml" // for generate qc and alignment result
 params.merged_gtf = null// dose merged_gtf provided
 singleEnd = params.singleEnd ? true : false
@@ -142,8 +142,8 @@ log.info print_yellow("Fastq file extension:           ") + print_green(params.f
 log.info print_yellow("Single end :                    ") + print_green(params.singleEnd)
 log.info print_yellow("skip annotation process:        ") + print_green(params.skip_combine)
 log.info print_yellow("Input folder:                   ") + print_green(params.input_folder)
-log.info print_yellow("Output folder:                  ") + print_green(params.out_folder)
-log.info print_yellow("Genome sequence location:       ") + print_green(params.fasta_ref)
+log.info print_yellow("Output folder:                  ") + print_green(params.outdir)
+log.info print_yellow("Genome sequence location:       ") + print_green(params.fasta)
 log.info print_yellow("STAR index path:                ") + print_green(params.star_index)
 log.info print_yellow("HISAT2 index path:               ") + print_green(params.hisat2_index)
 log.info print_yellow("bowtie/tophat index path:       ") + print_green(params.bowtie2_index)
@@ -157,8 +157,8 @@ log.info "\n"
 
 
 // read file
-fasta_ref = file(params.fasta_ref)
-if (!fasta_ref.exists()) exit 1, "Reference genome not found: ${params.fasta_ref}"
+fasta = file(params.fasta)
+if (!fasta.exists()) exit 1, "Reference genome not found: ${params.fasta}"
 if(params.aligner=='star'){
     star_index = file(params.star_index)
     if (!star_index.exists()) exit 1, "STAR index not found: ${params.star_index}"
@@ -188,7 +188,7 @@ if (params.species=="human") {
     annotation_channel.collectFile { file -> ['lncRNA.gtflist', file.name + '\n'] }
             .set { LncRNA_gtflist }
     process combine_public_annotation {
-        storeDir { params.out_folder + "/Combined_annotations" }
+        storeDir { params.outdir + "/Combined_annotations" }
         input:
         file lncRNA_gtflistfile from LncRNA_gtflist
         file gencode_annotation_gtf
@@ -255,14 +255,14 @@ if (!params.merged_gtf) {
      * Step 2: Build read aligner (STAR/tophat/HISAT2) index, if not provided
      */
     //star_index if not exist
-    /*if (params.aligner == 'star' && params.star_index == false && fasta_ref) {
+    /*if (params.aligner == 'star' && params.star_index == false && fasta) {
         process Make_STARindex {
-            tag fasta_ref
+            tag fasta
 
-            storeDir { params.out_folder + "/STARIndex" }
+            storeDir { params.outdir + "/STARIndex" }
 
             input:
-            file fasta_ref from fasta_ref
+            file fasta from fasta
             file gencode_annotation_gtf
 
             output:
@@ -278,40 +278,40 @@ if (!params.merged_gtf) {
                     --sjdbGTFfile $gencode_annotation_gtf \
                     --sjdbOverhang 149 \
                     --genomeDir star_index/ \
-                    --genomeFastaFiles $fasta_ref
+                    --genomeFastaFiles $fasta
                 """
         }
-    } else if (params.aligner == 'star' && params.star_index == false && !fasta_ref) {
-        println print_red("No reference fasta sequence loaded! please specify ") + print_red("--fasta_ref") + print_red(" with reference.")
+    } else if (params.aligner == 'star' && params.star_index == false && !fasta) {
+        println print_red("No reference fasta sequence loaded! please specify ") + print_red("--fasta") + print_red(" with reference.")
 
-    } else if (params.aligner == 'tophat' && params.bowtie2_index == false && !fasta_ref) {
+    } else if (params.aligner == 'tophat' && params.bowtie2_index == false && !fasta) {
         process Make_bowtie2_index {
 
-            tag fasta_ref
-            storeDir { params.out_folder + "/bowtie2Index" }
+            tag fasta
+            storeDir { params.outdir + "/bowtie2Index" }
 
             input:
-            file fasta_ref from fasta_ref
+            file fasta from fasta
 
             output:
             file "genome_bt2.*" into bowtie2_index
 
             shell:
             """
-                bowtie2-build !{fasta_ref} genome_bt2
+                bowtie2-build !{fasta} genome_bt2
                 """
         }
-    } else if (params.aligner == 'tophat' && !fasta_ref) {
-        println print_red("No reference fasta equence loaded! please specify ") + print_red("--fasta_ref") + print_red(" with reference.")
-    } else if (params.aligner == 'hisat' && !fasta_ref) {
+    } else if (params.aligner == 'tophat' && !fasta) {
+        println print_red("No reference fasta equence loaded! please specify ") + print_red("--fasta") + print_red(" with reference.")
+    } else if (params.aligner == 'hisat' && !fasta) {
         process Make_hisat_index {
 
-            tag fasta_ref
+            tag fasta
 
-            storeDir { params.out_folder + "/hisatIndex" }
+            storeDir { params.outdir + "/hisatIndex" }
 
             input:
-            file fasta_ref from fasta_ref
+            file fasta from fasta
             file gencode_annotation_gtf
 
             output:
@@ -323,17 +323,17 @@ if (!params.merged_gtf) {
                 #for human genome it will take more than 160GB memory and take really  long time (6 more hours), thus we recommand to down pre-build genome from hisat website
                 extract_splice_sites.py !{gencode_annotation_gtf} >genome_ht2.ss
                 extract_exons.py !{gencode_annotation_gtf} > genome_ht2.exon
-                hisat2-build -p !{hisat2_index_threads} --ss genome_ht2.ss --exo genome_ht2.exon !{fasta_ref} genome_ht2
+                hisat2-build -p !{hisat2_index_threads} --ss genome_ht2.ss --exo genome_ht2.exon !{fasta} genome_ht2
                 """
         }
-    } else if (params.aligner == 'tophat' && params.hisat_index == false && !fasta_ref) {
-        println print_red("No reference fasta sequence loaded! please specify ") + print_red("--fasta_ref") + print_red(" with reference.")
+    } else if (params.aligner == 'tophat' && params.hisat_index == false && !fasta) {
+        println print_red("No reference fasta sequence loaded! please specify ") + print_red("--fasta") + print_red(" with reference.")
     }*/
 
     println print_purple("Analysis from fastq file")
     //Match the pairs on two channels
 
-    reads = params.input_folder + params.fastq_ext
+    reads = params.input_folder + params.reads
 
     /*
     * Step 3: QC (FastQC/AfterQC/Fastp) of raw reads
@@ -350,7 +350,7 @@ if (!params.merged_gtf) {
             label 'qc'
 
             publishDir pattern: "*.html",
-                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
+                    path: { params.outdir + "/QC" }, mode: 'copy', overwrite: true
 
             input:
             set val(samplename), file(fastq_file) from reads_for_fastqc
@@ -367,14 +367,14 @@ if (!params.merged_gtf) {
     else if (params.qctools == 'afterqc'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta string in nextflow.config file \n")
         }.set { reads_for_fastqc}
         process Run_afterQC {
 
             tag { fastq_tag }
             label 'qc'
             publishDir pattern: "QC/*.html",
-                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
+                    path: { params.outdir + "/QC" }, mode: 'copy', overwrite: true
 
             input:
             set val(samplename), file(fastq_file) from reads_for_fastqc
@@ -398,7 +398,7 @@ if (!params.merged_gtf) {
     else if (params.qctools == 'fastp'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
         process Run_FastP {
@@ -407,7 +407,7 @@ if (!params.merged_gtf) {
             label 'qc'
 
             publishDir pattern: "*.html",
-                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
+                    path: { params.outdir + "/QC" }, mode: 'copy', overwrite: true
 
             input:
             set val(samplename), file(fastq_file) from reads_for_fastqc
@@ -431,7 +431,7 @@ if (!params.merged_gtf) {
     }else{
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta string in nextflow.config file \n")
         }
         .into{readPairs_for_discovery; readPairs_for_kallisto;fastqc_for_waiting}
     }
@@ -446,12 +446,12 @@ if (!params.merged_gtf) {
             tag { file_tag }
 
             publishDir pattern: "",
-                    path: { params.out_folder + "/Result/Star_alignment" }, mode: 'copy', overwrite: true
+                    path: { params.outdir + "/Star_alignment" }, mode: 'copy', overwrite: true
 
             input:
             set val(samplename), file(pair) from readPairs_for_discovery
             file tempfiles from fastqc_for_waiting // just for waiting
-            file fasta_ref
+            file fasta
             file star_index
 
             output:
@@ -511,12 +511,12 @@ if (!params.merged_gtf) {
             tag { file_tag }
 
             publishDir pattern: "",
-                    path: { params.out_folder + "/Result/tophat_alignment" }, mode: 'copy', overwrite: true
+                    path: { params.outdir + "/tophat_alignment" }, mode: 'copy', overwrite: true
 
             input:
             set val(samplename), file(pair) from readPairs_for_discovery
             file tempfiles from fastqc_for_waiting // just for waiting
-            file fasta_ref
+            file fasta
             file bowtie2_index from bowtie2_index.collect()
             file gtf from gencode_annotation_gtf
 
@@ -553,12 +553,12 @@ if (!params.merged_gtf) {
             tag { file_tag }
             label 'para'
             publishDir pattern: "",
-                    path: { params.out_folder + "/Result/hisat_alignment" }, mode: 'copy', overwrite: true
+                    path: { params.outdir + "/hisat_alignment" }, mode: 'copy', overwrite: true
 
             input:
             set val(samplename), file(pair) from readPairs_for_discovery
             file tempfiles from fastqc_for_waiting // just for waiting
-            file fasta_ref
+            file fasta
             file hisat2_id from hisat2_index.collect()
 
             output:
@@ -629,7 +629,7 @@ if (!params.merged_gtf) {
 
             input:
             set val(samplename),file(alignment_bam) from hisat_mappedReads
-            file fasta_ref
+            file fasta
             file gencode_annotation_gtf
 
             output:
@@ -664,12 +664,12 @@ if (!params.merged_gtf) {
             tag { file_tag }
             label 'para'
             publishDir pattern: "merged.gtf",
-                    path: { params.out_folder + "/Result/Merged_assemblies" }, mode: 'copy', overwrite: true
+                    path: { params.outdir + "/Merged_assemblies" }, mode: 'copy', overwrite: true
 
             input:
             file gtf_filenames from GTFfilenames
             file cufflinksgtf_file from StringTieOutGtf_fn.toList() // not used but just send the file in current running folder
-            file fasta_ref
+            file fasta
 
 
             output:
@@ -691,7 +691,7 @@ if (!params.merged_gtf) {
 
             input:
             set val(file_tag), file(alignment_bam) from mappedReads
-            file fasta_ref
+            file fasta
             file gencode_annotation_gtf
 
             output:
@@ -709,7 +709,7 @@ if (!params.merged_gtf) {
             #run cufflinks
             
             cufflinks -g !{gencode_annotation_gtf} \
-                      -b !{fasta_ref} \
+                      -b !{fasta} \
                       --library-type !{strand_str}\
                       --max-multiread-fraction 0.25 \
                       --3-overhang-tolerance 2000 \
@@ -724,7 +724,7 @@ if (!params.merged_gtf) {
             #run cufflinks
             
             cufflinks -g !{gencode_annotation_gtf} \
-                      -b !{fasta_ref} \
+                      -b !{fasta} \
                       --library-type !{strand_str} \
                       --max-multiread-fraction 0.25 \
                       --3-overhang-tolerance 2000 \
@@ -752,13 +752,13 @@ if (!params.merged_gtf) {
             tag { file_tag }
             label 'para'
             publishDir pattern: "CUFFMERGE/merged.gtf",
-                    path: { params.out_folder + "/Result/All_assemblies" }, mode: 'copy', overwrite: true
+                    path: { params.outdir + "/All_assemblies" }, mode: 'copy', overwrite: true
 
             input:
             file gtf_filenames from GTFfilenames
             file cufflinksgtf_file from cuflinksoutgtf_fn.toList() // not used but just send the file in current running folder
 
-            file fasta_ref
+            file fasta
 
 
             output:
@@ -768,7 +768,7 @@ if (!params.merged_gtf) {
             '''
             mkdir CUFFMERGE
             cuffmerge -o CUFFMERGE \
-                      -s !{fasta_ref} \
+                      -s !{fasta} \
                       -p !{task.cpus} \
                          !{gtf_filenames}
             
@@ -790,7 +790,7 @@ else {
     }
 
     // add fastq when do quantification
-    reads = params.input_folder + params.fastq_ext
+    reads = params.input_folder + params.reads
     if (params.qctools == 'fastqc') {
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
@@ -802,7 +802,7 @@ else {
             label 'qc'
 
             publishDir pattern: "*.html",
-                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
+                    path: { params.outdir + "/QC" }, mode: 'copy', overwrite: true
 
             input:
             set val(samplename), file(fastq_file) from reads_for_fastqc
@@ -819,7 +819,7 @@ else {
     else if (params.qctools == 'afterqc'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Fastq file not found :  ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Fastq file not found :  ${reads}\nPlz check your reads string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
         process Run_afterQC {
@@ -828,7 +828,7 @@ else {
             label 'qc'
 
             publishDir pattern: "QC/*.html",
-                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
+                    path: { params.outdir + "/QC" }, mode: 'copy', overwrite: true
 
             input:
             set val(samplename), file(fastq_file) from reads_for_fastqc
@@ -852,7 +852,7 @@ else {
     else if (params.qctools == 'fastp'){
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Fastq file not found :  ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Fastq file not found :  ${reads}\nPlz check your reads string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
         process Run_FastP {
@@ -861,7 +861,7 @@ else {
             label 'qc'
 
             publishDir pattern: "*.html",
-                    path: { params.out_folder + "/Result/QC" }, mode: 'copy', overwrite: true
+                    path: { params.outdir + "/QC" }, mode: 'copy', overwrite: true
 
             input:
             set val(samplename), file(fastq_file) from reads_for_fastqc
@@ -886,7 +886,7 @@ else {
     else{
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {
-            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
+            exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your reads string in nextflow.config file \n")
         }
         .into{readPairs_for_discovery; readPairs_for_kallisto;fastqc_for_waiting}
     }
@@ -923,7 +923,7 @@ process Identify_novel_lncRNA_with_criterions {
 
     input:
     file comparedTmap from comparedGTF_tmap
-    file fasta_ref
+    file fasta
     file mergedGTF from mergeTranscripts_forExtract
 
     output:
@@ -945,7 +945,7 @@ process Identify_novel_lncRNA_with_criterions {
         # gtf2gff3
         #check whether required
         # get fasta from gtf
-        gffread novel.longRNA.gtf -g !{fasta_ref} -w novel.longRNA.fa -W
+        gffread novel.longRNA.gtf -g !{fasta} -w novel.longRNA.fa -W
      '''
 }
 
@@ -980,30 +980,30 @@ process Predict_coding_abilities_by_CPAT {
     if(params.species=="human"){
         '''
         cpat.py -g !{novel_lncRNA_fasta} \
-                                       -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Human_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/Human_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/Human_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
     }else if (params.species=="mouse"){
         '''
         cpat.py -g !{novel_lncRNA_fasta} \
-                                       -x !{params.cpatpath}/dat/Mouse_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Mouse_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/Mouse_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/Mouse_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
 
     }else if (params.species=="zebrafish"){
         '''
         cpat.py -g !{novel_lncRNA_fasta} \
-                                       -x !{params.cpatpath}/dat/zebrafish_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/zebrafish_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/zebrafish_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/zebrafish_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
     }else {
         '''
         cpat.py -g !{novel_lncRNA_fasta} \
-                                       -x !{params.cpatpath}/dat/fly_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/fly_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/fly_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/fly_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
     }
@@ -1021,7 +1021,7 @@ process Filter_lncRNA_by_coding_potential_result {
     file longRNA_novel_exoncount from novelLncRnaExonCount
     file cuffmergegtf from mergeTranscripts_forCodeingProtential
     file gencode_annotation_gtf
-    file fasta_ref
+    file fasta
 
     output:
     file "novel.longRNA.stringent.gtf" into Novel_longRNA_stringent_gtf // not used
@@ -1044,14 +1044,14 @@ process Filter_lncRNA_by_coding_potential_result {
 *Step 10: Further filtered lncRNAs with known criterion
 */
 process Summary_renaming_and_classification {
-    publishDir "${params.out_folder}/Result/Identified_lncRNA", mode: 'copy'
+    publishDir "${params.outdir}/Identified_lncRNA", mode: 'copy'
 
 
     input:
     file knowlncRNAgtf from KnownLncRNAgtf
     file gencode_protein_coding_gtf from proteinCodingGTF
     file novel_lncRNA_stringent_Gtf from novel_lncRNA_stringent_gtf
-    file fasta_ref
+    file fasta
     file mod_file_for_rename
 
     output:
@@ -1091,9 +1091,9 @@ process Summary_renaming_and_classification {
         grep -v NA-1-1 lncRNA.final.v2.gtf > all_lncRNA_for_classifier.gtf
         perl !{baseDir}/bin/rename_proteincoding.pl !{gencode_protein_coding_gtf}> protein_coding.final.gtf
         cat all_lncRNA_for_classifier.gtf protein_coding.final.gtf > final_all.gtf
-        gffread final_all.gtf -g !{fasta_ref} -w final_all.fa -W
-        gffread all_lncRNA_for_classifier.gtf -g !{fasta_ref} -w lncRNA.fa -W
-        gffread protein_coding.final.gtf -g !{fasta_ref} -w protein_coding.fa -W
+        gffread final_all.gtf -g !{fasta} -w final_all.fa -W
+        gffread all_lncRNA_for_classifier.gtf -g !{fasta} -w lncRNA.fa -W
+        gffread protein_coding.final.gtf -g !{fasta} -w protein_coding.fa -W
         #classification 
         perl !{baseDir}/bin/lincRNA_classification.pl all_lncRNA_for_classifier.gtf !{gencode_protein_coding_gtf} lncRNA_classification.txt 
         
@@ -1118,9 +1118,9 @@ process Summary_renaming_and_classification {
         grep -v NA-1-1 lncRNA.final.v2.gtf > all_lncRNA_for_classifier.gtf
         perl !{baseDir}/bin/rename_proteincoding.pl !{gencode_protein_coding_gtf}> protein_coding.final.gtf
         cat all_lncRNA_for_classifier.gtf protein_coding.final.gtf > final_all.gtf
-        gffread final_all.gtf -g !{fasta_ref} -w final_all.fa -W
-        gffread all_lncRNA_for_classifier.gtf -g !{fasta_ref} -w lncRNA.fa -W
-        gffread protein_coding.final.gtf -g !{fasta_ref} -w protein_coding.fa -W
+        gffread final_all.gtf -g !{fasta} -w final_all.fa -W
+        gffread all_lncRNA_for_classifier.gtf -g !{fasta} -w lncRNA.fa -W
+        gffread protein_coding.final.gtf -g !{fasta} -w protein_coding.fa -W
         #classification 
         perl !{baseDir}/bin/lincRNA_classification.pl all_lncRNA_for_classifier.gtf !{gencode_protein_coding_gtf} lncRNA_classification.txt 
         
@@ -1144,30 +1144,30 @@ process Rerun_CPAT_to_evaluate_lncRNA {
     if(params.species=="human"){
         '''
         cpat.py -g !{lncRNA_final_cpat_fasta} \
-                                       -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Human_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/Human_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/Human_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
         '''
     }else if (params.species=="mouse"){
         '''
         cpat.py -g !{lncRNA_final_cpat_fasta} \
-                                       -x !{params.cpatpath}/dat/Mouse_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Mouse_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/Mouse_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/Mouse_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
         '''
 
     }else if (params.species=="zebrafish"){
         '''
         cpat.py -g !{lncRNA_final_cpat_fasta} \
-                                       -x !{params.cpatpath}/dat/zebrafish_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/zebrafish_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/zebrafish_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/zebrafish_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
         '''
     }else {
         '''
         cpat.py -g !{lncRNA_final_cpat_fasta} \
-                                       -x !{params.cpatpath}/dat/fly_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/fly_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/fly_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/fly_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
         '''
     }
@@ -1181,8 +1181,8 @@ process Rerun_CPAT_to_evaluate_coding {
     shell:
     '''
         cpat.py -g !{final_coding_gene_for_CPAT} \
-                                       -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Human_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/Human_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/Human_logitModel.RData \
                                        -o protein_coding.final.CPAT.out
         '''
 }
@@ -1448,7 +1448,7 @@ if(params.quant=="htseq"){
     process Get_HTseq_matrix {
         tag { file_tag }
         publishDir pattern: "htseq*.txt",
-                path: "${params.out_folder}/Result/Quantification/", mode: 'copy'
+                path: "${params.outdir}/Quantification/", mode: 'copy'
         input:
         file abundance_tsv_matrix from htseq_tcv_collection.collect()
         file annotated_gtf from finalGTF_for_annotate_gtf
@@ -1466,7 +1466,7 @@ if(params.quant=="htseq"){
     process Get_kallisto_matrix {
         tag { file_tag }
         publishDir pattern: "kallisto*.txt",
-                path: "${params.out_folder}/Result/Quantification/", mode: 'copy'
+                path: "${params.outdir}/Quantification/", mode: 'copy'
         input:
         file abundance_tsv_matrix from kallisto_tcv_collection.collect()
         file annotated_gtf from finalGTF_for_annotate_gtf
@@ -1503,7 +1503,7 @@ if(design!=null){
         process Run_LncPipeReporter {
             tag { file_tag }
             publishDir pattern: "*",
-                    path: "${params.out_folder}/Result/", mode: 'move'
+                    path: "${params.outdir}/", mode: 'move'
             input:
             //alignmet log
             file design
@@ -1525,7 +1525,7 @@ if(design!=null){
         process Run_LncPipeReporter {
             tag { file_tag }
             publishDir pattern: "*",
-                    path: "${params.out_folder}/Result/", mode: 'move'
+                    path: "${params.outdir}/", mode: 'move'
             input:
             //alignment log
             file design
@@ -1550,7 +1550,7 @@ if(design!=null){
         process Run_LncPipeReporter_without_Design {
             tag { file_tag }
             publishDir pattern: "*",
-                    path: "${params.out_folder}/Result/", mode: 'move'
+                    path: "${params.outdir}/", mode: 'move'
             input:
             //alignmet log
             file alignmetlogs from alignment_logs.collect()
@@ -1571,7 +1571,7 @@ if(design!=null){
         process Run_LncPipeReporter_without_Design {
             tag { file_tag }
             publishDir pattern: "*",
-                    path: "${params.out_folder}/Result/", mode: 'move'
+                    path: "${params.outdir}/", mode: 'move'
             input:
             //alignment log
             //gtf statistics

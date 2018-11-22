@@ -23,6 +23,7 @@ The nf-core/lncpipe pipeline comes with documentation about the pipeline, found 
     * [Adding your own system](docs/configuration/adding_your_own.md)
 3. [Running the pipeline](docs/usage.md)
 4. [Output and how to interpret the results](docs/output.md)
+5. [Run analysis for non-human species](docs/README_for_non_human_genome.md)
 5. [Troubleshooting](docs/troubleshooting.md)
 
 ## Schematic diagram 
