@@ -39,7 +39,7 @@ If you have problems that are related to Nextflow and not our pipeline then chec
 
 
 ## FAQ  
-
+In local mode: 
 * *1. PLEK throws an error "/data/software/PLEK.1.2/PLEK.py:line12: $'\r': can not find command", how to fix?*
 >A: using the follow command as suggested in the installation section. 
     

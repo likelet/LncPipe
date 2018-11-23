@@ -934,7 +934,6 @@ process Identify_novel_lncRNA_with_criterions {
     shell:
     '''
         # filtering novel lncRNA based on cuffmerged trascripts
-        set -o pipefail
         awk '$3 =="x"||$3=="u"||$3=="i"{print $0}' !{comparedTmap} > novel.gtf.tmap
         #   excluding length smaller than 200 nt
         awk '$10 >200{print}' novel.gtf.tmap > novel.longRNA.gtf.tmap
@@ -1030,7 +1029,6 @@ process Filter_lncRNA_by_coding_potential_result {
 
     shell:
     '''
-        set -o pipefail
         #merged transcripts
         perl !{baseDir}/bin/integrate_novel_transcripts.pl > novel.longRNA.txt
         awk '$4 >1{print $1}' novel.longRNA.txt|perl !{baseDir}/bin/extract_gtf_by_name.pl !{cuffmergegtf} - > novel.longRNA.stringent.gtf
@@ -1073,7 +1071,6 @@ process Summary_renaming_and_classification {
 
     if(params.species=="human"){
         '''
-        set -o pipefail
         gffcompare -G -o filter \
                     -r !{knowlncRNAgtf} \
                     -p !{task.cpus} !{novel_lncRNA_stringent_Gtf}
@@ -1101,7 +1098,6 @@ process Summary_renaming_and_classification {
         '''
     }else{
         '''
-        set -o pipefail
         gffcompare -G -o filter \
                     -r !{knowlncRNAgtf} \
                     -p !{task.cpus} !{novel_lncRNA_stringent_Gtf}
