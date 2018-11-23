@@ -74,7 +74,7 @@ if (params.help) {
 
             print_yellow('    General arguments:             Input and output setting\n') +
             print_cyan('      --input_folder <path>         ') + print_green('Path to input data(optional), current path default\n') +
-            print_cyan('      --fastq_ext <*_fq.gz>         ') + print_green('Filename pattern for pairing raw reads, e.g: *_{1,2}.fastq.gz for paired reads\n') +
+            print_cyan('      --reads <*_fq.gz>         ') + print_green('Filename pattern for pairing raw reads, e.g: *_{1,2}.fastq.gz for paired reads\n') +
             print_cyan('      --out_folder <path>           ') + print_green('The output directory where the results will be saved(optional), current path is default\n') +
             print_cyan('      --aligner <hisat>             ') + print_green('Aligner for reads mapping (optional),"hisat"(defalt)/"star"/"tophat"\n') +
             print_cyan('      --qctools <fastp>            ') + print_green('Tools for assess reads quality, fastp(default)/afterqc/fastqc/none(skip QC step)\n') +
@@ -112,7 +112,7 @@ if (params.help) {
 
 //check parameters
 /*
-allowed_params = ["input_folder","fastq_ext","out_folder","aligner","qctools","detools","quant",
+allowed_params = ["input_folder","reads","out_folder","aligner","qctools","detools","quant",
                    "merged_gtf","design","singleEnd","unstrand",
                    "fasta","gencode_annotation_gtf","lncipedia_gtf",
                    "lncRep_Output", "lncRep_theme","lncRep_min_expressed_sample",
@@ -133,12 +133,15 @@ params.merged_gtf = null// dose merged_gtf provided
 singleEnd = params.singleEnd ? true : false
 skip_combine = params.skip_combine ? true : false
 unstrand = params.unstrand ? true : false
+params.mail=false
+
 //Checking parameters
 log.info print_purple("You are running LncPipe with the following parameters:")
 log.info print_purple("Checking parameters ...")
 log.info print_yellow("=====================================")
 log.info print_yellow("Species:                        ") + print_green(params.species)
-log.info print_yellow("Fastq file extension:           ") + print_green(params.fastq_ext)
+log.info print_yellow("Fastq file extension:           ") + print_green(params.reads)
+log.info print_yellow("Design file:                    ") + print_green(params.design)
 log.info print_yellow("Single end :                    ") + print_green(params.singleEnd)
 log.info print_yellow("skip annotation process:        ") + print_green(params.skip_combine)
 log.info print_yellow("Input folder:                   ") + print_green(params.input_folder)
@@ -1490,7 +1493,7 @@ lncRep_cdf_percent = params.lncRep_cdf_percent
 lncRep_max_lnc_len = params.lncRep_max_lnc_len
 lncRep_min_expressed_sample = params.lncRep_min_expressed_sample
 detools = params.detools
-design=params.design
+design= params.design
 if(design!=null){
     design = file(params.design)
     if (!design.exists()) exit 1, "Design file not found, plz check your design file path: ${params.design}"
@@ -1498,8 +1501,8 @@ if(design!=null){
     if(!params.merged_gtf) {
         process Run_LncPipeReporter {
             tag { file_tag }
-            publishDir pattern: "*",
-                    path: "${params.outdir}/", mode: 'move'
+            publishDir pattern: "LncPipeReports",
+                    path: "${params.outdir}/", mode: 'copy'
             input:
             //alignmet log
             file design
@@ -1510,7 +1513,7 @@ if(design!=null){
             file kallisto_count_matrix from expression_matrixfile_count
 
             output:
-            file "*" into final_output
+            file "LncPipeReports" into final_output
             shell:
             file_tag = "Generating report ..."
             """
@@ -1520,8 +1523,8 @@ if(design!=null){
     }else{
         process Run_LncPipeReporter {
             tag { file_tag }
-            publishDir pattern: "*",
-                    path: "${params.outdir}/", mode: 'move'
+            publishDir pattern: "LncPipeReports",
+                    path: "${params.outdir}/", mode: 'copy'
             input:
             //alignment log
             file design
@@ -1531,7 +1534,7 @@ if(design!=null){
             file kallisto_count_matrix from expression_matrixfile_count
 
             output:
-            file "*" into final_output
+            file "LncPipeReports" into final_output
             shell:
             file_tag = "Generating report ..."
             """
@@ -1545,8 +1548,8 @@ if(design!=null){
     if(!params.merged_gtf) {
         process Run_LncPipeReporter_without_Design {
             tag { file_tag }
-            publishDir pattern: "*",
-                    path: "${params.outdir}/", mode: 'move'
+            publishDir pattern: "LncPipeReports",
+                    path: "${params.outdir}/", mode: 'copy'
             input:
             //alignmet log
             file alignmetlogs from alignment_logs.collect()
@@ -1556,7 +1559,7 @@ if(design!=null){
             file kallisto_count_matrix from expression_matrixfile_count
 
             output:
-            file "*" into final_output
+            file "LncPipeReports" into final_output
             shell:
             file_tag = "Generating report ..."
             """
@@ -1566,8 +1569,8 @@ if(design!=null){
     }else{
         process Run_LncPipeReporter_without_Design {
             tag { file_tag }
-            publishDir pattern: "*",
-                    path: "${params.outdir}/", mode: 'move'
+            publishDir pattern: "LncPipeReports",
+                    path: "${params.outdir}/", mode: 'copy'
             input:
             //alignment log
             //gtf statistics
@@ -1592,8 +1595,8 @@ if(design!=null){
 
 
 //pipeline log
-if(workflow.success) {
-    workflow.onComplete {
+
+workflow.onComplete {
 
         log.info print_green("LncPipe Pipeline Complete!")
 
@@ -1619,8 +1622,8 @@ if(workflow.success) {
         }
 
 
-    }
 }
+
 workflow.onError {
     println print_yellow("Oops... Pipeline execution stopped with the following message: ")+print_red(workflow.errorMessage)
 }
