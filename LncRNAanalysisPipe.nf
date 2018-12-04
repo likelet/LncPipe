@@ -137,12 +137,8 @@ params.each { entry ->
 //default values
 params.input_folder = './'
 params.out_folder = './'
-
-
-//dose merged_gtf provided
-params.merged_gtf = null
-
-
+params.multiqc_config = "$baseDir/assets/multiqc_config.yaml" // for generate qc and alignment result
+params.merged_gtf = null// dose merged_gtf provided
 singleEnd = params.singleEnd ? true : false
 skip_combine = params.skip_combine ? true : false
 unstrand = params.unstrand ? true : false
@@ -201,7 +197,7 @@ if(params.aligner=='star'){
 }
 
 input_folder = file(params.input_folder)
-
+multiqc_config = file(params.multiqc_config)
 
 /*
 *Step 1: Prepare Annotations
