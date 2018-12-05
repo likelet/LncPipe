@@ -73,7 +73,7 @@ if (params.help) {
             print_purple('       Nextflow run LncRNAanalysisPipe.nf \n') +
 
             print_yellow('    General arguments:             Input and output setting\n') +
-            print_cyan('      --input_folder <path>         ') + print_green('Path to input data(optional), current path default\n') +
+            print_cyan('      --inputdir <path>         ') + print_green('Path to input data(optional), current path default\n') +
             print_cyan('      --reads <*_fq.gz>         ') + print_green('Filename pattern for pairing raw reads, e.g: *_{1,2}.fastq.gz for paired reads\n') +
             print_cyan('      --out_folder <path>           ') + print_green('The output directory where the results will be saved(optional), current path is default\n') +
             print_cyan('      --aligner <hisat>             ') + print_green('Aligner for reads mapping (optional),"hisat"(defalt)/"star"/"tophat"\n') +
@@ -112,7 +112,7 @@ if (params.help) {
 
 //check parameters
 /*
-allowed_params = ["input_folder","reads","out_folder","aligner","qctools","detools","quant",
+allowed_params = ["inputdir","reads","out_folder","aligner","qctools","detools","quant",
                    "merged_gtf","design","singleEnd","unstrand",
                    "fasta","gencode_annotation_gtf","lncipedia_gtf",
                    "lncRep_Output", "lncRep_theme","lncRep_min_expressed_sample",
@@ -126,7 +126,7 @@ params.each { entry ->
 */
 
 //default values
-params.input_folder = './'
+params.inputdir = ''
 params.outdir = './'
 params.multiqc_config = "$baseDir/assets/multiqc_config.yaml" // for generate qc and alignment result
 params.merged_gtf = null// dose merged_gtf provided
@@ -144,7 +144,7 @@ log.info print_yellow("Fastq file extension:           ") + print_green(params.r
 log.info print_yellow("Design file:                    ") + print_green(params.design)
 log.info print_yellow("Single end :                    ") + print_green(params.singleEnd)
 log.info print_yellow("skip annotation process:        ") + print_green(params.skip_combine)
-log.info print_yellow("Input folder:                   ") + print_green(params.input_folder)
+log.info print_yellow("Input folder:                   ") + print_green(params.inputdir)
 log.info print_yellow("Output folder:                  ") + print_green(params.outdir)
 log.info print_yellow("Genome sequence location:       ") + print_green(params.fasta)
 log.info print_yellow("STAR index path:                ") + print_green(params.star_index)
@@ -173,7 +173,7 @@ if(params.aligner=='star'){
             .ifEmpty { exit 1, "bowtie2 index for tophat not found: ${params.bowtie2_index}" }
 }
 
-input_folder = file(params.input_folder)
+inputdir = params.inputdir
 multiqc_config = file(params.multiqc_config)
 
 /*
@@ -336,7 +336,7 @@ if (!params.merged_gtf) {
     println print_purple("Analysis from fastq file")
     //Match the pairs on two channels
 
-    reads = params.input_folder + params.reads
+    reads = params.inputdir + params.reads
 
     /*
     * Step 3: QC (FastQC/AfterQC/Fastp) of raw reads
@@ -793,7 +793,7 @@ else {
     }
 
     // add fastq when do quantification
-    reads = params.input_folder + params.reads
+    reads = params.inputdir + params.reads
     if (params.qctools == 'fastqc') {
         Channel.fromFilePairs(reads, size: params.singleEnd ? 1 : 2)
                 .ifEmpty {

@@ -32,5 +32,9 @@ env:
 script:
   # Lint the pipeline code
   - nf-core lint ${TRAVIS_BUILD_DIR}
+  # download the test data 
+  - wget http://cancerbio.info/pub/lncpipe/testdata.tar.gz
+  - tar -xvzf testdata.tar.gz
+  - cd testdata
   # Run the pipeline with the test profile
   - nextflow run ${TRAVIS_BUILD_DIR} -profile test,docker
