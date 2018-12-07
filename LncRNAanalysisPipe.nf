@@ -63,7 +63,7 @@ version="v0.2.43"
 // Nextflow Version check
 if( !nextflow.version.matches('0.30+') ) {
     println print_yellow("This workflow requires Nextflow version 0.26 or greater -- You are running version ")+ print_red(nextflow.version)
-#    exit 1
+// exit 1
 }
 //help information
 params.help = null
