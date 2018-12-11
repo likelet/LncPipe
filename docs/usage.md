@@ -14,6 +14,7 @@
         * [`none`](#none)
     * [`--reads`](#--reads)
     * [`--singleEnd`](#--singleend)
+    * [`--unstrand`](#--unstrand)
 * [Reference Genomes](#reference-genomes)
     * [`--genome`](#--genome)
     * [`--fasta`](#--fasta)
@@ -64,6 +65,41 @@ results         # Finished results (configurable, see below)
 # Other nextflow hidden files, eg. history of pipeline runs and old logs.
 ```
 
+## Prepare Input file 
+
+* Reference files for humans 
+
+    1. hisat index built from Genome: 
+    http://cancerbio.info/pub/hg38_hisat_index.tar.gz 
+    
+    2. Genome reference: 
+    ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/GRCh38.p10.genome.fa.gz 
+    
+    3. GENCODE gene annotation: 
+    ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_27/gencode.v27.annotation.gtf.gz 
+     
+    4. LNCipedia gene annotation: 
+     https://lncipedia.org/downloads/lncipedia_5_0_hc_hg38.gtf  
+     
+    5. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed
+    
+    6. `design` file (optional)
+
+* Reference files for mouse 
+
+    1. hisat index built from Genome  
+    
+    2. Genome reference:   
+    ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/GRCm38.p5.genome.fa.gz  
+    
+    3. GENCODE gene annotation: 
+    ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M16/gencode.vM16.annotation.gtf.gz
+    
+    4. Raw sequence file with \*.fastq.gz / \*.fq.gz suffixed  
+    
+    5. `design` file (optional)
+
+
 ### Updating the pipeline
 When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
 
@@ -101,6 +137,7 @@ Use this parameter to choose a configuration profile. Profiles can give configur
 * `test`
     * A profile with a complete configuration for automated testing
     * Includes links to test data so needs no other parameters
+    * NOTE: in lncPipe, test data should be downloaded separately, plz see details in [here]()
 * `none`
     * No configuration at all. Useful if you want to build your own config from scratch and want to avoid loading in the default `base` config profile (not recommended).
 
@@ -131,38 +168,24 @@ It is not possible to run a mixture of single-end and paired-end files in one ru
 
 ## Reference Genomes
 
-The pipeline config files come bundled with paths to the illumina iGenomes reference index files. If running with docker or AWS, the configuration is set up to use the [AWS-iGenomes](https://ewels.github.io/AWS-iGenomes/) resource.
+The lncPipe currently support `human` species only, other species will be supported in the near feature.  
 
-### `--genome` (using iGenomes)
-There are 31 different species supported in the iGenomes references. To run the pipeline, you must specify which to use with the `--genome` flag.
+We recommended users adopted the reference file from [GENCODE](https://www.gencodegenes.org/)
 
-You can find the keys to specify the genomes in the [iGenomes config file](../conf/igenomes.config). Common genomes that are supported are:
 
-* Human
-  * `--genome GRCh37`
-* Mouse
-  * `--genome GRCm38`
-* _Drosophila_
-  * `--genome BDGP6`
-* _S. cerevisiae_
-  * `--genome 'R64-1-1'`
+## Annotation file 
 
-> There are numerous others - check the config file for more.
+### `--gencode_annotation_gtf`  
+An annotation file from GENCODE database for annotating lncRNAs(required if not set in config file). e.g. [gencode.v26.annotation.gtf](ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_26/gencode.v26.annotation.gtf.gz)   
 
-Note that you can use the same configuration setup to save sets of reference files for your own use, even if they are not part of the iGenomes resource. See the [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for instructions on where to save such a file.
+### `--lncipedia_gtf`    
+An annotation file from LNCipedia database for annotating lncRNAs(required if not set in config file) e.g. [lncipedia_4_0_hc_hg38.gtf](http://www.lncipedia.org/downloads/lncipedia_4_0_hc_hg38.gtf) |
 
-The syntax for this reference configuration is as follows:
+### `--star_index/--bowtie2_index/--hisat2_index`
 
-```nextflow
-params {
-  genomes {
-    'GRCh37' {
-      fasta   = '<path to the genome fasta file>' // Used if no star index given
-    }
-    // Any number of additional genomes, key is used with --genome
-  }
-}
-```
+> This parameter is *required* when not configured in nextflow.config file. It specify the star/tophat/hisat2(mutually exclusive) index folder built before running [LncPipe](https://github.com/likelet/LncPipe) .
+If you don't know what it is?You can use `--fasta` to specify the reference sequence data. The index file would be built by [LncPipe](https://github.com/likelet/LncPipe)  automatically.
+
 
 ### `--fasta`
 If you prefer, you can specify the full path to your reference genome when you run the pipeline:
@@ -170,6 +193,23 @@ If you prefer, you can specify the full path to your reference genome when you r
 ```bash
 --fasta '[path to Fasta reference]'
 ```
+
+### `--design`
+> Experimental design file matrix for differential expression analysis. Default: `null`
+Format:
+
+    WT:Sample1,Sample2,Sample3
+    KO:Sample1,Sample2,Sample3
+
+While `KO/WT` represents the two experimental condition, and sample1, sample2, sample3 are replicates which should be comma-delimited in the same line .
+
+For sample names, it should be the sample as the prefix of fastq files which was trimmed by `--fastq_ext`.
+
+For example:
+
+ if fastq file names are `Sample1_1.fq.gz, Sample1_2.fq.gz` that comes from one sample and your `--fastq_ext` is set as `*_{1,2}.fq.gz`, the sample name
+should be Sample1.
+
 
 ## Job Resources
 ### Automatic resubmission
