@@ -1023,30 +1023,30 @@ process Predict_coding_abilities_by_CPAT {
     if(params.species=="human"){
         '''
         cpat.py -g !{novel_lncRNA_fasta} \
-                                       -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Human_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/Human_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/Human_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
     }else if (params.species=="mouse"){
         '''
         cpat.py -g !{novel_lncRNA_fasta} \
-                                       -x !{params.cpatpath}/dat/Mouse_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Mouse_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/Mouse_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/Mouse_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
 
     }else if (params.species=="zebrafish"){
         '''
         cpat.py -g !{novel_lncRNA_fasta} \
-                                       -x !{params.cpatpath}/dat/zebrafish_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/zebrafish_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/zebrafish_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/zebrafish_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
     }else {
         '''
         cpat.py -g !{novel_lncRNA_fasta} \
-                                       -x !{params.cpatpath}/dat/fly_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/fly_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/fly_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/fly_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
     }
@@ -1188,30 +1188,30 @@ process Rerun_CPAT_to_evaluate_lncRNA {
     if(params.species=="human"){
         '''
         cpat.py -g !{lncRNA_final_cpat_fasta} \
-                                       -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Human_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/Human_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/Human_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
         '''
     }else if (params.species=="mouse"){
         '''
         cpat.py -g !{lncRNA_final_cpat_fasta} \
-                                       -x !{params.cpatpath}/dat/Mouse_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Mouse_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/Mouse_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/Mouse_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
         '''
 
     }else if (params.species=="zebrafish"){
         '''
         cpat.py -g !{lncRNA_final_cpat_fasta} \
-                                       -x !{params.cpatpath}/dat/zebrafish_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/zebrafish_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/zebrafish_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/zebrafish_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
         '''
     }else {
         '''
         cpat.py -g !{lncRNA_final_cpat_fasta} \
-                                       -x !{params.cpatpath}/dat/fly_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/fly_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/fly_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/fly_logitModel.RData \
                                        -o lncRNA.final.CPAT.out
         '''
    }
@@ -1225,8 +1225,8 @@ process Rerun_CPAT_to_evaluate_coding {
     shell:
     '''
         cpat.py -g !{final_coding_gene_for_CPAT} \
-                                       -x !{params.cpatpath}/dat/Human_Hexamer.tsv \
-                                       -d !{params.cpatpath}/dat/Human_logitModel.RData \
+                                       -x !{baseDir}/bin/cpat_model/Human_Hexamer.tsv \
+                                       -d !{baseDir}/bin/cpat_model/Human_logitModel.RData \
                                        -o protein_coding.final.CPAT.out
         '''
 }
