@@ -172,6 +172,7 @@ As a nextflow-based analysis pipeline, LncPipe allow users edit configure file `
 
 To configure, please go to `params` line, and set the following information of various file locations and system environment settings
 
+```groovy
         params {
         /*
             User setting options (mandatory)
@@ -231,7 +232,7 @@ To configure, please go to `params` line, and set the following information of v
             file: "timeline.html"
         }
 
-
+```
 
 ## Parameters 
 > Those parameters would cover the setting from `nextflow.config` file

@@ -1,43 +1,89 @@
 #!/usr/bin/perl -w
 use strict;
+#die ("usage: <Genecode gtf file> <lncipedia gtf file>") unless @ARGV > 2;
+#print "#Query file ".$ARGV[0]." with file_number ".$ARGV[1]."\n";
 
 my %know_lnc;
 open FH,"known.lncRNA.bed" or die;
 while(<FH>){
 	chomp;
 	my @field=split "\t";
-	$know_lnc{$field[0].'\t'.$field[1].'\t'.$field[2].'\t'.$field[5].'\t'.$field[7]} = $field[3];
-}
-
-
-my %genecode;
-open FH,"gencode.v25.annotation.chrX.gtf_mod.gtf" or die;
-while(<FH>){
-	chomp;
-	my @field=split "\t";
-	$_=~/gene_name "(.+?)"/;
-	my $gene_name=$1;
-	my $loc = $field[0].'\t'.($field[3]-1).'\t'.$field[4].'\t'.$field[6].'\t'.$field[2];
-	foreach my $location (keys %know_lnc){
-		if($location eq $loc){
-			$genecode{$know_lnc{$loc}} = $gene_name;
-		}
+	if ($field[7] eq "exon"){
+		$know_lnc{$field[0].'\t'.$field[1].'\t'.$field[5]} = $field[3];
+		$know_lnc{$field[0].'\t'.$field[2].'\t'.$field[5]} = $field[3];
 	}
 }
-open FH,"lncipedia_4_0.chrX.gtf_mod.gtf" or die;
+
+
+my %genecode;my %lncpedia;
+if (@ARGV == 2){
+open FH,"$ARGV[0]" or die;
 while(<FH>){
 	chomp;
+	if ($_ =~ /^#/){
+		next;
+	}
 	my @field=split "\t";
+	if ($field[2] ne "exon"){
+		next;
+	}
 	$_=~/gene_id "(.+?)"/;
 	my $gene_name=$1;
-	my $loc = $field[0].'\t'.($field[3]-1).'\t'.$field[4].'\t'.$field[6].'\t'.$field[2];
-	foreach my $location (keys %know_lnc){
-		if($location eq $loc){
-			$genecode{$know_lnc{$loc}} = $gene_name;
-		}
+	my $loc1 = $field[0].'\t'.($field[3]-1).'\t'.$field[6];
+	my $loc2 = $field[0].'\t'.$field[4].'\t'.$field[6];
+	if (defined($know_lnc{$loc1})){
+			$genecode{$know_lnc{$loc1}} = $gene_name;
+	}
+	if (defined($know_lnc{$loc2})){
+			$genecode{$know_lnc{$loc2}} = $gene_name;
 	}
 }
-
+open FH,"$ARGV[1]" or die;
+while(<FH>){
+	chomp;
+	if ($_ =~ /^#/){
+		next;
+	}
+	my @field=split "\t";
+	if ($field[2] ne "exon"){
+		next;
+	}
+	$_=~/gene_id "(.+?)"/;
+	my $gene_name=$1;
+	my $loc1 = $field[0].'\t'.($field[3]-1).'\t'.$field[6];
+	my $loc2 = $field[0].'\t'.$field[4].'\t'.$field[6];
+	if (defined($know_lnc{$loc1})){
+			$lncpedia{$know_lnc{$loc1}} = $gene_name;
+	}
+	if (defined($know_lnc{$loc2})){
+			$lncpedia{$know_lnc{$loc2}} = $gene_name;
+	}
+}
+}elsif (@ARGV == 1){
+open FH,"$ARGV[0]" or die;
+while(<FH>){
+	chomp;
+	if ($_ =~ /^#/){
+		next;
+	}
+	my @field=split "\t";
+	if ($field[2] ne "exon"){
+		next;
+	}
+	$_=~/gene_id "(.+?)"/;
+	my $gene_name=$1;
+	my $loc1 = $field[0].'\t'.($field[3]-1).'\t'.$field[6];
+	my $loc2 = $field[0].'\t'.$field[4].'\t'.$field[6];
+	if (defined($know_lnc{$loc1})){
+			$genecode{$know_lnc{$loc1}} = $gene_name;
+	}
+	if (defined($know_lnc{$loc2})){
+			$genecode{$know_lnc{$loc2}} = $gene_name;
+	}
+}
+}else{
+	die ("usage: at least one gtf file is needed!!!")
+}
 my %exon;
 my %gene;
 
@@ -66,7 +112,7 @@ while(<FH>){
 	}else{
 		$gene{$genename}{END}=$end;
 	}
-	
+
 }
 
 open FH,"novel.lncRNA.stringent.filter.bed" or die;
@@ -94,7 +140,7 @@ while(<FH>){
 	}else{
 		$gene{$genename}{END}=$end;
 	}
-	
+
 }
 open OUT,">lncRNA.for_anno.bed" or die;
 foreach my $k (keys %gene){
@@ -143,7 +189,7 @@ while(<FH>){
 		my $genename="NA-$naidx";
 		$map{$genename}{$geneid}="NA";
 		#print $genename."\n";
-	}else{	
+	}else{
 	if($up_dist < $down_dist){
 		my $genename;
 		if($up_dist==0){
@@ -155,7 +201,7 @@ while(<FH>){
 				}else{
 					$map{$genename}{$geneid}=$up_dist;
 				}
-				
+
 			}else{
 				#print "LALALALALA"."\n";
 			}
@@ -223,13 +269,24 @@ foreach my $genename (keys %map){
 			}
 
 		}
-	}		
+	}
+}
+my %all_data;
+foreach my $mstr(sort(keys %genecode)){
+	$all_data{$mstr} = 1;
+}
+foreach my $mstr(sort(keys %lncpedia)){
+	$all_data{$mstr} = 1;
 }
 open OUT3,">lncRNA.mapping.file" or die;
-foreach my $mstr(sort(keys %genecode)){
-	if(defined($MSTRG2genename{$mstr})){
-	print OUT3 $mstr."\t".$genecode{$mstr}."\t".$MSTRG2genename{$mstr}."\n";
+foreach my $mstr(sort(keys %all_data)){
+	if(defined($MSTRG2genename{$mstr}) && defined($lncpedia{$mstr}) && defined($genecode{$mstr})){
+		print OUT3 $mstr."\t".$MSTRG2genename{$mstr}."\t".$genecode{$mstr}."\t".$lncpedia{$mstr}."\n";
+	}elsif (defined($MSTRG2genename{$mstr}) && defined($genecode{$mstr})){
+		print OUT3 $mstr."\t".$MSTRG2genename{$mstr}."\t".$genecode{$mstr}."\t\n"
+	}elsif (defined($MSTRG2genename{$mstr}) && defined($lncpedia{$mstr})){
+		print OUT3 $mstr."\t".$MSTRG2genename{$mstr}."\t\t".$lncpedia{$mstr}."\n"
 	}else{
-		#print $mstr."\n";
+		next;
 	}
 }
