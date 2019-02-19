@@ -205,6 +205,7 @@ multiqc_config = file(params.multiqc_config)
  
 println print_purple("Combining known annotations from GTFs")
 if (params.species=="human") {
+
     gencode_annotation_gtf = file(params.gencode_annotation_gtf)
     if (!gencode_annotation_gtf.exists()) exit 1, "GENCODE annotation file not found: ${params.gencode_annotation_gtf}"
     lncipedia_gtf = file(params.lncipedia_gtf)
@@ -213,6 +214,7 @@ if (params.species=="human") {
     annotation_channel = Channel.from(gencode_annotation_gtf, lncipedia_gtf)
     annotation_channel.collectFile { file -> ['lncRNA.gtflist', file.name + '\n'] }
             .set { LncRNA_gtflist }
+
     process combine_public_annotation {
         storeDir { params.out_folder + "/Combined_annotations" }
         input:
@@ -239,7 +241,6 @@ if (params.species=="human") {
             echo  gencode_annotation_gtf_mod.gtf   >>filenames.txt
             echo lncipedia_mod.gtf   >>filenames.txt
            
-            
             stringtie --merge -o merged_lncRNA.gtf  filenames.txt
             cat gencode_annotation_gtf_mod.gtf   |grep "protein_coding" > gencode_protein_coding.gtf
             gffcompare -r gencode_protein_coding.gtf -p !{cufflinks_threads} merged_lncRNA.gtf
@@ -247,7 +248,8 @@ if (params.species=="human") {
             mv  merged.filter.gtf known.lncRNA.gtf
         
             '''
-        }else {
+        }
+        else {
 
             '''
             set -o pipefail
@@ -835,7 +837,7 @@ else {
             exit 1, print_red("Fastq file not found, plz check your file path : ${reads}\n")
         }
         .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
-        process Run_fastQC {
+        process Run_fastQC_2 {
             tag { fastq_tag }
             label 'qc'
 
@@ -861,7 +863,7 @@ else {
             exit 1, print_red("Fastq file not found :  ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
-        process Run_afterQC {
+        process Run_afterQC_2 {
 
             tag { fastq_tag }
             label 'qc'
@@ -895,7 +897,7 @@ else {
             exit 1, print_red("Fastq file not found :  ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
-        process Run_FastP {
+        process Run_FastP_2 {
 
             tag { fastq_tag }
             label 'qc'
@@ -1429,7 +1431,7 @@ if(!params.merged_gtf){
     if(params.quant=="htseq"){
         exit 0, print_red("htseq can not be applicable without mapping step, plz set quant tool using `kallisto`")
     }else {
-        process Build_kallisto_index_of_GTF_for_quantification {
+        process Build_kallisto_index_of_GTF_for_quantification_2 {
             
 
             input:
@@ -1446,7 +1448,7 @@ if(!params.merged_gtf){
     '''
         }
         constant_kallisto_index = final_kallisto_index.first()
-        process Run_kallisto_for_quantification {
+        process Run_kallisto_for_quantification_2 {
             
 
             tag { file_tag }
@@ -1614,7 +1616,7 @@ if(design!=null){
             """
         }
     }else{
-        process Run_LncPipeReporter_without_Design {
+        process Run_LncPipeReporter_without_Design_2 {
             tag { file_tag }
             publishDir pattern: "*",
                     path: "${params.out_folder}/Result/", mode: 'move'
