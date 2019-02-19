@@ -354,15 +354,18 @@ should be Sample1.
 
 ## FAQ  
 
-* *1. PLEK throws an error "/data/software/PLEK.1.2/PLEK.py:line12: $'\r': can not find command", how to fix?*
+* 1. PLEK throws an error "/data/software/PLEK.1.2/PLEK.py:line12: $'\r': can not find command", how to fix?*
 >A: using the follow command as suggested in the installation section. 
     
         perl -CD -pi -e'tr/\x{feff}//d && s/[\r\n]+/\n/' *.py 
     
-* *2. IOError: [Errno 2] No such file or directory: '/opt/CPAT-1.2.3/dat/Human_Hexamer.tsv'?*
+* 2. IOError: [Errno 2] No such file or directory: '/opt/CPAT-1.2.3/dat/Human_Hexamer.tsv'?
 >A: The cpat command required  the `Human_Hexamer.tsv` to predict lncRNA coding potential, plz check your `cpatpath` parameters. 
-* *3. When using htseq to quantify transicript, it throws "Error occured when reading beginning of SAM/BAM file. 'csamtools.AlignedRead' object has no attribute 'reference_start' "*
+* 3. When using htseq to quantify transicript, it throws "Error occured when reading beginning of SAM/BAM file. 'csamtools.AlignedRead' object has no attribute 'reference_start' "
 >A: It's a version conflict caused by htseq and hisat generated bamfile, a possible solution for this is to install the old version of htseq
+
+* 4. encounter "ERROR ~ Process `Run_fastQC` is already define... " 
+>A: You must use a old version of lncPipe and the latest version of Nextflow. As i know, from `Version 18.12.0`, nextflow will throw a error rather than warning with duplicate process name. plz update the lncPipe with `git clone ` to get the latest LncPipe (higher than 0.2.45) to go through this.  
 
 
     

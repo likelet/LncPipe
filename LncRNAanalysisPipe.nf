@@ -58,7 +58,7 @@ def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
 //Help information
 // Nextflow  version
-version="v0.2.44"
+version="v0.2.45"
 //=======================================================================================
 // Nextflow Version check
 if( !nextflow.version.matches('0.30+') ) {
