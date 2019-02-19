@@ -1570,7 +1570,7 @@ if(design!=null){
         """
         }
     }else{
-        process Run_LncPipeReporter {
+        process Run_LncPipeReporter_2 {
             tag { file_tag }
             publishDir pattern: "*",
                     path: "${params.out_folder}/Result/", mode: 'move'
