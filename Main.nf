@@ -800,7 +800,7 @@ else {
             exit 1, print_red("Fastq file not found, plz check your file path : ${reads}\n")
         }
         .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
-        process Run_fastQC {
+        process Run_fastQC_2 {
             tag { fastq_tag }
             label 'qc'
 
@@ -825,7 +825,7 @@ else {
             exit 1, print_red("Fastq file not found :  ${reads}\nPlz check your reads string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
-        process Run_afterQC {
+        process Run_afterQC_2 {
 
             tag { fastq_tag }
             label 'qc'
@@ -858,7 +858,7 @@ else {
             exit 1, print_red("Fastq file not found :  ${reads}\nPlz check your reads string in nextflow.config file \n")
         }
         .set { reads_for_fastqc}
-        process Run_FastP {
+        process Run_FastP_2 {
 
             tag { fastq_tag }
             label 'qc'
@@ -1383,7 +1383,7 @@ if(!params.merged_gtf){
     if(params.quant=="htseq"){
         exit 0, print_red("htseq can not be applicable without mapping step, plz set quant tool using `kallisto`")
     }else {
-        process Build_kallisto_index_of_GTF_for_quantification {
+        process Build_kallisto_index_of_GTF_for_quantification_2 {
 
 
             input:
@@ -1400,7 +1400,7 @@ if(!params.merged_gtf){
     '''
         }
         constant_kallisto_index = final_kallisto_index.first()
-        process Run_kallisto_for_quantification {
+        process Run_kallisto_for_quantification_2 {
 
 
             tag { file_tag }
@@ -1521,7 +1521,7 @@ if(design!=null){
         """
         }
     }else{
-        process Run_LncPipeReporter {
+        process Run_LncPipeReporter_2 {
             tag { file_tag }
             publishDir pattern: "LncPipeReports",
                     path: "${params.outdir}/", mode: 'copy'
@@ -1545,7 +1545,7 @@ if(design!=null){
     }
 
 }else{
-    if(!params.merged_gtf) {
+    if(!params.design) {
         process Run_LncPipeReporter_without_Design {
             tag { file_tag }
             publishDir pattern: "LncPipeReports",
@@ -1567,7 +1567,7 @@ if(design!=null){
             """
         }
     }else{
-        process Run_LncPipeReporter_without_Design {
+        process Run_LncPipeReporter_without_Design_2 {
             tag { file_tag }
             publishDir pattern: "LncPipeReports",
                     path: "${params.outdir}/", mode: 'copy'
