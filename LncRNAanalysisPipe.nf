@@ -156,8 +156,14 @@ log.info print_yellow("Genome sequence location:       ") + print_green(params.f
 log.info print_yellow("STAR index path:                ") + print_green(params.star_index)
 log.info print_yellow("HISAT2 index path:               ") + print_green(params.hisat2_index)
 log.info print_yellow("bowtie/tophat index path:       ") + print_green(params.bowtie2_index)
-log.info print_yellow("GENCODE annotation location:    ") + print_green(params.gencode_annotation_gtf)
-log.info print_yellow("lncipedia annotation location:  ") + print_green(params.lncipedia_gtf)
+if(params.species=="human"){
+    log.info print_yellow("GENCODE annotation location:    ") + print_green(params.gencode_annotation_gtf)
+    log.info print_yellow("lncipedia annotation location:  ") + print_green(params.lncipedia_gtf)
+}else{
+    log.info print_yellow("known protein coding annotation location:    ") + print_green(params.known_coding_gtf)
+    log.info print_yellow("known lncRNA annotation location:            ") + print_green(params.known_lncRNA_gtf)
+}
+
 log.info print_yellow("=====================================")
 log.info "\n"
 
@@ -203,9 +209,9 @@ multiqc_config = file(params.multiqc_config)
 *Step 1: Prepare Annotations
  */
  
-println print_purple("Combining known annotations from GTFs")
-if (params.species=="human") {
 
+if (params.species=="human") {
+    println print_purple("Combining known annotations from GTFs")
     gencode_annotation_gtf = file(params.gencode_annotation_gtf)
     if (!gencode_annotation_gtf.exists()) exit 1, "GENCODE annotation file not found: ${params.gencode_annotation_gtf}"
     lncipedia_gtf = file(params.lncipedia_gtf)
@@ -225,6 +231,7 @@ if (params.species=="human") {
         file "gencode_protein_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
         file "known.lncRNA.gtf" into KnownLncRNAgtf
         file "*_mod.gtf" into mod_file_for_rename
+        file "gencode_annotation_gtf_mod.gtf" into gencode_annotation_gtf_for_assemble,gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
 
         shell:
         cufflinks_threads = ava_cpu- 1
@@ -263,17 +270,37 @@ if (params.species=="human") {
         '''
         }
     }
-}
-else {// for mouse or other species, user should provide known_protein_coding and known_lncRNA GTF file for analysis
-
-    KnownLncRNAgtf=file(params.known_lncRNA_gtf)
-    if (!KnownLncRNAgtf.exists()) exit 1, print_red("In non-human mode, known lncRNA GTF annotation file not found: ${params.known_lncRNA_gtf}")
+} else {// for mouse or other species, user should provide known_protein_coding and known_lncRNA GTF file for analysis
+    println print_purple("skip combination step due to non-human analysis")
+    Known_LncRNAgtf=file(params.known_lncRNA_gtf)
+  //  if (!KnownLncRNAgtf.exists()) exit 1, print_red("In non-human mode, known lncRNA GTF annotation file not found: ${params.known_lncRNA_gtf}")
     known_coding_gtf=file(params.known_coding_gtf)
-    if (!known_coding_gtf.exists()) exit 1, print_red("In non-human mode, known protein coding GTF annotation file not found: ${params.known_coding_gtf}")
-    gencode_annotation_gtf = file(params.gencode_annotation_gtf)
-    if (!gencode_annotation_gtf.exists()) exit 1, print_red("GENCODE annotation file not found: ${params.gencode_annotation_gtf}")
-    gencode_annotation_gtf.into{proteinCodingGTF; proteinCodingGTF_forClass}
-    knownLncRNAgtf.set{knownLncRNAgtf}
+    //if (!known_coding_gtf.exists()) exit 1, print_red("In non-human mode, known protein coding GTF annotation file not found: ${params.known_coding_gtf}")
+
+    process process_non_human_annotation{
+        storeDir { params.out_folder + "/Combined_annotations" }
+        input:
+        file Known_LncRNAgtf
+        file known_coding_gtf
+        output:
+        file "know_lnc.gtf" into KnownLncRNAgtf
+        file "known_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
+        file "non_human_mod.gtf" into mod_file_for_rename,gencode_annotation_gtf_for_assemble,gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
+        shell:
+        '''
+        set -o pipefail
+        # add quote and remove gene terms avoiding malformed error by stringtie and bedops
+         perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g'  !{Known_LncRNAgtf} | grep -w gene -v > know_lnc.gtf
+         perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{known_coding_gtf} | grep -w gene -v > known_coding.gtf 
+         cat know_lnc.gtf known_coding.gtf  > non_human_mod.gtf
+        
+        
+        '''
+    }
+
+
+
+
 
 }
 
@@ -451,7 +478,7 @@ if (!params.merged_gtf) {
             fastq_threads = idv_cpu - 1
             if (params.singleEnd) {
                 '''
-            fastp -i !{fastq_file[0]} -o !{samplename}.qc.gz -h !{samplename}_fastp.html
+            fastp -i !{fastq_file[0]} -o !{samplename}.qc.fq.gz  -h !{samplename}_fastp.html
            
             '''
             } else {
@@ -665,7 +692,7 @@ if (!params.merged_gtf) {
             input:
             set val(samplename),file(alignment_bam) from hisat_mappedReads
             file fasta_ref
-            file gencode_annotation_gtf
+            file gencode_annotation_gtf from gencode_annotation_gtf_for_assemble
 
             output:
 
@@ -729,7 +756,7 @@ if (!params.merged_gtf) {
             input:
             set val(file_tag), file(alignment_bam) from mappedReads
             file fasta_ref
-            file gencode_annotation_gtf
+            file gencode_annotation_gtf from gencode_annotation_gtf_for_assemble
 
             output:
 
@@ -945,7 +972,7 @@ else {
         tag { file_tag }
         input:
         file mergeGtfFile from mergeTranscripts_forCompare
-        file gencode_annotation_gtf
+        file gencode_annotation_gtf from gencode_annotation_gtf_for_merge
 
         output:
         file "merged_lncRNA.merged.gtf.tmap" into comparedGTF_tmap
@@ -1044,7 +1071,7 @@ process Predict_coding_abilities_by_CPAT {
                                        -d !{baseDir}/bin/cpat_model/zebrafish_logitModel.RData \
                                        -o novel.longRNA.CPAT.out
         '''
-    }else {
+    }else if (params.species=="fly"){
         '''
         cpat.py -g !{novel_lncRNA_fasta} \
                                        -x !{baseDir}/bin/cpat_model/fly_Hexamer.tsv \
@@ -1065,7 +1092,7 @@ process Filter_lncRNA_by_coding_potential_result {
     file novel_longRNA_CPAT_ from novel_longRNA_CPAT_result
     file longRNA_novel_exoncount from novelLncRnaExonCount
     file cuffmergegtf from mergeTranscripts_forCodeingProtential
-    file gencode_annotation_gtf
+    file gencode_annotation_gtf  from gencode_annotation_gtf_for_filter
     file fasta_ref
 
     output:
@@ -1468,21 +1495,21 @@ if(!params.merged_gtf){
             if (params.singleEnd) {
                 println print_purple("Quantification by kallisto in single end mode")
                 '''
-        #quantification by kallisto in single end mode
-        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20 !{pair} 
-        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
-        
-        '''
+                #quantification by kallisto in single end mode
+                kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 --single -l 180 -s 20 !{pair} 
+                mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
+                
+                '''
 
 
             } else {
                 println print_purple("Quantification by kallisto in paired end mode")
                 '''
-        #quantification by kallisto 
-        kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} !{pair[1]}
-        mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
-        '''
-            }
+                #quantification by kallisto 
+                kallisto quant -i !{kallistoIndex} -o !{file_tag_new}_kallisto -t !{kallisto_threads} -b 100 !{pair[0]} !{pair[1]}
+                mv !{file_tag_new}_kallisto/abundance.tsv !{file_tag_new}_abundance.tsv
+                '''
+                    }
         }
     }
 }
