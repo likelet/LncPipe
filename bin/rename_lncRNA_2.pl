@@ -91,6 +91,9 @@ open FH,"known.lncRNA.bed" or die;
 while(<FH>){
 	chomp;
 	my @field=split "\t";
+	if($field[7] eq "transcript"){
+		next;
+	}
 	my $chr=$field[0];
 	my $genename="known:".$field[3];
 	my $start=$field[1];
@@ -119,6 +122,9 @@ open FH,"novel.lncRNA.stringent.filter.bed" or die;
 while(<FH>){
 	chomp;
 	my @field=split "\t";
+	if($field[7] eq "transcript"){
+		next;
+	}
 	my $chr=$field[0];
 	my $genename="novel:".$field[3];
 	my $start=$field[1];

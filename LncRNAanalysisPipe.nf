@@ -1162,7 +1162,7 @@ process Summary_renaming_and_classification {
         perl !{baseDir}/bin/rename_lncRNA_2.pl gencode_annotation_gtf_mod.gtf lncipedia_mod.gtf 
         # mv lncRNA.final.v2.gtf all_lncRNA_for_classifier.gtf
         grep -v NA-1-1 lncRNA.final.v2.gtf > all_lncRNA_for_classifier.gtf
-        perl !{baseDir}/bin/rename_proteincoding.pl !{gencode_protein_coding_gtf}> protein_coding.final.gtf
+        perl !{baseDir}/bin/rename_proteincoding.pl !{gencode_protein_coding_gtf} | grep -w exone > protein_coding.final.gtf
         cat all_lncRNA_for_classifier.gtf protein_coding.final.gtf > final_all.gtf
         gffread final_all.gtf -g !{fasta_ref} -w final_all.fa -W
         gffread all_lncRNA_for_classifier.gtf -g !{fasta_ref} -w lncRNA.fa -W
@@ -1593,8 +1593,9 @@ if(design!=null){
             shell:
             file_tag = "Generating report ..."
             """
-         Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
-        """
+            perl -F':|,' -lanE'BEGIN{say qq{SampleID\tcondition}} $del = shift @F; say qq{\$_\\t$del} for @F' ${design}  > design.matrix 
+            Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
+            """
         }
     }else{
         process Run_LncPipeReporter_2 {

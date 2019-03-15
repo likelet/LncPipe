@@ -82,3 +82,13 @@ Leave the other line unchanged, modified the following sentences like below (Acc
 > The default running tools in each step are fastp, hisat, gffcompare, stringtie, cpat, plek, sambamba, kallisto ,edgeR and LncPipeReporter, if you want to change the tool in each step, plz modify `config` file instead.
 
 * Any question, plz open an issue in the issue page, we will reply ASAP :)
+
+
+## run a test data 
+
+
+
+
+
+
+
