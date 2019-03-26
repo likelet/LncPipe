@@ -1593,7 +1593,7 @@ if(design!=null){
             shell:
             file_tag = "Generating report ..."
             """
-            perl -F':|,' -lanE'BEGIN{say qq{SampleID\tcondition}} $del = shift @F; say qq{\$_\\t$del} for @F' ${design}  > design.matrix 
+            perl ${baseDir}/bin/modifyDesign.pl ${design}  > design.matrix 
             Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
             """
         }
@@ -1615,7 +1615,7 @@ if(design!=null){
             shell:
             file_tag = "Generating report ..."
             """
-            perl -F':|,' -lanE'BEGIN{say qq{SampleID\tcondition}} $del = shift @F; say qq{$_\t$del} for @F' ${design}  > design.matrix 
+            perl ${baseDir}/bin/modifyDesign.pl ${design}  > design.matrix 
             Rscript -e "library(LncPipeReporter);run_reporter(input='.', output = 'reporter.html',output_dir='./LncPipeReports',de.method=\'${detools}\',theme = 'npg',cdf.percent = ${lncRep_cdf_percent},max.lncrna.len = ${lncRep_max_lnc_len},min.expressed.sample = ${lncRep_min_expressed_sample}, ask = FALSE)"
             """
         }
