@@ -170,10 +170,10 @@ while(<FH>){
 		next;
 	}
 	my $up_gene="";
-	my $up_dist=999999;
+	my $up_dist=999999999;
 	my $up_strand;
 	my $down_gene="";
-	my $down_dist=999999;
+	my $down_dist=999999999;
 	my $down_strand;
 	my $closet_genename="";
 	if($field[1] ne "NA"){
@@ -194,6 +194,7 @@ while(<FH>){
 		$naidx++;
 		my $genename="NA-$naidx";
 		$map{$genename}{$geneid}="NA";
+		$genename2gene{$genename} = "NA";
 		#print $genename."\n";
 	}else{
 	if($up_dist < $down_dist){
