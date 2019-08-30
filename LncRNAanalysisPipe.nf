@@ -1161,8 +1161,8 @@ process Summary_renaming_and_classification {
         
         perl !{baseDir}/bin/rename_lncRNA_2.pl gencode_annotation_gtf_mod.gtf lncipedia_mod.gtf 
         # mv lncRNA.final.v2.gtf all_lncRNA_for_classifier.gtf
-        grep -v "gene_id \\"NA-" lncRNA.final.v2.gtf > all_lncRNA_for_classifier.gtf
-        perl !{baseDir}/bin/rename_proteincoding.pl !{gencode_protein_coding_gtf} | grep -w exone > protein_coding.final.gtf
+        grep -v 'gene_id \"NA-' lncRNA.final.v2.gtf > all_lncRNA_for_classifier.gtf
+        perl !{baseDir}/bin/rename_proteincoding.pl !{gencode_protein_coding_gtf} | grep -w exon > protein_coding.final.gtf
         cat all_lncRNA_for_classifier.gtf protein_coding.final.gtf > final_all.gtf
         gffread final_all.gtf -g !{fasta_ref} -w final_all.fa -W
         gffread all_lncRNA_for_classifier.gtf -g !{fasta_ref} -w lncRNA.fa -W
