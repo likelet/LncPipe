@@ -260,6 +260,12 @@ if (params.species=="human") {
 
             '''
             set -o pipefail
+
+            perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{gencode_annotation_gtf} > gencode_annotation_gtf_mod.gtf 
+            perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{lncipedia_gtf} > lncipedia_mod.gtf 
+            
+            echo  gencode_annotation_gtf_mod.gtf   >>filenames.txt
+            echo lncipedia_mod.gtf   >>filenames.txt
             
             cuffmerge -o merged_lncRNA  !{lncRNA_gtflistfile}
             cat !{gencode_annotation_gtf} |grep "protein_coding" > gencode_protein_coding.gtf

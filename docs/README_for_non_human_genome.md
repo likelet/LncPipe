@@ -1,5 +1,12 @@
 # Example usage for non-human species 
 
+- [Introduction](#introduction)
+- [Example usage for mouse](#example-usage-for-mouse)
+  * [Step 1. Prepare input files. The following files required by LncPipe](#step-1-prepare-input-files-the-following-files-required-by-lncpipe)
+  * [Step 2. Edit `nextflow.config` file](#step-2-edit--nextflowconfig--file)
+  * [Step 3. Start your analysis trip with command below](#step-3-start-your-analysis-trip-with-command-below)
+
+
 ## Introduction 
 LncPipe accepts raw reads, annotations and genome reference as input to conduct the whole analysis, 
 and is also applicable for selected referenced species. In the first version, we mainly focus on human 
@@ -82,13 +89,3 @@ Leave the other line unchanged, modified the following sentences like below (Acc
 > The default running tools in each step are fastp, hisat, gffcompare, stringtie, cpat, plek, sambamba, kallisto ,edgeR and LncPipeReporter, if you want to change the tool in each step, plz modify `config` file instead.
 
 * Any question, plz open an issue in the issue page, we will reply ASAP :)
-
-
-## run a test data 
-
-
-
-
-
-
-
