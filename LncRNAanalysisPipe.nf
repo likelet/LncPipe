@@ -58,7 +58,7 @@ def print_white = {  str -> ANSI_WHITE + str + ANSI_RESET }
 
 //Help information
 // Nextflow  version
-version="v0.2.45"
+version="v0.2.47"
 //=======================================================================================
 // Nextflow Version check
 if( !nextflow.version.matches('0.30+') ) {
@@ -231,7 +231,7 @@ if (params.species=="human") {
         file "gencode_protein_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
         file "known.lncRNA.gtf" into KnownLncRNAgtf
         file "*_mod.gtf" into mod_file_for_rename
-        file "gencode_annotation_gtf_mod.gtf" into Gencode_annotation_gtf_for_assemble,gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
+        file "gencode_annotation_gtf_mod.gtf" into Gencode_annotation_gtf_for_assemble,Gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
 
         shell:
         cufflinks_threads = ava_cpu- 1
@@ -291,7 +291,7 @@ if (params.species=="human") {
         output:
         file "know_lnc.gtf" into KnownLncRNAgtf
         file "known_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
-        file "non_human_mod.gtf" into mod_file_for_rename,Gencode_annotation_gtf_for_assemble,gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
+        file "non_human_mod.gtf" into mod_file_for_rename,Gencode_annotation_gtf_for_assemble,Gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
         shell:
         '''
         set -o pipefail
@@ -406,7 +406,7 @@ if (!params.merged_gtf) {
                 .ifEmpty {
             exit 1, print_red("Cannot find any reads matching: ${reads}\nNB: Path needs to be enclosed in quotes!\n")
         }
-        .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
+        .into { reads_for_fastqc; ReadPairs_for_discovery;ReadPairs_for_kallisto}
         process Run_fastQC {
             tag { fastq_tag }
             label 'qc'
@@ -444,7 +444,7 @@ if (!params.merged_gtf) {
 
             output:
             file "QC/*.html" into fastqc_for_waiting
-            set val(fastq_tag), file('*.good.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
+            set val(fastq_tag), file('*.good.fq.gz')  into ReadPairs_for_discovery,ReadPairs_for_kallisto
             shell:
             fastq_tag = samplename
             fastq_threads = idv_cpu - 1
@@ -478,7 +478,7 @@ if (!params.merged_gtf) {
 
             output:
             file "*.html" into fastqc_for_waiting
-            set val(fastq_tag), file('*qc.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
+            set val(fastq_tag), file('*qc.fq.gz')  into ReadPairs_for_discovery,ReadPairs_for_kallisto
             shell:
             fastq_tag = samplename
             fastq_threads = idv_cpu - 1
@@ -498,7 +498,7 @@ if (!params.merged_gtf) {
                 .ifEmpty {
             exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
-                .into{readPairs_for_discovery; readPairs_for_kallisto;fastqc_for_waiting}
+                .into{ReadPairs_for_discovery; readPairs_for_kallisto;fastqc_for_waiting}
     }
     fastqc_for_waiting = fastqc_for_waiting.first()
 
@@ -514,13 +514,13 @@ if (!params.merged_gtf) {
                     path: { params.out_folder + "/Result/Star_alignment" }, mode: 'copy', overwrite: true
 
             input:
-            set val(samplename), file(pair) from readPairs_for_discovery
+            set val(samplename), file(pair) from ReadPairs_for_discovery
             file tempfiles from fastqc_for_waiting // just for waiting
             file fasta_ref
             file star_index
 
             output:
-            set val(file_tag_new), file("${file_tag_new}Aligned.sortedByCoord.out.bam") into MappedReads,forHtseqMappedReads
+            set val(file_tag_new), file("${file_tag_new}Aligned.sortedByCoord.out.bam") into MappedReads,ForHtseqMappedReads
             file "${file_tag_new}Log.final.out" into alignment_logs
             shell:
             println print_purple("Start mapping with STAR aligner " + samplename)
@@ -580,14 +580,14 @@ if (!params.merged_gtf) {
                     path: { params.out_folder + "/Result/tophat_alignment" }, mode: 'copy', overwrite: true
 
             input:
-            set val(samplename), file(pair) from readPairs_for_discovery
+            set val(samplename), file(pair) from ReadPairs_for_discovery
             file tempfiles from fastqc_for_waiting // just for waiting
             file fasta_ref
             file bowtie2_index from bowtie2_index.collect()
-            file gtf from gencode_annotation_gtf
+            file gtf from gencode_annotation_gtf.collect()
 
             output:
-             set val(samplename),file("${file_tag_new}_thout/accepted.bam") into MappedReads,forHtseqMappedReads
+             set val(samplename),file("${file_tag_new}_thout/accepted.bam") into MappedReads,ForHtseqMappedReads
             file "${file_tag_new}_thout/Alignment_summary.txt" into alignment_logs
             //align_summary.txt as log file
             shell:
@@ -623,13 +623,13 @@ if (!params.merged_gtf) {
                     path: { params.out_folder + "/Result/hisat_alignment" }, mode: 'copy', overwrite: true
 
             input:
-            set val(samplename), file(pair) from readPairs_for_discovery
+            set val(samplename), file(pair) from ReadPairs_for_discovery
             file tempfiles from fastqc_for_waiting // just for waiting
             file fasta_ref
             file hisat2_id from hisat2_index.collect()
 
             output:
-            set val(file_tag_new),file("${file_tag_new}.sort.bam") into Hisat_mappedReads,forHtseqMappedReads
+            set val(file_tag_new),file("${file_tag_new}.sort.bam") into Hisat_mappedReads,ForHtseqMappedReads
             file "${file_tag_new}.hisat2_summary.txt" into alignment_logs
             //align_summary.txt as log file
             shell:
@@ -690,6 +690,7 @@ if (!params.merged_gtf) {
     /*
     * Step 5: Transcript assembly using Stringtie
     */
+  
     if(params.aligner == 'hisat'){
         process StringTie_assembly {
             
@@ -698,7 +699,7 @@ if (!params.merged_gtf) {
             input:
             set val(samplename),file(alignment_bam) from Hisat_mappedReads
             file fasta_ref
-            file gencode_annotation_gtf from Gencode_annotation_gtf_for_assemble
+            file gencode_annotation_gtf from Gencode_annotation_gtf_for_assemble.collect()
 
             output:
 
@@ -737,7 +738,7 @@ if (!params.merged_gtf) {
 
             input:
             file gtf_filenames from GTFfilenames
-            file cufflinksgtf_file from StringTieoutgtf_fn.toList() // not used but just send the file in current running folder
+            file cufflinksgtf_file from StringTieoutgtf_fn.collect() // not used but just send the file in current running folder
             file fasta_ref
 
 
@@ -762,7 +763,7 @@ if (!params.merged_gtf) {
             input:
             set val(file_tag), file(alignment_bam) from MappedReads
             file fasta_ref
-            file gencode_annotation_gtf from Gencode_annotation_gtf_for_assemble
+            file gencode_annotation_gtf from Gencode_annotation_gtf_for_assemble.collect()
 
             output:
 
@@ -827,7 +828,7 @@ if (!params.merged_gtf) {
 
             input:
             file gtf_filenames from GTFfilenames
-            file cufflinksgtf_file from cuflinksoutgtf_fn.toList() // not used but just send the file in current running folder
+            file cufflinksgtf_file from cuflinksoutgtf_fn.collect() // not used but just send the file in current running folder
 
             file fasta_ref
 
@@ -869,7 +870,7 @@ else {
                 .ifEmpty {
             exit 1, print_red("Fastq file not found, plz check your file path : ${reads}\n")
         }
-        .into { reads_for_fastqc; readPairs_for_discovery;readPairs_for_kallisto}
+        .into { reads_for_fastqc; ReadPairs_for_discovery;readPairs_for_kallisto}
         process Run_fastQC_2 {
             tag { fastq_tag }
             label 'qc'
@@ -909,7 +910,7 @@ else {
 
             output:
             file "QC/*.html" into fastqc_for_waiting
-            set val(fastq_tag), file('*.good.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
+            set val(fastq_tag), file('*.good.fq.gz')  into ReadPairs_for_discovery,readPairs_for_kallisto
             shell:
             fastq_tag = samplename
             fastq_threads = idv_cpu - 1
@@ -943,7 +944,7 @@ else {
 
             output:
             file "*.html" into fastqc_for_waiting
-            set val(fastq_tag), file('*qc.fq.gz')  into readPairs_for_discovery,readPairs_for_kallisto
+            set val(fastq_tag), file('*qc.fq.gz')  into ReadPairs_for_discovery,ReadPairs_for_kallisto
             shell:
             fastq_tag = samplename
             fastq_threads = idv_cpu - 1
@@ -964,7 +965,7 @@ else {
                 .ifEmpty {
             exit 1, print_red("Cannot find any reads matching: ${reads}\nPlz check your fasta_ref string in nextflow.config file \n")
         }
-        .into{readPairs_for_discovery; readPairs_for_kallisto;fastqc_for_waiting}
+        .into{ReadPairs_for_discovery; ReadPairs_for_kallisto;fastqc_for_waiting}
     }
     fastqc_for_waiting2 = fastqc_for_waiting.first()
 
@@ -978,10 +979,10 @@ else {
         tag { file_tag }
         input:
         file mergeGtfFile from MergeTranscripts_forCompare
-        file gencode_annotation_gtf from gencode_annotation_gtf_for_merge
+        file gencode_annotation_gtf from Gencode_annotation_gtf_for_merge
 
         output:
-        file "merged_lncRNA.merged.gtf.tmap" into comparedGTF_tmap
+        file "merged_lncRNA.merged.gtf.tmap" into ComparedGTF_tmap
         shell:
 
         gffcompare_threads = ava_cpu- 1
@@ -999,7 +1000,7 @@ else {
 process Identify_novel_lncRNA_with_criterions {
 
     input:
-    file comparedTmap from comparedGTF_tmap
+    file comparedTmap from ComparedGTF_tmap
     file fasta_ref
     file mergedGTF from MergeTranscripts_forExtract
 
@@ -1376,7 +1377,7 @@ if(!params.merged_gtf){
         process Run_htseq_for_quantification{
             tag { file_tag }
             input:
-            set val(samplename),file(bamfile) from forHtseqMappedReads
+            set val(samplename),file(bamfile) from ForHtseqMappedReads
             file final_gtf from finalGTF_for_quantification_gtf
 
             output:
@@ -1428,7 +1429,7 @@ if(!params.merged_gtf){
 
             input:
             file kallistoIndex from constant_kallisto_index
-            set val(samplename), file(pair) from readPairs_for_kallisto
+            set val(samplename), file(pair) from ReadPairs_for_kallisto
 
             output:
             file "${file_tag_new}_abundance.tsv" into kallisto_tcv_collection
@@ -1489,7 +1490,7 @@ if(!params.merged_gtf){
 
             input:
             file kallistoIndex from constant_kallisto_index
-            set val(samplename), file(pair) from readPairs_for_kallisto
+            set val(samplename), file(pair) from ReadPairs_for_kallisto
             file tempfiles from fastqc_for_waiting2
             output:
             file "${file_tag_new}_abundance.tsv" into kallisto_tcv_collection

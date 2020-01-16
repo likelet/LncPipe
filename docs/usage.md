@@ -50,7 +50,7 @@ NXF_OPTS='-Xms1g -Xmx4g'
 ## Running the pipeline
 The typical command for running the pipeline is as follows:
 ```bash
-nextflow run  LncRNAanalysisPipe.nf --reads '*_R{1,2}.fastq.gz' -profile standard,docker,test
+nextflow run  LncRNAanalysisPipe.nf  -profile docker,test --fastq_ext '*_R{1,2}.fastq.gz'
 ```
 
 
@@ -170,7 +170,7 @@ profiles {
   }
   
   singularity {
-    
+    includeConfig 'conf/base.config'
     includeConfig 'conf/sing.config'
   }
   
@@ -182,7 +182,7 @@ profiles {
    run {
         includeConfig 'conf/base.config'
         includeConfig 'conf/run.config'
-    }
+   }
 
   debug { process.beforeScript = 'echo $HOSTNAME' }
   none {
@@ -193,6 +193,7 @@ profiles {
 ```
 
 Then you can run the pipeline with your own data  the following command : 
+ PlZ go to https://github.com/likelet/LncPipeTestData 
 
 ```bash
  nextflow run  LncRNAanalysisPipe.nf -profile standard,docker,run
