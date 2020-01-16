@@ -231,7 +231,7 @@ if (params.species=="human") {
         file "gencode_protein_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
         file "known.lncRNA.gtf" into KnownLncRNAgtf
         file "*_mod.gtf" into mod_file_for_rename
-        file "gencode_annotation_gtf_mod.gtf" into gencode_annotation_gtf_for_assemble,gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
+        file "gencode_annotation_gtf_mod.gtf" into Gencode_annotation_gtf_for_assemble,gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
 
         shell:
         cufflinks_threads = ava_cpu- 1
@@ -291,7 +291,7 @@ if (params.species=="human") {
         output:
         file "know_lnc.gtf" into KnownLncRNAgtf
         file "known_coding.gtf" into proteinCodingGTF, proteinCodingGTF_forClass
-        file "non_human_mod.gtf" into mod_file_for_rename,gencode_annotation_gtf_for_assemble,gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
+        file "non_human_mod.gtf" into mod_file_for_rename,Gencode_annotation_gtf_for_assemble,gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
         shell:
         '''
         set -o pipefail
@@ -520,7 +520,7 @@ if (!params.merged_gtf) {
             file star_index
 
             output:
-            set val(file_tag_new), file("${file_tag_new}Aligned.sortedByCoord.out.bam") into mappedReads,forHtseqMappedReads
+            set val(file_tag_new), file("${file_tag_new}Aligned.sortedByCoord.out.bam") into MappedReads,forHtseqMappedReads
             file "${file_tag_new}Log.final.out" into alignment_logs
             shell:
             println print_purple("Start mapping with STAR aligner " + samplename)
@@ -587,7 +587,7 @@ if (!params.merged_gtf) {
             file gtf from gencode_annotation_gtf
 
             output:
-             set val(samplename),file("${file_tag_new}_thout/accepted.bam") into mappedReads,forHtseqMappedReads
+             set val(samplename),file("${file_tag_new}_thout/accepted.bam") into MappedReads,forHtseqMappedReads
             file "${file_tag_new}_thout/Alignment_summary.txt" into alignment_logs
             //align_summary.txt as log file
             shell:
@@ -629,7 +629,7 @@ if (!params.merged_gtf) {
             file hisat2_id from hisat2_index.collect()
 
             output:
-            set val(file_tag_new),file("${file_tag_new}.sort.bam") into hisat_mappedReads,forHtseqMappedReads
+            set val(file_tag_new),file("${file_tag_new}.sort.bam") into Hisat_mappedReads,forHtseqMappedReads
             file "${file_tag_new}.hisat2_summary.txt" into alignment_logs
             //align_summary.txt as log file
             shell:
@@ -696,13 +696,13 @@ if (!params.merged_gtf) {
             tag { file_tag }
 
             input:
-            set val(samplename),file(alignment_bam) from hisat_mappedReads
+            set val(samplename),file(alignment_bam) from Hisat_mappedReads
             file fasta_ref
-            file gencode_annotation_gtf from gencode_annotation_gtf_for_assemble
+            file gencode_annotation_gtf from Gencode_annotation_gtf_for_assemble
 
             output:
 
-            file "stringtie_${file_tag_new}_transcripts.gtf" into stringTieoutgtf, StringTieOutGtf_fn
+            file "stringtie_${file_tag_new}_transcripts.gtf" into StringTieoutgtf, StringTieoutgtf_fn
 
             shell:
             file_tag = samplename
@@ -723,7 +723,7 @@ if (!params.merged_gtf) {
 
         }
 // Create a file 'gtf_filenames' containing the filenames of each post processes cufflinks gtf
-        stringTieoutgtf.collectFile { file -> ['gtf_filenames.txt', file.name + '\n'] }
+        StringTieoutgtf.collectFile { file -> ['gtf_filenames.txt', file.name + '\n'] }
                 .set { GTFfilenames }
         /*
         * Step 6: Merged GTFs into one
@@ -737,12 +737,12 @@ if (!params.merged_gtf) {
 
             input:
             file gtf_filenames from GTFfilenames
-            file cufflinksgtf_file from StringTieOutGtf_fn.toList() // not used but just send the file in current running folder
+            file cufflinksgtf_file from StringTieoutgtf_fn.toList() // not used but just send the file in current running folder
             file fasta_ref
 
 
             output:
-            file "merged.gtf" into mergeTranscripts_forCompare, mergeTranscripts_forExtract, mergeTranscripts_forCodeingProtential
+            file "merged.gtf" into MergeTranscripts_forCompare, MergeTranscripts_forExtract, MergeTranscripts_forCodeingProtential
             shell:
 
             stringtie_threads = ava_cpu- 1
@@ -760,9 +760,9 @@ if (!params.merged_gtf) {
             tag { file_tag }
 
             input:
-            set val(file_tag), file(alignment_bam) from mappedReads
+            set val(file_tag), file(alignment_bam) from MappedReads
             file fasta_ref
-            file gencode_annotation_gtf from gencode_annotation_gtf_for_assemble
+            file gencode_annotation_gtf from Gencode_annotation_gtf_for_assemble
 
             output:
 
@@ -833,7 +833,7 @@ if (!params.merged_gtf) {
 
 
             output:
-            file "CUFFMERGE/merged.gtf" into mergeTranscripts_forCompare, mergeTranscripts_forExtract, mergeTranscripts_forCodeingProtential
+            file "CUFFMERGE/merged.gtf" into MergeTranscripts_forCompare, MergeTranscripts_forExtract, MergeTranscripts_forCodeingProtential
             shell:
 
             cufflinks_threads = ava_cpu- 1
@@ -859,7 +859,7 @@ else {
     Channel.fromPath(merged_gtf)
             .ifEmpty { exit 1, "Cannot find merged gtf : ${merged_gtf}" }
             .into {
-        mergeTranscripts_forCompare; mergeTranscripts_forExtract; mergeTranscripts_forCodeingProtential
+        MergeTranscripts_forCompare; MergeTranscripts_forExtract; MergeTranscripts_forCodeingProtential
     }
 
     // add fastq when do quantification
@@ -977,7 +977,7 @@ else {
 
         tag { file_tag }
         input:
-        file mergeGtfFile from mergeTranscripts_forCompare
+        file mergeGtfFile from MergeTranscripts_forCompare
         file gencode_annotation_gtf from gencode_annotation_gtf_for_merge
 
         output:
@@ -1001,7 +1001,7 @@ process Identify_novel_lncRNA_with_criterions {
     input:
     file comparedTmap from comparedGTF_tmap
     file fasta_ref
-    file mergedGTF from mergeTranscripts_forExtract
+    file mergedGTF from MergeTranscripts_forExtract
 
     output:
     file "novel.gtf.tmap" into noveltmap
@@ -1029,16 +1029,16 @@ process Identify_novel_lncRNA_with_criterions {
 /*
 *Step 9: Predict coding potential abilities using CPAT and PLEK (CNCI functionality coming soon!)
 */
-novelLncRnaFasta.into { novelLncRnaFasta_for_PLEK; novelLncRnaFasta_for_CPAT; }
+novelLncRnaFasta.into { NovelLncRnaFasta_for_PLEK; NovelLncRnaFasta_for_CPAT; }
 
 process Predict_coding_abilities_by_PLEK {
     
     // as PLEK can not return valid exit status even run smoothly, we manually set the exit status into 0 to promote analysis
     validExitStatus 0, 1, 2
     input:
-    file novel_lncRNA_fasta from novelLncRnaFasta_for_PLEK
+    file novel_lncRNA_fasta from NovelLncRnaFasta_for_PLEK
     output:
-    file "novel.longRNA.PLEK.out" into novel_longRNA_PLEK_result
+    file "novel.longRNA.PLEK.out" into Novel_longRNA_PLEK_result
     shell:
     plek_threads = ava_cpu- 1
     '''
@@ -1051,9 +1051,9 @@ process Predict_coding_abilities_by_PLEK {
 }
 process Predict_coding_abilities_by_CPAT {
     input:
-    file novel_lncRNA_fasta from novelLncRnaFasta_for_CPAT
+    file novel_lncRNA_fasta from NovelLncRnaFasta_for_CPAT
     output:
-    file "novel.longRNA.CPAT.out" into novel_longRNA_CPAT_result
+    file "novel.longRNA.CPAT.out" into Novel_longRNA_CPAT_result
     shell:
     if(params.species=="human"){
         '''
@@ -1094,10 +1094,10 @@ process Predict_coding_abilities_by_CPAT {
 */
 process Filter_lncRNA_by_coding_potential_result {
     input:
-    file novel_longRNA_PLEK_ from novel_longRNA_PLEK_result
-    file novel_longRNA_CPAT_ from novel_longRNA_CPAT_result
+    file novel_longRNA_PLEK_ from Novel_longRNA_PLEK_result
+    file novel_longRNA_CPAT_ from Novel_longRNA_CPAT_result
     file longRNA_novel_exoncount from novelLncRnaExonCount
-    file cuffmergegtf from mergeTranscripts_forCodeingProtential
+    file cuffmergegtf from MergeTranscripts_forCodeingProtential
     file gencode_annotation_gtf  from gencode_annotation_gtf_for_filter
     file fasta_ref
 
