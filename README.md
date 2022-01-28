@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/nf-core/lncpipe.svg?branch=master)](https://travis-ci.org/nf-core/lncpipe)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.32.0-brightgreen.svg)](https://www.nextflow.io/)
-
+[![check in Biotreasury](https://img.shields.io/badge/Biotreasury-collected-brightgreen)](https://biotreasury.rjmart.cn/#/tool?id=10007)
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)
 [![Docker](https://img.shields.io/docker/automated/nfcore/lncpipe.svg)](https://hub.docker.com/r/bioinformatist/lncpipe)
 ![Singularity Container available](
