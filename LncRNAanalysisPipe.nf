@@ -1035,7 +1035,7 @@ novelLncRnaFasta.into { NovelLncRnaFasta_for_PLEK; NovelLncRnaFasta_for_CPAT; }
 process Predict_coding_abilities_by_PLEK {
     
     // as PLEK can not return valid exit status even run smoothly, we manually set the exit status into 0 to promote analysis
-    validExitStatus 0, 1, 2
+    errorStrategy { task.exitStatus=99 ? 'ignore' : 'terminate' }
     input:
     file novel_lncRNA_fasta from NovelLncRnaFasta_for_PLEK
     output:
