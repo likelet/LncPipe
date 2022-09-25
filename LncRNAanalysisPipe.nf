@@ -1047,7 +1047,6 @@ process Predict_coding_abilities_by_PLEK {
         PLEK.py -fasta !{novel_lncRNA_fasta} \
                                    -out novel.longRNA.PLEK.out \
                                    -thread !{plek_threads}
-	    exit 0
         '''
 
 }
