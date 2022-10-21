@@ -1033,8 +1033,6 @@ process Identify_novel_lncRNA_with_criterions {
 novelLncRnaFasta.into { NovelLncRnaFasta_for_PLEK; NovelLncRnaFasta_for_CPAT; }
 
 process Predict_coding_abilities_by_PLEK {
-    errorStrategy { task.attempt <= 3 ? 'retry' : 'ignore' }
-    maxRetries 3
     // as PLEK can not return valid exit status even run smoothly, we manually set the exit status into 0 to promote analysis
     input:
     file novel_lncRNA_fasta from NovelLncRnaFasta_for_PLEK
@@ -1043,10 +1041,10 @@ process Predict_coding_abilities_by_PLEK {
     shell:
     plek_threads = ava_cpu- 1
     '''
+        trap 'if [[ $? == exit 1 ]]; then echo OK; exit 0; fi' EXIT
         PLEK.py -fasta !{novel_lncRNA_fasta} \
                                    -out novel.longRNA.PLEK.out \
                                    -thread !{plek_threads}
-            exit 1
         '''
 
 }
