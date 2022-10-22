@@ -1177,7 +1177,6 @@ process Summary_renaming_and_classification {
         '''
     }else{
         '''
-        set -o pipefail
         gffcompare -G -o filter \
                     -r !{knowlncRNAgtf} \
                     -p !{cufflinks_threads} !{novel_lncRNA_stringent_Gtf}
