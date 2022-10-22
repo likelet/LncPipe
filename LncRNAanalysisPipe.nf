@@ -239,7 +239,6 @@ if (params.species=="human") {
 
         if(params.aligner=='hisat'){//fix the gtf format required by hisat
             '''
-            set -o pipefail
             touch filenames.txt
             
             perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{gencode_annotation_gtf} > gencode_annotation_gtf_mod.gtf 
@@ -259,8 +258,6 @@ if (params.species=="human") {
         else {
 
             '''
-            set -o pipefail
-
             perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{gencode_annotation_gtf} > gencode_annotation_gtf_mod.gtf 
             perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{lncipedia_gtf} > lncipedia_mod.gtf 
             
@@ -294,7 +291,6 @@ if (params.species=="human") {
         file "non_human_mod.gtf" into mod_file_for_rename,Gencode_annotation_gtf_for_assemble,Gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
         shell:
         '''
-        set -o pipefail
         # add quote and remove gene terms avoiding malformed error by stringtie and bedops
          perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g'  !{Known_LncRNAgtf} | grep -w gene -v > know_lnc.gtf
          perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{known_coding_gtf} | grep -w gene -v > known_coding.gtf 
@@ -1012,7 +1008,6 @@ process Identify_novel_lncRNA_with_criterions {
     shell:
     '''
         # filtering novel lncRNA based on cuffmerged trascripts
-        set -o pipefail
         awk '$3 =="x"||$3=="u"||$3=="i"{print $0}' !{comparedTmap} > novel.gtf.tmap
         #   excluding length smaller than 200 nt
         awk '$10 >200{print}' novel.gtf.tmap > novel.longRNA.gtf.tmap
