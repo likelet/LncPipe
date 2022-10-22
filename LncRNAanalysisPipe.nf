@@ -1107,7 +1107,6 @@ process Filter_lncRNA_by_coding_potential_result {
 
     shell:
     '''
-        set -o pipefail
         #merged transcripts
         perl !{baseDir}/bin/integrate_novel_transcripts.pl > novel.longRNA.txt
         awk '$4 >1{print $1}' novel.longRNA.txt|perl !{baseDir}/bin/extract_gtf_by_name.pl !{cuffmergegtf} - > novel.longRNA.stringent.gtf
@@ -1151,7 +1150,6 @@ process Summary_renaming_and_classification {
 
     if(params.species=="human"){
         '''
-        set -o pipefail
         gffcompare -G -o filter \
                     -r !{knowlncRNAgtf} \
                     -p !{cufflinks_threads} !{novel_lncRNA_stringent_Gtf}
