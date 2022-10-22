@@ -239,7 +239,6 @@ if (params.species=="human") {
 
         if(params.aligner=='hisat'){//fix the gtf format required by hisat
             '''
-            set -o pipefail
             touch filenames.txt
             
             perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{gencode_annotation_gtf} > gencode_annotation_gtf_mod.gtf 
@@ -259,8 +258,6 @@ if (params.species=="human") {
         else {
 
             '''
-            set -o pipefail
-
             perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{gencode_annotation_gtf} > gencode_annotation_gtf_mod.gtf 
             perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{lncipedia_gtf} > lncipedia_mod.gtf 
             
@@ -294,7 +291,6 @@ if (params.species=="human") {
         file "non_human_mod.gtf" into mod_file_for_rename,Gencode_annotation_gtf_for_assemble,Gencode_annotation_gtf_for_merge,gencode_annotation_gtf_for_filter
         shell:
         '''
-        set -o pipefail
         # add quote and remove gene terms avoiding malformed error by stringtie and bedops
          perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g'  !{Known_LncRNAgtf} | grep -w gene -v > know_lnc.gtf
          perl -lpe 's/ ([^"]\\S+) ;/ "$1" ;/g' !{known_coding_gtf} | grep -w gene -v > known_coding.gtf 
@@ -1012,7 +1008,6 @@ process Identify_novel_lncRNA_with_criterions {
     shell:
     '''
         # filtering novel lncRNA based on cuffmerged trascripts
-        set -o pipefail
         awk '$3 =="x"||$3=="u"||$3=="i"{print $0}' !{comparedTmap} > novel.gtf.tmap
         #   excluding length smaller than 200 nt
         awk '$10 >200{print}' novel.gtf.tmap > novel.longRNA.gtf.tmap
@@ -1033,9 +1028,7 @@ process Identify_novel_lncRNA_with_criterions {
 novelLncRnaFasta.into { NovelLncRnaFasta_for_PLEK; NovelLncRnaFasta_for_CPAT; }
 
 process Predict_coding_abilities_by_PLEK {
-    
     // as PLEK can not return valid exit status even run smoothly, we manually set the exit status into 0 to promote analysis
-    validExitStatus 0, 1, 2
     input:
     file novel_lncRNA_fasta from NovelLncRnaFasta_for_PLEK
     output:
@@ -1043,10 +1036,10 @@ process Predict_coding_abilities_by_PLEK {
     shell:
     plek_threads = ava_cpu- 1
     '''
+        trap 'if [[ $? == expected_error ]]; then echo OK; exit 0; fi' EXIT
         PLEK.py -fasta !{novel_lncRNA_fasta} \
                                    -out novel.longRNA.PLEK.out \
                                    -thread !{plek_threads}
-	    exit 0
         '''
 
 }
@@ -1109,7 +1102,6 @@ process Filter_lncRNA_by_coding_potential_result {
 
     shell:
     '''
-        set -o pipefail
         #merged transcripts
         perl !{baseDir}/bin/integrate_novel_transcripts.pl > novel.longRNA.txt
         awk '$4 >1{print $1}' novel.longRNA.txt|perl !{baseDir}/bin/extract_gtf_by_name.pl !{cuffmergegtf} - > novel.longRNA.stringent.gtf
@@ -1153,7 +1145,6 @@ process Summary_renaming_and_classification {
 
     if(params.species=="human"){
         '''
-        set -o pipefail
         gffcompare -G -o filter \
                     -r !{knowlncRNAgtf} \
                     -p !{cufflinks_threads} !{novel_lncRNA_stringent_Gtf}
@@ -1181,7 +1172,6 @@ process Summary_renaming_and_classification {
         '''
     }else{
         '''
-        set -o pipefail
         gffcompare -G -o filter \
                     -r !{knowlncRNAgtf} \
                     -p !{cufflinks_threads} !{novel_lncRNA_stringent_Gtf}
